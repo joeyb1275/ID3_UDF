@@ -1,0 +1,8 @@
+Features Not currently implemented:
+
+- Update ID3RemoveTag to sync to MPEG data remove all tag data
+- Update all function comments
+- Unsynchronization
+- Compression
+- Padding/cluster size alignment
+- Tag restrictions

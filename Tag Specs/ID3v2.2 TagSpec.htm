@@ -1,0 +1,1842 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="robots" content="index,nofollow">
+
+<title>id3v2-00 - ID3.org</title>
+<script type="text/javascript" src="/wiki/common/js/common.js"></script>
+
+<script type="text/javascript">
+<!--// common functions
+
+// We keep here the state of the search box
+searchIsDisabled = false;
+
+function searchChange(e) {
+    // Update search buttons status according to search box content.
+    // Ignore empty or whitespace search term.
+    var value = e.value.replace(/\s+/, '');
+    if (value == '' || searchIsDisabled) { 
+        searchSetDisabled(true);
+    } else {
+        searchSetDisabled(false);
+    }
+}
+
+function searchSetDisabled(flag) {
+    // Enable or disable search
+    document.getElementById('fullsearch').disabled = flag;
+    document.getElementById('titlesearch').disabled = flag;
+}
+
+function searchFocus(e) {
+    // Update search input content on focus
+    if (e.value == 'Search') {
+        e.value = '';
+        e.className = '';
+        searchIsDisabled = false;
+    }
+}
+
+function searchBlur(e) {
+    // Update search input content on blur
+    if (e.value == '') {
+        e.value = 'Search';
+        e.className = 'disabled';
+        searchIsDisabled = true;
+    }
+}
+
+function actionsMenuInit(title) {
+    // Initialize action menu
+    for (i = 0; i < document.forms.length; i++) {
+        var form = document.forms[i];
+        if (form.className == 'actionsmenu') {
+            // Check if this form needs update
+            var div = form.getElementsByTagName('div')[0];
+            var label = div.getElementsByTagName('label')[0];
+            if (label) {
+                // This is the first time: remove label and do buton.
+                div.removeChild(label);
+                var dobutton = div.getElementsByTagName('input')[0];
+                div.removeChild(dobutton);
+                // and add menu title
+                var select = div.getElementsByTagName('select')[0];
+                var item = document.createElement('option');
+                item.appendChild(document.createTextNode(title));
+                item.value = 'show';
+                select.insertBefore(item, select.options[0]);
+                select.selectedIndex = 0;
+            }
+        }
+    }
+}
+//-->
+</script>
+
+
+<link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="/wiki/mentalwealth_id3/css/common.css">
+<link rel="stylesheet" type="text/css" charset="utf-8" media="screen" href="/wiki/mentalwealth_id3/css/screen.css">
+<link rel="stylesheet" type="text/css" charset="utf-8" media="print" href="/wiki/mentalwealth_id3/css/print.css">
+<link rel="stylesheet" type="text/css" charset="utf-8" media="projection" href="/wiki/mentalwealth_id3/css/projection.css">
+<link rel="alternate" title="ID3.org Recent Changes" href="/RecentChanges?action=rss_rc&amp;ddiffs=1&amp;unique=1" type="application/rss+xml">
+
+<link rel="Start" href="/Home">
+<link rel="Alternate" title="Wiki Markup" href="/id3v2-00?action=raw">
+<link rel="Alternate" media="print" title="Print View" href="/id3v2-00?action=print">
+<link rel="Search" href="/FindPage">
+<link rel="Index" href="/TitleIndex">
+<link rel="Glossary" href="/WordIndex">
+<link rel="Help" href="/HelpOnFormatting">
+</head>
+
+<body  lang="en" dir="ltr">
+<center><script type="text/javascript"><!--
+google_ad_client = "pub-1408728402565238";
+google_ad_width = 728;
+google_ad_height = 90;
+google_ad_format = "728x90_as";
+google_ad_type = "text";
+google_ad_channel = "";
+google_color_border = "ffffff";
+google_color_bg = "FFFFFF";
+google_color_link = "DD6600";
+google_color_text = "000000";
+google_color_url = "DD6600";
+//--></script>
+<script type="text/javascript"
+  src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+  </script>
+</center>
+<div id="header"><div id="logo"><a href="/Home"><img src="http://www.id3.org/id3v2.gif" alt="ID3.org Logo">&nbsp;&nbsp;The Audience is informed</a></div></div>
+
+<div id="sidebar">
+<div class="sidepanel"><h1>Search</h1>
+<form id="searchform" method="get" action="">
+<div>
+<input type="hidden" name="action" value="fullsearch">
+<input type="hidden" name="context" value="180">
+<label for="searchinput">Search:</label>
+<input id="searchinput" type="text" name="value" value="" size="20"
+    onfocus="searchFocus(this)" onblur="searchBlur(this)"
+    onkeyup="searchChange(this)" onchange="searchChange(this)" alt="Search">
+<br><input id="titlesearch" name="titlesearch" type="submit"
+    value="Titles" alt="Search Titles">
+<input id="fullsearch" name="fullsearch" type="submit"
+    value="Text" alt="Search Full Text">
+</div>
+</form>
+<script type="text/javascript">
+<!--// Initialize search form
+var f = document.getElementById('searchform');
+f.getElementsByTagName('label')[0].style.display = 'none';
+var e = document.getElementById('searchinput');
+searchChange(e);
+searchBlur(e);
+//-->
+</script>
+</div>
+<div class="sidepanel"><h1>Navigation</h1>
+<ul id="navibar">
+<li class="wikilink"><a href="/Home">Home</a></li><li class="wikilink"><a href="/Introduction">Introduction</a></li><li class="wikilink"><a href="/Developer_Information">Developer Information</a></li><li class="wikilink"><a href="/Implementations">Implementations</a></li><li class="wikilink"><a href="/Compliance_Issues">Compliance Issues</a></li><li class="wikilink"><a href="/Contributors">Contributors</a></li><li class="wikilink"><a href="/FAQ">FAQ</a></li><li class="wikilink"><a href="/MailingList">MailingList</a></li><li class="wikilink"><a href="/RecentChanges">RecentChanges</a></li><li class="wikilink"><a href="/FindPage">FindPage</a></li><li class="wikilink"><a href="/HelpContents">HelpContents</a></li><li class="current"><a href="/id3v2-00">id3v2-00</a></li>
+</ul>
+</div>
+<div class="sidepanel"><h1>Recent</h1></div>
+<div class="sidepanel"><h1>This Page</h1><ul class="editbar">
+<li><a href="/id3v2-00?action=diff">show changes</a></li>
+<li><a href="/id3v2-00?action=info">get info</a></li>
+<li><a href="/id3v2-00?action=raw">show raw text</a></li>
+<li><a href="/id3v2-00?action=print">show print view</a></li>
+<li><a href="/id3v2-00?action=refresh">delete cache</a></li>
+<li><a href="/id3v2-00?action=AttachFile">attach file</a></li>
+<li><a href="/id3v2-00?action=SpellCheck">check spelling</a></li>
+<li><a href="/id3v2-00?action=LikePages">show like pages</a></li>
+<li><a href="/id3v2-00?action=LocalSiteMap">show local site map</a></li>
+</ul>
+</div>
+<div class="sidepanel"><h1>More Actions</h1><ul class="editbar">
+<li><a href="/id3v2-00?action=Despam">despam</a></li>
+<li><a href="/id3v2-00?action=SubscribeUser">subscribe user</a></li>
+<li><a href="/id3v2-00?action=RenderAsDocbook">render as docbook</a></li>
+<li><a href="/id3v2-00?action=PackagePages">package pages</a></li>
+<li><a href="/id3v2-00?action=MyPages">my pages</a></li>
+</ul>
+</div>
+<div class="sidepanel"><h1>User</h1><ul id="username"><li><a href="/id3v2-00?action=login" id="login">Login</a></li></ul></div>
+<ul id="credits">
+<li><a href="http://moinmoin.wikiwikiweb.de/">MoinMoin Powered</a></li><li><a href="http://www.python.org/">Python Powered</a></li><li><a href="http://validator.w3.org/check?uri=referer">Valid HTML 4.01</a></li>
+</ul>
+
+</div>
+
+<div id="page" lang="en" dir="ltr">
+<div dir="ltr" id="content" lang="en"><span class="anchor" id="top"></span>
+<span class="anchor" id="line-2"></span><p class="line867"><span class="anchor" id="line-3"></span><pre>Informal standard                                             M. Nilsson
+<span class="anchor" id="line-4"></span>Document: id3v2-00.txt                                   26th March 1998
+<span class="anchor" id="line-5"></span>
+<span class="anchor" id="line-6"></span>
+<span class="anchor" id="line-7"></span>                            ID3 tag version 2
+<span class="anchor" id="line-8"></span>
+<span class="anchor" id="line-9"></span>Status of this document
+<span class="anchor" id="line-10"></span>
+<span class="anchor" id="line-11"></span>   This document is an Informal standard and is released so that
+<span class="anchor" id="line-12"></span>   implementors could have a set standard before the formal standard is
+<span class="anchor" id="line-13"></span>   set. The formal standard will use another version number if not
+<span class="anchor" id="line-14"></span>   identical to what is described in this document. The contents in this
+<span class="anchor" id="line-15"></span>   document may change for clarifications but never for added or altered
+<span class="anchor" id="line-16"></span>   functionallity.
+<span class="anchor" id="line-17"></span>
+<span class="anchor" id="line-18"></span>   Distribution of this document is unlimited.
+<span class="anchor" id="line-19"></span>
+<span class="anchor" id="line-20"></span>
+<span class="anchor" id="line-21"></span>Abstract
+<span class="anchor" id="line-22"></span>
+<span class="anchor" id="line-23"></span>   The recent gain of popularity for MPEG layer III audio files on the
+<span class="anchor" id="line-24"></span>   internet forced a standardised way of storing information about an
+<span class="anchor" id="line-25"></span>   audio file within itself to determinate its origin and contents.
+<span class="anchor" id="line-26"></span>
+<span class="anchor" id="line-27"></span>   Today the most accepted way to do this is with the so called ID3 tag,
+<span class="anchor" id="line-28"></span>   which is simple but very limited and in some cases very unsuitable.
+<span class="anchor" id="line-29"></span>   The ID3 tag has very limited space in every field, very limited
+<span class="anchor" id="line-30"></span>   numbers of fields, not expandable or upgradeable and is placed at the
+<span class="anchor" id="line-31"></span>   end of a the file, which is unsuitable for streaming audio. This draft
+<span class="anchor" id="line-32"></span>   is an attempt to answer these issues with a new version of the ID3
+<span class="anchor" id="line-33"></span>   tag.
+<span class="anchor" id="line-34"></span>
+<span class="anchor" id="line-35"></span>
+<span class="anchor" id="line-36"></span>1.   Table of contents
+<span class="anchor" id="line-37"></span>
+<span class="anchor" id="line-38"></span>   2.   Conventions in this document
+<span class="anchor" id="line-39"></span>   3.   ID3v2 overview
+<span class="anchor" id="line-40"></span>     3.1.   ID3v2 header
+<span class="anchor" id="line-41"></span>     3.2.   ID3v2 frames overview
+<span class="anchor" id="line-42"></span>   4.   Declared ID3v2 frames
+<span class="anchor" id="line-43"></span>     4.1.   Unique file identifier
+<span class="anchor" id="line-44"></span>     4.2.   Text information frames
+<span class="anchor" id="line-45"></span>       4.2.1.   Text information frames - details
+<span class="anchor" id="line-46"></span>       4.2.2.   User defined text information frame
+<span class="anchor" id="line-47"></span>     4.3.   URL link frames
+<span class="anchor" id="line-48"></span>       4.3.1.   URL link frames - details
+<span class="anchor" id="line-49"></span>       4.3.2.   User defined URL link frame
+<span class="anchor" id="line-50"></span>     4.4.   Involved people list
+<span class="anchor" id="line-51"></span>     4.5.   Music CD Identifier
+<span class="anchor" id="line-52"></span>     4.6.   Event timing codes
+<span class="anchor" id="line-53"></span>     4.7.   MPEG location lookup table
+<span class="anchor" id="line-54"></span>     4.8.   Synced tempo codes
+<span class="anchor" id="line-55"></span>     4.9.   Unsychronised lyrics/text transcription
+<span class="anchor" id="line-56"></span>     4.10.  Synchronised lyrics/text
+<span class="anchor" id="line-57"></span>     4.11.  Comments
+<span class="anchor" id="line-58"></span>     4.12.  Relative volume adjustment
+<span class="anchor" id="line-59"></span>     4.13.  Equalisation
+<span class="anchor" id="line-60"></span>     4.14.  Reverb
+<span class="anchor" id="line-61"></span>     4.15.  Attached picture
+<span class="anchor" id="line-62"></span>     4.16.  General encapsulated object
+<span class="anchor" id="line-63"></span>     4.17.  Play counter
+<span class="anchor" id="line-64"></span>     4.18.  Popularimeter
+<span class="anchor" id="line-65"></span>     4.19.  Recommended buffer size
+<span class="anchor" id="line-66"></span>     4.20.  Encrypted meta frame
+<span class="anchor" id="line-67"></span>     4.21.  Audio encryption
+<span class="anchor" id="line-68"></span>     4.22.  Linked information
+<span class="anchor" id="line-69"></span>   5.   The 'unsynchronisation scheme'
+<span class="anchor" id="line-70"></span>   6.   Copyright
+<span class="anchor" id="line-71"></span>   7.   References
+<span class="anchor" id="line-72"></span>   8.   Appendix
+<span class="anchor" id="line-73"></span>     A.   Appendix A - ID3-Tag Specification V1.1
+<span class="anchor" id="line-74"></span>       A.1.   Overview
+<span class="anchor" id="line-75"></span>       A.2.   ID3v1 Implementation
+<span class="anchor" id="line-76"></span>       A.3.   Genre List
+<span class="anchor" id="line-77"></span>       A.4.   Track addition - ID3v1.1
+<span class="anchor" id="line-78"></span>   9.   Author's Address
+<span class="anchor" id="line-79"></span>
+<span class="anchor" id="line-80"></span>
+<span class="anchor" id="line-81"></span>2.   Conventions in this document
+<span class="anchor" id="line-82"></span>
+<span class="anchor" id="line-83"></span>   In the examples, text within "" is a text string exactly as it appears
+<span class="anchor" id="line-84"></span>   in a file. Numbers preceded with $ are hexadecimal and numbers
+<span class="anchor" id="line-85"></span>   preceded with % are binary. $xx is used to indicate a byte with
+<span class="anchor" id="line-86"></span>   unknown content. %x is used to indicate a bit with unknown content.
+<span class="anchor" id="line-87"></span>   The most significant bit (MSB) of a byte is called 'bit 7' and the
+<span class="anchor" id="line-88"></span>   least significant bit (LSB) is called 'bit 0'.
+<span class="anchor" id="line-89"></span>
+<span class="anchor" id="line-90"></span>   A tag is the whole tag described in this document. A frame is a block
+<span class="anchor" id="line-91"></span>   of information in the tag. The tag consists of a header, frames and
+<span class="anchor" id="line-92"></span>   optional padding. A field is a piece of information; one value, a
+<span class="anchor" id="line-93"></span>   string etc. A numeric string is a string that consists of the
+<span class="anchor" id="line-94"></span>   characters 0-9 only.
+<span class="anchor" id="line-95"></span>
+<span class="anchor" id="line-96"></span>
+<span class="anchor" id="line-97"></span>3.   ID3v2 overview
+<span class="anchor" id="line-98"></span>
+<span class="anchor" id="line-99"></span>   The two biggest design goals were to be able to implement ID3v2
+<span class="anchor" id="line-100"></span>   without disturbing old software too much and that ID3v2 should be
+<span class="anchor" id="line-101"></span>   expandable.
+<span class="anchor" id="line-102"></span>
+<span class="anchor" id="line-103"></span>   The first criterion is met by the simple fact that the MPEG [MPEG]
+<span class="anchor" id="line-104"></span>   decoding software uses a syncsignal, embedded in the audiostream, to
+<span class="anchor" id="line-105"></span>   'lock on to' the audio. Since the ID3v2 tag doesn't contain a valid
+<span class="anchor" id="line-106"></span>   syncsignal, no software will attempt to play the tag. If, for any
+<span class="anchor" id="line-107"></span>   reason, coincidence make a syncsignal appear within the tag it will be
+<span class="anchor" id="line-108"></span>   taken care of by the 'unsynchronisation scheme' described in section
+<span class="anchor" id="line-109"></span>   5.
+<span class="anchor" id="line-110"></span>
+<span class="anchor" id="line-111"></span>   The second criterion has made a more noticeable impact on the design
+<span class="anchor" id="line-112"></span>   of the ID3v2 tag. It is constructed as a container for several
+<span class="anchor" id="line-113"></span>   information blocks, called frames, whose format need not be known to
+<span class="anchor" id="line-114"></span>   the software that encounters them. At the start of every frame there
+<span class="anchor" id="line-115"></span>   is an identifier that explains the frames's format and content, and a
+<span class="anchor" id="line-116"></span>   size descriptor that allows software to skip unknown frames.
+<span class="anchor" id="line-117"></span>
+<span class="anchor" id="line-118"></span>   If a total revision of the ID3v2 tag should be needed, there is a
+<span class="anchor" id="line-119"></span>   version number and a size descriptor in the ID3v2 header.
+<span class="anchor" id="line-120"></span>
+<span class="anchor" id="line-121"></span>   The ID3 tag described in this document is mainly targeted to files
+<span class="anchor" id="line-122"></span>   encoded with MPEG-2 layer I, MPEG-2 layer II, MPEG-2 layer III and
+<span class="anchor" id="line-123"></span>   MPEG-2.5, but may work with other types of encoded audio.
+<span class="anchor" id="line-124"></span>
+<span class="anchor" id="line-125"></span>   The bitorder in ID3v2 is most significant bit first (MSB). The
+<span class="anchor" id="line-126"></span>   byteorder in multibyte numbers is most significant byte first (e.g.
+<span class="anchor" id="line-127"></span>   $12345678 would be encoded $12 34 56 78).
+<span class="anchor" id="line-128"></span>
+<span class="anchor" id="line-129"></span>   It is permitted to include padding after all the final frame (at the
+<span class="anchor" id="line-130"></span>   end of the ID3 tag), making the size of all the frames together
+<span class="anchor" id="line-131"></span>   smaller than the size given in the head of the tag. A possible purpose
+<span class="anchor" id="line-132"></span>   of this padding is to allow for adding a few additional frames or
+<span class="anchor" id="line-133"></span>   enlarge existing frames within the tag without having to rewrite the
+<span class="anchor" id="line-134"></span>   entire file. The value of the padding bytes must be $00.
+<span class="anchor" id="line-135"></span>
+<span class="anchor" id="line-136"></span>
+<span class="anchor" id="line-137"></span>3.1.   ID3v2 header
+<span class="anchor" id="line-138"></span>
+<span class="anchor" id="line-139"></span>   The ID3v2 tag header, which should be the first information in the
+<span class="anchor" id="line-140"></span>   file, is 10 bytes as follows:
+<span class="anchor" id="line-141"></span>
+<span class="anchor" id="line-142"></span>     ID3/file identifier      "ID3"
+<span class="anchor" id="line-143"></span>     ID3 version              $02 00
+<span class="anchor" id="line-144"></span>     ID3 flags                %xx000000
+<span class="anchor" id="line-145"></span>     ID3 size             4 * %0xxxxxxx
+<span class="anchor" id="line-146"></span>
+<span class="anchor" id="line-147"></span>   The first three bytes of the tag are always "ID3" to indicate that
+<span class="anchor" id="line-148"></span>   this is an ID3 tag, directly followed by the two version bytes. The
+<span class="anchor" id="line-149"></span>   first byte of ID3 version is it's major version, while the second byte
+<span class="anchor" id="line-150"></span>   is its revision number. All revisions are backwards compatible while
+<span class="anchor" id="line-151"></span>   major versions are not. If software with ID3v2 and below support
+<span class="anchor" id="line-152"></span>   should encounter version three or higher it should simply ignore the
+<span class="anchor" id="line-153"></span>   whole tag. Version and revision will never be $FF.
+<span class="anchor" id="line-154"></span>
+<span class="anchor" id="line-155"></span>   The first bit (bit 7) in the 'ID3 flags' is indicating whether or not
+<span class="anchor" id="line-156"></span>   unsynchronisation is used (see section 5 for details); a set bit
+<span class="anchor" id="line-157"></span>   indicates usage.
+<span class="anchor" id="line-158"></span>
+<span class="anchor" id="line-159"></span>   The second bit (bit 6) is indicating whether or not compression is
+<span class="anchor" id="line-160"></span>   used; a set bit indicates usage. Since no compression scheme has been
+<span class="anchor" id="line-161"></span>   decided yet, the ID3 decoder (for now) should just ignore the entire
+<span class="anchor" id="line-162"></span>   tag if the compression bit is set.
+<span class="anchor" id="line-163"></span>
+<span class="anchor" id="line-164"></span>   The ID3 tag size is encoded with four bytes where the first bit (bit
+<span class="anchor" id="line-165"></span>   7) is set to zero in every byte, making a total of 28 bits. The zeroed
+<span class="anchor" id="line-166"></span>   bits are ignored, so a 257 bytes long tag is represented as $00 00 02
+<span class="anchor" id="line-167"></span>   01.
+<span class="anchor" id="line-168"></span>
+<span class="anchor" id="line-169"></span>   The ID3 tag size is the size of the complete tag after
+<span class="anchor" id="line-170"></span>   unsychronisation, including padding, excluding the header (total tag
+<span class="anchor" id="line-171"></span>   size - 10). The reason to use 28 bits (representing up to 256MB) for
+<span class="anchor" id="line-172"></span>   size description is that we don't want to run out of space here.
+<span class="anchor" id="line-173"></span>
+<span class="anchor" id="line-174"></span>   A ID3v2 tag can be detected with the following pattern:
+<span class="anchor" id="line-175"></span>     $49 44 33 yy yy xx zz zz zz zz
+<span class="anchor" id="line-176"></span>   Where yy is less than $FF, xx is the 'flags' byte and zz is less than
+<span class="anchor" id="line-177"></span>   $80.
+<span class="anchor" id="line-178"></span>
+<span class="anchor" id="line-179"></span>
+<span class="anchor" id="line-180"></span>3.2.   ID3v2 frames overview
+<span class="anchor" id="line-181"></span>
+<span class="anchor" id="line-182"></span>   The headers of the frames are similar in their construction. They
+<span class="anchor" id="line-183"></span>   consist of one three character identifier (capital A-Z and 0-9) and
+<span class="anchor" id="line-184"></span>   one three byte size field, making a total of six bytes. The header is
+<span class="anchor" id="line-185"></span>   excluded from the size. Identifiers beginning with "X", "Y" and "Z"
+<span class="anchor" id="line-186"></span>   are for experimental use and free for everyone to use. Have in mind
+<span class="anchor" id="line-187"></span>   that someone else might have used the same identifier as you. All
+<span class="anchor" id="line-188"></span>   other identifiers are either used or reserved for future use.
+<span class="anchor" id="line-189"></span>
+<span class="anchor" id="line-190"></span>   The three character frame identifier is followed by a three byte size
+<span class="anchor" id="line-191"></span>   descriptor, making a total header size of six bytes in every frame.
+<span class="anchor" id="line-192"></span>   The size is calculated as framesize excluding frame identifier and
+<span class="anchor" id="line-193"></span>   size descriptor (frame size - 6).
+<span class="anchor" id="line-194"></span>
+<span class="anchor" id="line-195"></span>   There is no fixed order of the frames' appearance in the tag, although
+<span class="anchor" id="line-196"></span>   it is desired that the frames are arranged in order of significance
+<span class="anchor" id="line-197"></span>   concerning the recognition of the file. An example of such order:
+<span class="anchor" id="line-198"></span>   UFI, MCI, TT2 ...
+<span class="anchor" id="line-199"></span>
+<span class="anchor" id="line-200"></span>   A tag must contain at least one frame. A frame must be at least 1 byte
+<span class="anchor" id="line-201"></span>   big, excluding the 6-byte header.
+<span class="anchor" id="line-202"></span>
+<span class="anchor" id="line-203"></span>   If nothing else is said a string is represented as ISO-8859-1
+<span class="anchor" id="line-204"></span>   [ISO-8859-1] characters in the range $20 - $FF. All unicode strings
+<span class="anchor" id="line-205"></span>   [UNICODE] use 16-bit unicode 2.0 (ISO/IEC 10646-1:1993, UCS-2). All
+<span class="anchor" id="line-206"></span>   numeric strings are always encoded as ISO-8859-1. Terminated strings
+<span class="anchor" id="line-207"></span>   are terminated with $00 if encoded with ISO-8859-1 and $00 00 if
+<span class="anchor" id="line-208"></span>   encoded as unicode. If nothing else is said newline character is
+<span class="anchor" id="line-209"></span>   forbidden. In ISO-8859-1 a new line is represented, when allowed, with
+<span class="anchor" id="line-210"></span>   $0A only. Frames that allow different types of text encoding have a
+<span class="anchor" id="line-211"></span>   text encoding description byte directly after the frame size. If
+<span class="anchor" id="line-212"></span>   ISO-8859-1 is used this byte should be $00, if unicode is used it
+<span class="anchor" id="line-213"></span>   should be $01.
+<span class="anchor" id="line-214"></span>
+<span class="anchor" id="line-215"></span>   The three byte language field is used to describe the language of the
+<span class="anchor" id="line-216"></span>   frame's content, according to ISO-639-2 [ISO-639-2].
+<span class="anchor" id="line-217"></span>
+<span class="anchor" id="line-218"></span>   All URLs [URL] may be relative, e.g. "picture.png", "../doc.txt".
+<span class="anchor" id="line-219"></span>
+<span class="anchor" id="line-220"></span>   If a frame is longer than it should be, e.g. having more fields than
+<span class="anchor" id="line-221"></span>   specified in this document, that indicates that additions to the
+<span class="anchor" id="line-222"></span>   frame have been made in a later version of the ID3 standard. This
+<span class="anchor" id="line-223"></span>   is reflected by the revision number in the header of the tag.
+<span class="anchor" id="line-224"></span>
+<span class="anchor" id="line-225"></span>
+<span class="anchor" id="line-226"></span>4.   Declared ID3v2 frames
+<span class="anchor" id="line-227"></span>
+<span class="anchor" id="line-228"></span>   The following frames are declared in this draft.
+<span class="anchor" id="line-229"></span>
+<span class="anchor" id="line-230"></span>   4.19  BUF Recommended buffer size
+<span class="anchor" id="line-231"></span>
+<span class="anchor" id="line-232"></span>   4.17  CNT Play counter
+<span class="anchor" id="line-233"></span>   4.11  COM Comments
+<span class="anchor" id="line-234"></span>   4.21  CRA Audio encryption
+<span class="anchor" id="line-235"></span>   4.20  CRM Encrypted meta frame
+<span class="anchor" id="line-236"></span>
+<span class="anchor" id="line-237"></span>   4.6   ETC Event timing codes
+<span class="anchor" id="line-238"></span>   4.13  EQU Equalization
+<span class="anchor" id="line-239"></span>
+<span class="anchor" id="line-240"></span>   4.16  GEO General encapsulated object
+<span class="anchor" id="line-241"></span>
+<span class="anchor" id="line-242"></span>   4.4   IPL Involved people list
+<span class="anchor" id="line-243"></span>
+<span class="anchor" id="line-244"></span>   4.22  LNK Linked information
+<span class="anchor" id="line-245"></span>
+<span class="anchor" id="line-246"></span>   4.5   MCI Music CD Identifier
+<span class="anchor" id="line-247"></span>   4.7   MLL MPEG location lookup table
+<span class="anchor" id="line-248"></span>
+<span class="anchor" id="line-249"></span>   4.15  PIC Attached picture
+<span class="anchor" id="line-250"></span>   4.18  POP Popularimeter
+<span class="anchor" id="line-251"></span>
+<span class="anchor" id="line-252"></span>   4.14  REV Reverb
+<span class="anchor" id="line-253"></span>   4.12  RVA Relative volume adjustment
+<span class="anchor" id="line-254"></span>
+<span class="anchor" id="line-255"></span>   4.10  SLT Synchronized lyric/text
+<span class="anchor" id="line-256"></span>   4.8   STC Synced tempo codes
+<span class="anchor" id="line-257"></span>
+<span class="anchor" id="line-258"></span>   4.2.1 TAL Album/Movie/Show title
+<span class="anchor" id="line-259"></span>   4.2.1 TBP BPM (Beats Per Minute)
+<span class="anchor" id="line-260"></span>   4.2.1 TCM Composer
+<span class="anchor" id="line-261"></span>   4.2.1 TCO Content type
+<span class="anchor" id="line-262"></span>   4.2.1 TCR Copyright message
+<span class="anchor" id="line-263"></span>   4.2.1 TDA Date
+<span class="anchor" id="line-264"></span>   4.2.1 TDY Playlist delay
+<span class="anchor" id="line-265"></span>   4.2.1 TEN Encoded by
+<span class="anchor" id="line-266"></span>   4.2.1 TFT File type
+<span class="anchor" id="line-267"></span>   4.2.1 TIM Time
+<span class="anchor" id="line-268"></span>   4.2.1 TKE Initial key
+<span class="anchor" id="line-269"></span>   4.2.1 TLA Language(s)
+<span class="anchor" id="line-270"></span>   4.2.1 TLE Length
+<span class="anchor" id="line-271"></span>   4.2.1 TMT Media type
+<span class="anchor" id="line-272"></span>   4.2.1 TOA Original artist(s)/performer(s)
+<span class="anchor" id="line-273"></span>   4.2.1 TOF Original filename
+<span class="anchor" id="line-274"></span>   4.2.1 TOL Original Lyricist(s)/text writer(s)
+<span class="anchor" id="line-275"></span>   4.2.1 TOR Original release year
+<span class="anchor" id="line-276"></span>   4.2.1 TOT Original album/Movie/Show title
+<span class="anchor" id="line-277"></span>   4.2.1 TP1 Lead artist(s)/Lead performer(s)/Soloist(s)/Performing group
+<span class="anchor" id="line-278"></span>   4.2.1 TP2 Band/Orchestra/Accompaniment
+<span class="anchor" id="line-279"></span>   4.2.1 TP3 Conductor/Performer refinement
+<span class="anchor" id="line-280"></span>   4.2.1 TP4 Interpreted, remixed, or otherwise modified by
+<span class="anchor" id="line-281"></span>   4.2.1 TPA Part of a set
+<span class="anchor" id="line-282"></span>   4.2.1 TPB Publisher
+<span class="anchor" id="line-283"></span>   4.2.1 TRC ISRC (International Standard Recording Code)
+<span class="anchor" id="line-284"></span>   4.2.1 TRD Recording dates
+<span class="anchor" id="line-285"></span>   4.2.1 TRK Track number/Position in set
+<span class="anchor" id="line-286"></span>   4.2.1 TSI Size
+<span class="anchor" id="line-287"></span>   4.2.1 TSS Software/hardware and settings used for encoding
+<span class="anchor" id="line-288"></span>   4.2.1 TT1 Content group description
+<span class="anchor" id="line-289"></span>   4.2.1 TT2 Title/Songname/Content description
+<span class="anchor" id="line-290"></span>   4.2.1 TT3 Subtitle/Description refinement
+<span class="anchor" id="line-291"></span>   4.2.1 TXT Lyricist/text writer
+<span class="anchor" id="line-292"></span>   4.2.2 TXX User defined text information frame
+<span class="anchor" id="line-293"></span>   4.2.1 TYE Year
+<span class="anchor" id="line-294"></span>
+<span class="anchor" id="line-295"></span>   4.1   UFI Unique file identifier
+<span class="anchor" id="line-296"></span>   4.9   ULT Unsychronized lyric/text transcription
+<span class="anchor" id="line-297"></span>
+<span class="anchor" id="line-298"></span>   4.3.1 WAF Official audio file webpage
+<span class="anchor" id="line-299"></span>   4.3.1 WAR Official artist/performer webpage
+<span class="anchor" id="line-300"></span>   4.3.1 WAS Official audio source webpage
+<span class="anchor" id="line-301"></span>   4.3.1 WCM Commercial information
+<span class="anchor" id="line-302"></span>   4.3.1 WCP Copyright/Legal information
+<span class="anchor" id="line-303"></span>   4.3.1 WPB Publishers official webpage
+<span class="anchor" id="line-304"></span>   4.3.2 WXX User defined URL link frame
+<span class="anchor" id="line-305"></span>
+<span class="anchor" id="line-306"></span>
+<span class="anchor" id="line-307"></span>4.1.   Unique file identifier
+<span class="anchor" id="line-308"></span>
+<span class="anchor" id="line-309"></span>   This frame's purpose is to be able to identify the audio file in a
+<span class="anchor" id="line-310"></span>   database that may contain more information relevant to the content.
+<span class="anchor" id="line-311"></span>   Since standardisation of such a database is beyond this document, all
+<span class="anchor" id="line-312"></span>   frames begin with a null-terminated string with a URL [URL] containing
+<span class="anchor" id="line-313"></span>   an email address, or a link to a location where an email address can
+<span class="anchor" id="line-314"></span>   be found, that belongs to the organisation responsible for this
+<span class="anchor" id="line-315"></span>   specific database implementation. Questions regarding the database
+<span class="anchor" id="line-316"></span>   should be sent to the indicated email address. The URL should not be
+<span class="anchor" id="line-317"></span>   used for the actual database queries. If a $00 is found directly after
+<span class="anchor" id="line-318"></span>   the 'Frame size' the whole frame should be ignored, and preferably be
+<span class="anchor" id="line-319"></span>   removed. The 'Owner identifier' is then followed by the actual
+<span class="anchor" id="line-320"></span>   identifier, which may be up to 64 bytes. There may be more than one
+<span class="anchor" id="line-321"></span>   "UFI" frame in a tag, but only one with the same 'Owner identifier'.
+<span class="anchor" id="line-322"></span>
+<span class="anchor" id="line-323"></span>     Unique file identifier  "UFI"
+<span class="anchor" id="line-324"></span>     Frame size              $xx xx xx
+<span class="anchor" id="line-325"></span>     Owner identifier        &lt;textstring&gt; $00
+<span class="anchor" id="line-326"></span>     Identifier              &lt;up to 64 bytes binary data&gt;
+<span class="anchor" id="line-327"></span>
+<span class="anchor" id="line-328"></span>
+<span class="anchor" id="line-329"></span>4.2.   Text information frames
+<span class="anchor" id="line-330"></span>
+<span class="anchor" id="line-331"></span>   The text information frames are the most important frames, containing
+<span class="anchor" id="line-332"></span>   information like artist, album and more. There may only be one text
+<span class="anchor" id="line-333"></span>   information frame of its kind in an tag. If the textstring is followed
+<span class="anchor" id="line-334"></span>   by a termination ($00 (00)) all the following information should be
+<span class="anchor" id="line-335"></span>   ignored and not be displayed. All the text information frames have the
+<span class="anchor" id="line-336"></span>   following format:
+<span class="anchor" id="line-337"></span>
+<span class="anchor" id="line-338"></span>     Text information identifier  "T00" - "TZZ" , excluding "TXX",
+<span class="anchor" id="line-339"></span>                                   described in 4.2.2.
+<span class="anchor" id="line-340"></span>     Frame size                   $xx xx xx
+<span class="anchor" id="line-341"></span>     Text encoding                $xx
+<span class="anchor" id="line-342"></span>     Information                  &lt;textstring&gt;
+<span class="anchor" id="line-343"></span>
+<span class="anchor" id="line-344"></span>
+<span class="anchor" id="line-345"></span>4.2.1.   Text information frames - details
+<span class="anchor" id="line-346"></span>
+<span class="anchor" id="line-347"></span>  TT1
+<span class="anchor" id="line-348"></span>   The 'Content group description' frame is used if the sound belongs to
+<span class="anchor" id="line-349"></span>   a larger category of sounds/music. For example, classical music is
+<span class="anchor" id="line-350"></span>   often sorted in different musical sections (e.g. "Piano Concerto",
+<span class="anchor" id="line-351"></span>   "Weather - Hurricane").
+<span class="anchor" id="line-352"></span>
+<span class="anchor" id="line-353"></span>  TT2
+<span class="anchor" id="line-354"></span>   The 'Title/Songname/Content description' frame is the actual name of
+<span class="anchor" id="line-355"></span>   the piece (e.g. "Adagio", "Hurricane Donna").
+<span class="anchor" id="line-356"></span>
+<span class="anchor" id="line-357"></span>  TT3
+<span class="anchor" id="line-358"></span>   The 'Subtitle/Description refinement' frame is used for information
+<span class="anchor" id="line-359"></span>   directly related to the contents title (e.g. "Op. 16" or "Performed
+<span class="anchor" id="line-360"></span>   live at wembley").
+<span class="anchor" id="line-361"></span>
+<span class="anchor" id="line-362"></span>  TP1
+<span class="anchor" id="line-363"></span>   The 'Lead artist(s)/Lead performer(s)/Soloist(s)/Performing group' is
+<span class="anchor" id="line-364"></span>   used for the main artist(s). They are seperated with the "/"
+<span class="anchor" id="line-365"></span>   character.
+<span class="anchor" id="line-366"></span>
+<span class="anchor" id="line-367"></span>  TP2
+<span class="anchor" id="line-368"></span>   The 'Band/Orchestra/Accompaniment' frame is used for additional
+<span class="anchor" id="line-369"></span>   information about the performers in the recording.
+<span class="anchor" id="line-370"></span>
+<span class="anchor" id="line-371"></span>  TP3
+<span class="anchor" id="line-372"></span>   The 'Conductor' frame is used for the name of the conductor.
+<span class="anchor" id="line-373"></span>   
+<span class="anchor" id="line-374"></span>  TP4
+<span class="anchor" id="line-375"></span>   The 'Interpreted, remixed, or otherwise modified by' frame contains
+<span class="anchor" id="line-376"></span>   more information about the people behind a remix and similar
+<span class="anchor" id="line-377"></span>   interpretations of another existing piece.
+<span class="anchor" id="line-378"></span>
+<span class="anchor" id="line-379"></span>  TCM
+<span class="anchor" id="line-380"></span>   The 'Composer(s)' frame is intended for the name of the composer(s).
+<span class="anchor" id="line-381"></span>   They are seperated with the "/" character.
+<span class="anchor" id="line-382"></span>
+<span class="anchor" id="line-383"></span>  TXT
+<span class="anchor" id="line-384"></span>   The 'Lyricist(s)/text writer(s)' frame is intended for the writer(s)
+<span class="anchor" id="line-385"></span>   of the text or lyrics in the recording. They are seperated with the
+<span class="anchor" id="line-386"></span>   "/" character.
+<span class="anchor" id="line-387"></span>
+<span class="anchor" id="line-388"></span>  TLA
+<span class="anchor" id="line-389"></span>   The 'Language(s)' frame should contain the languages of the text or
+<span class="anchor" id="line-390"></span>   lyrics in the audio file. The language is represented with three
+<span class="anchor" id="line-391"></span>   characters according to ISO-639-2. If more than one language is used
+<span class="anchor" id="line-392"></span>   in the text their language codes should follow according to their
+<span class="anchor" id="line-393"></span>   usage.
+<span class="anchor" id="line-394"></span>
+<span class="anchor" id="line-395"></span>  TCO
+<span class="anchor" id="line-396"></span>   The content type, which previously (in ID3v1.1, see appendix A) was
+<span class="anchor" id="line-397"></span>   stored as a one byte numeric value only, is now a numeric string. You
+<span class="anchor" id="line-398"></span>   may use one or several of the types as ID3v1.1 did or, since the
+<span class="anchor" id="line-399"></span>   category list would be impossible to maintain with accurate and up to
+<span class="anchor" id="line-400"></span>   date categories, define your own.
+<span class="anchor" id="line-401"></span>   References to the ID3v1 genres can be made by, as first byte, enter
+<span class="anchor" id="line-402"></span>   "(" followed by a number from the genres list (section A.3.) and
+<span class="anchor" id="line-403"></span>   ended with a ")" character. This is optionally followed by a
+<span class="anchor" id="line-404"></span>   refinement, e.g. "(21)" or "(4)Eurodisco". Several references can be
+<span class="anchor" id="line-405"></span>   made in the same frame, e.g. "(51)(39)". If the refinement should
+<span class="anchor" id="line-406"></span>   begin with a "(" character it should be replaced with "((", e.g. "((I
+<span class="anchor" id="line-407"></span>   can figure out any genre)" or "(55)((I think...)". The following new
+<span class="anchor" id="line-408"></span>   content types is defined in ID3v2 and is implemented in the same way
+<span class="anchor" id="line-409"></span>   as the numerig content types, e.g. "(RX)".
+<span class="anchor" id="line-410"></span>   
+<span class="anchor" id="line-411"></span>     RX  Remix
+<span class="anchor" id="line-412"></span>     CR  Cover
+<span class="anchor" id="line-413"></span>
+<span class="anchor" id="line-414"></span>  TAL
+<span class="anchor" id="line-415"></span>   The 'Album/Movie/Show title' frame is intended for the title of the
+<span class="anchor" id="line-416"></span>   recording(/source of sound) which the audio in the file is taken from.
+<span class="anchor" id="line-417"></span>   
+<span class="anchor" id="line-418"></span>  TPA
+<span class="anchor" id="line-419"></span>   The 'Part of a set' frame is a numeric string that describes which
+<span class="anchor" id="line-420"></span>   part of a set the audio came from. This frame is used if the source
+<span class="anchor" id="line-421"></span>   described in the "TAL" frame is divided into several mediums, e.g. a
+<span class="anchor" id="line-422"></span>   double CD. The value may be extended with a "/" character and a
+<span class="anchor" id="line-423"></span>   numeric string containing the total number of parts in the set. E.g.
+<span class="anchor" id="line-424"></span>   "1/2".
+<span class="anchor" id="line-425"></span>
+<span class="anchor" id="line-426"></span>  TRK
+<span class="anchor" id="line-427"></span>   The 'Track number/Position in set' frame is a numeric string
+<span class="anchor" id="line-428"></span>   containing the order number of the audio-file on its original
+<span class="anchor" id="line-429"></span>   recording. This may be extended with a "/" character and a numeric
+<span class="anchor" id="line-430"></span>   string containing the total numer of tracks/elements on the original
+<span class="anchor" id="line-431"></span>   recording. E.g. "4/9".
+<span class="anchor" id="line-432"></span>
+<span class="anchor" id="line-433"></span>  TRC
+<span class="anchor" id="line-434"></span>   The 'ISRC' frame should contian the International Standard Recording
+<span class="anchor" id="line-435"></span>   Code [ISRC].
+<span class="anchor" id="line-436"></span>
+<span class="anchor" id="line-437"></span>  TYE
+<span class="anchor" id="line-438"></span>   The 'Year' frame is a numeric string with a year of the recording.
+<span class="anchor" id="line-439"></span>   This frames is always four characters long (until the year 10000).
+<span class="anchor" id="line-440"></span>
+<span class="anchor" id="line-441"></span>  TDA
+<span class="anchor" id="line-442"></span>   The 'Date' frame is a numeric string in the DDMM format containing
+<span class="anchor" id="line-443"></span>   the date for the recording. This field is always four characters
+<span class="anchor" id="line-444"></span>   long.
+<span class="anchor" id="line-445"></span>
+<span class="anchor" id="line-446"></span>  TIM
+<span class="anchor" id="line-447"></span>   The 'Time' frame is a numeric string in the HHMM format containing
+<span class="anchor" id="line-448"></span>   the time for the recording. This field is always four characters
+<span class="anchor" id="line-449"></span>   long.
+<span class="anchor" id="line-450"></span>   
+<span class="anchor" id="line-451"></span>  TRD
+<span class="anchor" id="line-452"></span>   The 'Recording dates' frame is a intended to be used as complement to
+<span class="anchor" id="line-453"></span>   the "TYE", "TDA" and "TIM" frames. E.g. "4th-7th June, 12th June" in
+<span class="anchor" id="line-454"></span>   combination with the "TYE" frame.
+<span class="anchor" id="line-455"></span>
+<span class="anchor" id="line-456"></span>  TMT
+<span class="anchor" id="line-457"></span>   The 'Media type' frame describes from which media the sound
+<span class="anchor" id="line-458"></span>   originated. This may be a textstring or a reference to the predefined
+<span class="anchor" id="line-459"></span>   media types found in the list below. References are made within "("
+<span class="anchor" id="line-460"></span>   and ")" and are optionally followed by a text refinement, e.g. "(MC)
+<span class="anchor" id="line-461"></span>   with four channels". If a text refinement should begin with a "("
+<span class="anchor" id="line-462"></span>   character it should be replaced with "((" in the same way as in the
+<span class="anchor" id="line-463"></span>   "TCO" frame. Predefined refinements is appended after the media type,
+<span class="anchor" id="line-464"></span>   e.g. "(CD/S)" or "(VID/PAL/VHS)".
+<span class="anchor" id="line-465"></span>
+<span class="anchor" id="line-466"></span>    DIG    Other digital media
+<span class="anchor" id="line-467"></span>      /A    Analog transfer from media
+<span class="anchor" id="line-468"></span>
+<span class="anchor" id="line-469"></span>    ANA    Other analog media
+<span class="anchor" id="line-470"></span>      /WAC  Wax cylinder
+<span class="anchor" id="line-471"></span>      /8CA  8-track tape cassette
+<span class="anchor" id="line-472"></span>
+<span class="anchor" id="line-473"></span>    CD     CD
+<span class="anchor" id="line-474"></span>      /A    Analog transfer from media
+<span class="anchor" id="line-475"></span>      /DD   DDD
+<span class="anchor" id="line-476"></span>      /AD   ADD
+<span class="anchor" id="line-477"></span>      /AA   AAD
+<span class="anchor" id="line-478"></span>
+<span class="anchor" id="line-479"></span>    LD     Laserdisc
+<span class="anchor" id="line-480"></span>      /A     Analog transfer from media
+<span class="anchor" id="line-481"></span>
+<span class="anchor" id="line-482"></span>    TT     Turntable records
+<span class="anchor" id="line-483"></span>      /33    33.33 rpm
+<span class="anchor" id="line-484"></span>      /45    45 rpm
+<span class="anchor" id="line-485"></span>      /71    71.29 rpm
+<span class="anchor" id="line-486"></span>      /76    76.59 rpm
+<span class="anchor" id="line-487"></span>      /78    78.26 rpm
+<span class="anchor" id="line-488"></span>      /80    80 rpm
+<span class="anchor" id="line-489"></span>     
+<span class="anchor" id="line-490"></span>    MD     MiniDisc
+<span class="anchor" id="line-491"></span>      /A    Analog transfer from media
+<span class="anchor" id="line-492"></span>     
+<span class="anchor" id="line-493"></span>    DAT    DAT
+<span class="anchor" id="line-494"></span>      /A    Analog transfer from media
+<span class="anchor" id="line-495"></span>      /1    standard, 48 kHz/16 bits, linear
+<span class="anchor" id="line-496"></span>      /2    mode 2, 32 kHz/16 bits, linear
+<span class="anchor" id="line-497"></span>      /3    mode 3, 32 kHz/12 bits, nonlinear, low speed
+<span class="anchor" id="line-498"></span>      /4    mode 4, 32 kHz/12 bits, 4 channels
+<span class="anchor" id="line-499"></span>      /5    mode 5, 44.1 kHz/16 bits, linear
+<span class="anchor" id="line-500"></span>      /6    mode 6, 44.1 kHz/16 bits, 'wide track' play
+<span class="anchor" id="line-501"></span>     
+<span class="anchor" id="line-502"></span>    DCC    DCC
+<span class="anchor" id="line-503"></span>      /A    Analog transfer from media
+<span class="anchor" id="line-504"></span>    
+<span class="anchor" id="line-505"></span>    DVD    DVD
+<span class="anchor" id="line-506"></span>      /A    Analog transfer from media
+<span class="anchor" id="line-507"></span>    
+<span class="anchor" id="line-508"></span>    TV     Television
+<span class="anchor" id="line-509"></span>      /PAL    PAL
+<span class="anchor" id="line-510"></span>      /NTSC   NTSC
+<span class="anchor" id="line-511"></span>      /SECAM  SECAM
+<span class="anchor" id="line-512"></span>    
+<span class="anchor" id="line-513"></span>    VID    Video
+<span class="anchor" id="line-514"></span>      /PAL    PAL
+<span class="anchor" id="line-515"></span>      /NTSC   NTSC
+<span class="anchor" id="line-516"></span>      /SECAM  SECAM
+<span class="anchor" id="line-517"></span>      /VHS    VHS
+<span class="anchor" id="line-518"></span>      /SVHS   S-VHS
+<span class="anchor" id="line-519"></span>      /BETA   BETAMAX
+<span class="anchor" id="line-520"></span>    
+<span class="anchor" id="line-521"></span>    RAD    Radio
+<span class="anchor" id="line-522"></span>      /FM   FM
+<span class="anchor" id="line-523"></span>      /AM   AM
+<span class="anchor" id="line-524"></span>      /LW   LW
+<span class="anchor" id="line-525"></span>      /MW   MW
+<span class="anchor" id="line-526"></span>    
+<span class="anchor" id="line-527"></span>    TEL    Telephone
+<span class="anchor" id="line-528"></span>      /I    ISDN
+<span class="anchor" id="line-529"></span>    
+<span class="anchor" id="line-530"></span>    MC     MC (normal cassette)
+<span class="anchor" id="line-531"></span>      /4    4.75 cm/s (normal speed for a two sided cassette)
+<span class="anchor" id="line-532"></span>      /9    9.5 cm/s
+<span class="anchor" id="line-533"></span>      /I    Type I cassette (ferric/normal)
+<span class="anchor" id="line-534"></span>      /II   Type II cassette (chrome)
+<span class="anchor" id="line-535"></span>      /III  Type III cassette (ferric chrome)
+<span class="anchor" id="line-536"></span>      /IV   Type IV cassette (metal)
+<span class="anchor" id="line-537"></span>    
+<span class="anchor" id="line-538"></span>    REE    Reel
+<span class="anchor" id="line-539"></span>      /9    9.5 cm/s
+<span class="anchor" id="line-540"></span>      /19   19 cm/s
+<span class="anchor" id="line-541"></span>      /38   38 cm/s
+<span class="anchor" id="line-542"></span>      /76   76 cm/s
+<span class="anchor" id="line-543"></span>      /I    Type I cassette (ferric/normal)
+<span class="anchor" id="line-544"></span>      /II   Type II cassette (chrome)
+<span class="anchor" id="line-545"></span>      /III  Type III cassette (ferric chrome)
+<span class="anchor" id="line-546"></span>      /IV   Type IV cassette (metal)
+<span class="anchor" id="line-547"></span>
+<span class="anchor" id="line-548"></span>  TFT
+<span class="anchor" id="line-549"></span>   The 'File type' frame indicates which type of audio this tag defines.
+<span class="anchor" id="line-550"></span>   The following type and refinements are defined:
+<span class="anchor" id="line-551"></span>   
+<span class="anchor" id="line-552"></span>     MPG    MPEG Audio
+<span class="anchor" id="line-553"></span>       /1     MPEG 2 layer I
+<span class="anchor" id="line-554"></span>       /2     MPEG 2 layer II
+<span class="anchor" id="line-555"></span>       /3     MPEG 2 layer III
+<span class="anchor" id="line-556"></span>       /2.5   MPEG 2.5
+<span class="anchor" id="line-557"></span>       /AAC   Advanced audio compression
+<span class="anchor" id="line-558"></span>     
+<span class="anchor" id="line-559"></span>   but other types may be used, not for these types though. This is used
+<span class="anchor" id="line-560"></span>   in a similar way to the predefined types in the "TMT" frame, but
+<span class="anchor" id="line-561"></span>   without parenthesis. If this frame is not present audio type is
+<span class="anchor" id="line-562"></span>   assumed to be "MPG".
+<span class="anchor" id="line-563"></span>
+<span class="anchor" id="line-564"></span>  TBP
+<span class="anchor" id="line-565"></span>   BPM is short for beats per minute, and is easily computed by
+<span class="anchor" id="line-566"></span>   dividing the number of beats in a musical piece with its length. To
+<span class="anchor" id="line-567"></span>   get a more accurate result, do the BPM calculation on the main-part
+<span class="anchor" id="line-568"></span>   only. To acquire best result measure the time between each beat and
+<span class="anchor" id="line-569"></span>   calculate individual BPM for each beat and use the median value as
+<span class="anchor" id="line-570"></span>   result. BPM is an integer and represented as a numerical string.
+<span class="anchor" id="line-571"></span>
+<span class="anchor" id="line-572"></span>  TCR
+<span class="anchor" id="line-573"></span>   The 'Copyright message' frame, which must begin with a year and a
+<span class="anchor" id="line-574"></span>   space character (making five characters), is intended for the
+<span class="anchor" id="line-575"></span>   copyright holder of the original sound, not the audio file itself. The
+<span class="anchor" id="line-576"></span>   absence of this frame means only that the copyright information is
+<span class="anchor" id="line-577"></span>   unavailable or has been removed, and must not be interpreted to mean
+<span class="anchor" id="line-578"></span>   that the sound is public domain. Every time this field is displayed
+<span class="anchor" id="line-579"></span>   the field must be preceded with "Copyright " (C) " ", where (C) is one
+<span class="anchor" id="line-580"></span>   character showing a C in a circle.
+<span class="anchor" id="line-581"></span>
+<span class="anchor" id="line-582"></span>  TPB
+<span class="anchor" id="line-583"></span>   The 'Publisher' frame simply contains the name of the label or
+<span class="anchor" id="line-584"></span>   publisher.
+<span class="anchor" id="line-585"></span>
+<span class="anchor" id="line-586"></span>  TEN
+<span class="anchor" id="line-587"></span>   The 'Encoded by' frame contains the name of the person or
+<span class="anchor" id="line-588"></span>   organisation that encoded the audio file. This field may contain a
+<span class="anchor" id="line-589"></span>   copyright message, if the audio file also is copyrighted by the
+<span class="anchor" id="line-590"></span>   encoder.
+<span class="anchor" id="line-591"></span>
+<span class="anchor" id="line-592"></span>  TSS
+<span class="anchor" id="line-593"></span>   The 'Software/hardware and settings used for encoding' frame
+<span class="anchor" id="line-594"></span>   includes the used audio encoder and its settings when the file was
+<span class="anchor" id="line-595"></span>   encoded. Hardware refers to hardware encoders, not the computer on
+<span class="anchor" id="line-596"></span>   which a program was run.
+<span class="anchor" id="line-597"></span>
+<span class="anchor" id="line-598"></span>  TOF
+<span class="anchor" id="line-599"></span>   The 'Original filename' frame contains the preferred filename for the
+<span class="anchor" id="line-600"></span>   file, since some media doesn't allow the desired length of the
+<span class="anchor" id="line-601"></span>   filename. The filename is case sensitive and includes its suffix.
+<span class="anchor" id="line-602"></span>
+<span class="anchor" id="line-603"></span>  TLE
+<span class="anchor" id="line-604"></span>   The 'Length' frame contains the length of the audiofile in
+<span class="anchor" id="line-605"></span>   milliseconds, represented as a numeric string.
+<span class="anchor" id="line-606"></span>
+<span class="anchor" id="line-607"></span>  TSI
+<span class="anchor" id="line-608"></span>   The 'Size' frame contains the size of the audiofile in bytes
+<span class="anchor" id="line-609"></span>   excluding the tag, represented as a numeric string.
+<span class="anchor" id="line-610"></span>
+<span class="anchor" id="line-611"></span>  TDY
+<span class="anchor" id="line-612"></span>   The 'Playlist delay' defines the numbers of milliseconds of silence
+<span class="anchor" id="line-613"></span>   between every song in a playlist. The player should use the "ETC"
+<span class="anchor" id="line-614"></span>   frame, if present, to skip initial silence and silence at the end of
+<span class="anchor" id="line-615"></span>   the audio to match the 'Playlist delay' time. The time is represented
+<span class="anchor" id="line-616"></span>   as a numeric string.
+<span class="anchor" id="line-617"></span>
+<span class="anchor" id="line-618"></span>  TKE
+<span class="anchor" id="line-619"></span>   The 'Initial key' frame contains the musical key in which the sound
+<span class="anchor" id="line-620"></span>   starts. It is represented as a string with a maximum length of three
+<span class="anchor" id="line-621"></span>   characters. The ground keys are represented with "A","B","C","D","E",
+<span class="anchor" id="line-622"></span>   "F" and "G" and halfkeys represented with "b" and "#". Minor is
+<span class="anchor" id="line-623"></span>   represented as "m". Example "Cbm". Off key is represented with an "o"
+<span class="anchor" id="line-624"></span>   only.
+<span class="anchor" id="line-625"></span>
+<span class="anchor" id="line-626"></span>  TOT
+<span class="anchor" id="line-627"></span>   The 'Original album/Movie/Show title' frame is intended for the title
+<span class="anchor" id="line-628"></span>   of the original recording(/source of sound), if for example the music
+<span class="anchor" id="line-629"></span>   in the file should be a cover of a previously released song.
+<span class="anchor" id="line-630"></span>   
+<span class="anchor" id="line-631"></span>  TOA
+<span class="anchor" id="line-632"></span>   The 'Original artist(s)/performer(s)' frame is intended for the
+<span class="anchor" id="line-633"></span>   performer(s) of the original recording, if for example the music in
+<span class="anchor" id="line-634"></span>   the file should be a cover of a previously released song. The
+<span class="anchor" id="line-635"></span>   performers are seperated with the "/" character.
+<span class="anchor" id="line-636"></span>
+<span class="anchor" id="line-637"></span>  TOL
+<span class="anchor" id="line-638"></span>   The 'Original Lyricist(s)/text writer(s)' frame is intended for the
+<span class="anchor" id="line-639"></span>   text writer(s) of the original recording, if for example the music in
+<span class="anchor" id="line-640"></span>   the file should be a cover of a previously released song. The text
+<span class="anchor" id="line-641"></span>   writers are seperated with the "/" character.
+<span class="anchor" id="line-642"></span>
+<span class="anchor" id="line-643"></span>  TOR
+<span class="anchor" id="line-644"></span>   The 'Original release year' frame is intended for the year when the
+<span class="anchor" id="line-645"></span>   original recording, if for example the music in the file should be a
+<span class="anchor" id="line-646"></span>   cover of a previously released song, was released. The field is
+<span class="anchor" id="line-647"></span>   formatted as in the "TDY" frame.
+<span class="anchor" id="line-648"></span>
+<span class="anchor" id="line-649"></span>
+<span class="anchor" id="line-650"></span>4.2.2.   User defined text information frame
+<span class="anchor" id="line-651"></span>
+<span class="anchor" id="line-652"></span>   This frame is intended for one-string text information concerning the
+<span class="anchor" id="line-653"></span>   audiofile in a similar way to the other "T"xx frames. The frame body
+<span class="anchor" id="line-654"></span>   consists of a description of the string, represented as a terminated
+<span class="anchor" id="line-655"></span>   string, followed by the actual string. There may be more than one
+<span class="anchor" id="line-656"></span>   "TXX" frame in each tag, but only one with the same description.
+<span class="anchor" id="line-657"></span>
+<span class="anchor" id="line-658"></span>     User defined...   "TXX"
+<span class="anchor" id="line-659"></span>     Frame size        $xx xx xx
+<span class="anchor" id="line-660"></span>     Text encoding     $xx
+<span class="anchor" id="line-661"></span>     Description       &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-662"></span>     Value             &lt;textstring&gt;
+<span class="anchor" id="line-663"></span>
+<span class="anchor" id="line-664"></span>
+<span class="anchor" id="line-665"></span>4.3.   URL link frames
+<span class="anchor" id="line-666"></span>
+<span class="anchor" id="line-667"></span>   With these frames dynamic data such as webpages with touring
+<span class="anchor" id="line-668"></span>   information, price information or plain ordinary news can be added to
+<span class="anchor" id="line-669"></span>   the tag. There may only be one URL [URL] link frame of its kind in an
+<span class="anchor" id="line-670"></span>   tag, except when stated otherwise in the frame description. If the
+<span class="anchor" id="line-671"></span>   textstring is followed by a termination ($00 (00)) all the following
+<span class="anchor" id="line-672"></span>   information should be ignored and not be displayed. All URL link
+<span class="anchor" id="line-673"></span>   frames have the following format:
+<span class="anchor" id="line-674"></span>
+<span class="anchor" id="line-675"></span>     URL link frame   "W00" - "WZZ" , excluding "WXX" 
+<span class="anchor" id="line-676"></span>                                      (described in 4.3.2.)
+<span class="anchor" id="line-677"></span>     Frame size       $xx xx xx
+<span class="anchor" id="line-678"></span>     URL              &lt;textstring&gt;
+<span class="anchor" id="line-679"></span>
+<span class="anchor" id="line-680"></span>
+<span class="anchor" id="line-681"></span>4.3.1.   URL link frames - details
+<span class="anchor" id="line-682"></span>
+<span class="anchor" id="line-683"></span>  WAF
+<span class="anchor" id="line-684"></span>   The 'Official audio file webpage' frame is a URL pointing at a file
+<span class="anchor" id="line-685"></span>   specific webpage.
+<span class="anchor" id="line-686"></span>   
+<span class="anchor" id="line-687"></span>  WAR
+<span class="anchor" id="line-688"></span>   The 'Official artist/performer webpage' frame is a URL pointing at
+<span class="anchor" id="line-689"></span>   the artists official webpage. There may be more than one "WAR" frame
+<span class="anchor" id="line-690"></span>   in a tag if the audio contains more than one performer.
+<span class="anchor" id="line-691"></span>   
+<span class="anchor" id="line-692"></span>  WAS
+<span class="anchor" id="line-693"></span>   The 'Official audio source webpage' frame is a URL pointing at the
+<span class="anchor" id="line-694"></span>   official webpage for the source of the audio file, e.g. a movie.
+<span class="anchor" id="line-695"></span>   
+<span class="anchor" id="line-696"></span>  WCM
+<span class="anchor" id="line-697"></span>   The 'Commercial information' frame is a URL pointing at a webpage
+<span class="anchor" id="line-698"></span>   with information such as where the album can be bought. There may be
+<span class="anchor" id="line-699"></span>   more than one "WCM" frame in a tag.
+<span class="anchor" id="line-700"></span>   
+<span class="anchor" id="line-701"></span>  WCP
+<span class="anchor" id="line-702"></span>   The 'Copyright/Legal information' frame is a URL pointing at a
+<span class="anchor" id="line-703"></span>   webpage where the terms of use and ownership of the file is described.
+<span class="anchor" id="line-704"></span>   
+<span class="anchor" id="line-705"></span>  WPB
+<span class="anchor" id="line-706"></span>   The 'Publishers official webpage' frame is a URL pointing at the
+<span class="anchor" id="line-707"></span>   official wepage for the publisher.
+<span class="anchor" id="line-708"></span>
+<span class="anchor" id="line-709"></span>
+<span class="anchor" id="line-710"></span>4.3.2.   User defined URL link frame
+<span class="anchor" id="line-711"></span>
+<span class="anchor" id="line-712"></span>   This frame is intended for URL [URL] links concerning the audiofile in
+<span class="anchor" id="line-713"></span>   a similar way to the other "W"xx frames. The frame body consists of a
+<span class="anchor" id="line-714"></span>   description of the string, represented as a terminated string,
+<span class="anchor" id="line-715"></span>   followed by the actual URL. The URL is always encoded with ISO-8859-1
+<span class="anchor" id="line-716"></span>   [ISO-8859-1]. There may be more than one "WXX" frame in each tag, but
+<span class="anchor" id="line-717"></span>   only one with the same description.
+<span class="anchor" id="line-718"></span>
+<span class="anchor" id="line-719"></span>     User defined...   "WXX"
+<span class="anchor" id="line-720"></span>     Frame size        $xx xx xx
+<span class="anchor" id="line-721"></span>     Text encoding     $xx
+<span class="anchor" id="line-722"></span>     Description       &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-723"></span>     URL               &lt;textstring&gt;
+<span class="anchor" id="line-724"></span>
+<span class="anchor" id="line-725"></span>
+<span class="anchor" id="line-726"></span>4.4.   Involved people list
+<span class="anchor" id="line-727"></span>
+<span class="anchor" id="line-728"></span>   Since there might be a lot of people contributing to an audio file in
+<span class="anchor" id="line-729"></span>   various ways, such as musicians and technicians, the 'Text
+<span class="anchor" id="line-730"></span>   information frames' are often insufficient to list everyone involved
+<span class="anchor" id="line-731"></span>   in a project. The 'Involved people list' is a frame containing the
+<span class="anchor" id="line-732"></span>   names of those involved, and how they were involved. The body simply
+<span class="anchor" id="line-733"></span>   contains a terminated string with the involvement directly followed by
+<span class="anchor" id="line-734"></span>   a terminated string with the involvee followed by a new involvement
+<span class="anchor" id="line-735"></span>   and so on. There may only be one "IPL" frame in each tag.
+<span class="anchor" id="line-736"></span>
+<span class="anchor" id="line-737"></span>     Involved people list   "IPL"
+<span class="anchor" id="line-738"></span>     Frame size             $xx xx xx
+<span class="anchor" id="line-739"></span>     Text encoding          $xx
+<span class="anchor" id="line-740"></span>     People list strings    &lt;textstrings&gt;
+<span class="anchor" id="line-741"></span>
+<span class="anchor" id="line-742"></span>
+<span class="anchor" id="line-743"></span>4.5.   Music CD Identifier
+<span class="anchor" id="line-744"></span>
+<span class="anchor" id="line-745"></span>   This frame is intended for music that comes from a CD, so that the CD
+<span class="anchor" id="line-746"></span>   can be identified in databases such as the CDDB [CDDB]. The frame
+<span class="anchor" id="line-747"></span>   consists of a binary dump of the Table Of Contents, TOC,  from the CD,
+<span class="anchor" id="line-748"></span>   which is a header of 4 bytes and then 8 bytes/track on the CD making a
+<span class="anchor" id="line-749"></span>   maximum of 804 bytes. This frame requires a present and valid "TRK"
+<span class="anchor" id="line-750"></span>   frame. There may only be one "MCI" frame in each tag.
+<span class="anchor" id="line-751"></span>
+<span class="anchor" id="line-752"></span>     Music CD identifier   "MCI"
+<span class="anchor" id="line-753"></span>     Frame size            $xx xx xx
+<span class="anchor" id="line-754"></span>     CD TOC                &lt;binary data&gt;
+<span class="anchor" id="line-755"></span>
+<span class="anchor" id="line-756"></span>
+<span class="anchor" id="line-757"></span>4.6.   Event timing codes
+<span class="anchor" id="line-758"></span>
+<span class="anchor" id="line-759"></span>   This frame allows synchronisation with key events in a song or sound.
+<span class="anchor" id="line-760"></span>   The head is:
+<span class="anchor" id="line-761"></span>
+<span class="anchor" id="line-762"></span>     Event timing codes   "ETC"
+<span class="anchor" id="line-763"></span>     Frame size           $xx xx xx
+<span class="anchor" id="line-764"></span>     Time stamp format    $xx
+<span class="anchor" id="line-765"></span>     
+<span class="anchor" id="line-766"></span>   Where time stamp format is:
+<span class="anchor" id="line-767"></span>     
+<span class="anchor" id="line-768"></span>     $01  Absolute time, 32 bit sized, using MPEG [MPEG] frames as unit
+<span class="anchor" id="line-769"></span>     $02  Absolute time, 32 bit sized, using milliseconds as unit
+<span class="anchor" id="line-770"></span>
+<span class="anchor" id="line-771"></span>   Abolute time means that every stamp contains the time from the
+<span class="anchor" id="line-772"></span>   beginning of the file.
+<span class="anchor" id="line-773"></span>
+<span class="anchor" id="line-774"></span>   Followed by a list of key events in the following format:
+<span class="anchor" id="line-775"></span>
+<span class="anchor" id="line-776"></span>     Type of event   $xx
+<span class="anchor" id="line-777"></span>     Time stamp      $xx (xx ...)
+<span class="anchor" id="line-778"></span>
+<span class="anchor" id="line-779"></span>   The 'Time stamp' is set to zero if directly at the beginning of the
+<span class="anchor" id="line-780"></span>   sound or after the previous event. All events should be sorted in
+<span class="anchor" id="line-781"></span>   chronological order. The type of event is as follows:
+<span class="anchor" id="line-782"></span>
+<span class="anchor" id="line-783"></span>     $00  padding (has no meaning)
+<span class="anchor" id="line-784"></span>     $01  end of initial silence
+<span class="anchor" id="line-785"></span>     $02  intro start
+<span class="anchor" id="line-786"></span>     $03  mainpart start
+<span class="anchor" id="line-787"></span>     $04  outro start
+<span class="anchor" id="line-788"></span>     $05  outro end
+<span class="anchor" id="line-789"></span>     $06  verse begins
+<span class="anchor" id="line-790"></span>     $07  refrain begins
+<span class="anchor" id="line-791"></span>     $08  interlude
+<span class="anchor" id="line-792"></span>     $09  theme start
+<span class="anchor" id="line-793"></span>     $0A  variation
+<span class="anchor" id="line-794"></span>     $0B  key change
+<span class="anchor" id="line-795"></span>     $0C  time change
+<span class="anchor" id="line-796"></span>     $0D  unwanted noise (Snap, Crackle &amp; Pop)
+<span class="anchor" id="line-797"></span>
+<span class="anchor" id="line-798"></span>     $0E-$DF  reserved for future use
+<span class="anchor" id="line-799"></span>
+<span class="anchor" id="line-800"></span>     $E0-$EF  not predefined sync 0-F
+<span class="anchor" id="line-801"></span>
+<span class="anchor" id="line-802"></span>     $F0-$FC  reserved for future use
+<span class="anchor" id="line-803"></span>
+<span class="anchor" id="line-804"></span>     $FD  audio end (start of silence)
+<span class="anchor" id="line-805"></span>     $FE  audio file ends
+<span class="anchor" id="line-806"></span>     $FF  one more byte of events follows (all the following bytes with
+<span class="anchor" id="line-807"></span>          the value $FF have the same function)
+<span class="anchor" id="line-808"></span>
+<span class="anchor" id="line-809"></span>   The 'Not predefined sync's ($E0-EF) are for user events. You might
+<span class="anchor" id="line-810"></span>   want to synchronise your music to something, like setting of an
+<span class="anchor" id="line-811"></span>   explosion on-stage, turning on your screensaver etc.
+<span class="anchor" id="line-812"></span>
+<span class="anchor" id="line-813"></span>   There may only be one "ETC" frame in each tag.
+<span class="anchor" id="line-814"></span>
+<span class="anchor" id="line-815"></span>
+<span class="anchor" id="line-816"></span>4.7.   MPEG location lookup table
+<span class="anchor" id="line-817"></span>
+<span class="anchor" id="line-818"></span>   To increase performance and accuracy of jumps within a MPEG [MPEG]
+<span class="anchor" id="line-819"></span>   audio file, frames with timecodes in different locations in the file
+<span class="anchor" id="line-820"></span>   might be useful. The ID3 frame includes references that the software
+<span class="anchor" id="line-821"></span>   can use to calculate positions in the file. After the frame header is
+<span class="anchor" id="line-822"></span>   a descriptor of how much the 'frame counter' should increase for every
+<span class="anchor" id="line-823"></span>   reference. If this value is two then the first reference points out
+<span class="anchor" id="line-824"></span>   the second frame, the 2nd reference the 4th frame, the 3rd reference
+<span class="anchor" id="line-825"></span>   the 6th frame etc. In a similar way the 'bytes between reference' and
+<span class="anchor" id="line-826"></span>   'milliseconds between reference' points out bytes and milliseconds
+<span class="anchor" id="line-827"></span>   respectively.
+<span class="anchor" id="line-828"></span>   
+<span class="anchor" id="line-829"></span>   Each reference consists of two parts; a certain number of bits, as
+<span class="anchor" id="line-830"></span>   defined in 'bits for bytes deviation', that describes the difference
+<span class="anchor" id="line-831"></span>   between what is said in 'bytes between reference' and the reality and
+<span class="anchor" id="line-832"></span>   a certain number of bits, as defined in 'bits for milliseconds
+<span class="anchor" id="line-833"></span>   deviation', that describes the difference between what is said in
+<span class="anchor" id="line-834"></span>   'milliseconds between reference' and the reality. The number of bits
+<span class="anchor" id="line-835"></span>   in every reference, i.e. 'bits for bytes deviation'+'bits for
+<span class="anchor" id="line-836"></span>   milliseconds deviation', must be a multiple of four. There may only be
+<span class="anchor" id="line-837"></span>   one "MLL" frame in each tag.
+<span class="anchor" id="line-838"></span>   
+<span class="anchor" id="line-839"></span>     Location lookup table          "MLL"
+<span class="anchor" id="line-840"></span>     ID3 frame size                 $xx xx xx
+<span class="anchor" id="line-841"></span>     MPEG frames between reference  $xx xx
+<span class="anchor" id="line-842"></span>     Bytes between reference        $xx xx xx
+<span class="anchor" id="line-843"></span>     Milliseconds between reference $xx xx xx
+<span class="anchor" id="line-844"></span>     Bits for bytes deviation       $xx
+<span class="anchor" id="line-845"></span>     Bits for milliseconds dev.     $xx
+<span class="anchor" id="line-846"></span>
+<span class="anchor" id="line-847"></span>   Then for every reference the following data is included;
+<span class="anchor" id="line-848"></span>
+<span class="anchor" id="line-849"></span>     Deviation in bytes         %xxx....
+<span class="anchor" id="line-850"></span>     Deviation in milliseconds  %xxx....
+<span class="anchor" id="line-851"></span>
+<span class="anchor" id="line-852"></span>
+<span class="anchor" id="line-853"></span>4.8.   Synced tempo codes
+<span class="anchor" id="line-854"></span>
+<span class="anchor" id="line-855"></span>   For a more accurate description of the tempo of a musical piece this
+<span class="anchor" id="line-856"></span>   frame might be used. After the header follows one byte describing
+<span class="anchor" id="line-857"></span>   which time stamp format should be used. Then follows one or more tempo
+<span class="anchor" id="line-858"></span>   codes. Each tempo code consists of one tempo part and one time part.
+<span class="anchor" id="line-859"></span>   The tempo is in BPM described with one or two bytes. If the first byte
+<span class="anchor" id="line-860"></span>   has the value $FF, one more byte follows, which is added to the first
+<span class="anchor" id="line-861"></span>   giving a range from 2 - 510 BPM, since $00 and $01 is reserved. $00 is
+<span class="anchor" id="line-862"></span>   used to describe a beat-free time period, which is not the same as a
+<span class="anchor" id="line-863"></span>   music-free time period. $01 is used to indicate one single beat-stroke
+<span class="anchor" id="line-864"></span>   followed by a beat-free period.
+<span class="anchor" id="line-865"></span>
+<span class="anchor" id="line-866"></span>   The tempo descriptor is followed by a time stamp. Every time the tempo
+<span class="anchor" id="line-867"></span>   in the music changes, a tempo descriptor may indicate this for the
+<span class="anchor" id="line-868"></span>   player. All tempo descriptors should be sorted in chronological order.
+<span class="anchor" id="line-869"></span>   The first beat-stroke in a time-period is at the same time as the beat
+<span class="anchor" id="line-870"></span>   description occurs. There may only be one "STC" frame in each tag.
+<span class="anchor" id="line-871"></span>
+<span class="anchor" id="line-872"></span>     Synced tempo codes  "STC"
+<span class="anchor" id="line-873"></span>     Frame size          $xx xx xx
+<span class="anchor" id="line-874"></span>     Time stamp format   $xx
+<span class="anchor" id="line-875"></span>     Tempo data          &lt;binary data&gt;
+<span class="anchor" id="line-876"></span>
+<span class="anchor" id="line-877"></span>   Where time stamp format is:
+<span class="anchor" id="line-878"></span>     
+<span class="anchor" id="line-879"></span>     $01  Absolute time, 32 bit sized, using MPEG [MPEG] frames as unit
+<span class="anchor" id="line-880"></span>     $02  Absolute time, 32 bit sized, using milliseconds as unit
+<span class="anchor" id="line-881"></span>
+<span class="anchor" id="line-882"></span>   Abolute time means that every stamp contains the time from the
+<span class="anchor" id="line-883"></span>   beginning of the file.
+<span class="anchor" id="line-884"></span>
+<span class="anchor" id="line-885"></span>
+<span class="anchor" id="line-886"></span>4.9.   Unsychronised lyrics/text transcription
+<span class="anchor" id="line-887"></span>
+<span class="anchor" id="line-888"></span>   This frame contains the lyrics of the song or a text transcription of
+<span class="anchor" id="line-889"></span>   other vocal activities. The head includes an encoding descriptor and
+<span class="anchor" id="line-890"></span>   a content descriptor. The body consists of the actual text. The
+<span class="anchor" id="line-891"></span>   'Content descriptor' is a terminated string. If no descriptor is
+<span class="anchor" id="line-892"></span>   entered, 'Content descriptor' is $00 (00) only. Newline characters
+<span class="anchor" id="line-893"></span>   are allowed in the text. Maximum length for the descriptor is 64
+<span class="anchor" id="line-894"></span>   bytes. There may be more than one lyrics/text frame in each tag, but
+<span class="anchor" id="line-895"></span>   only one with the same language and content descriptor.
+<span class="anchor" id="line-896"></span>
+<span class="anchor" id="line-897"></span>     Unsynced lyrics/text "ULT"
+<span class="anchor" id="line-898"></span>     Frame size           $xx xx xx
+<span class="anchor" id="line-899"></span>     Text encoding        $xx
+<span class="anchor" id="line-900"></span>     Language             $xx xx xx
+<span class="anchor" id="line-901"></span>     Content descriptor   &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-902"></span>     Lyrics/text          &lt;textstring&gt;
+<span class="anchor" id="line-903"></span>
+<span class="anchor" id="line-904"></span>
+<span class="anchor" id="line-905"></span>4.10.   Synchronised lyrics/text
+<span class="anchor" id="line-906"></span>
+<span class="anchor" id="line-907"></span>   This is another way of incorporating the words, said or sung lyrics,
+<span class="anchor" id="line-908"></span>   in the audio file as text, this time, however, in sync with the audio.
+<span class="anchor" id="line-909"></span>   It might also be used to describing events e.g. occurring on a stage
+<span class="anchor" id="line-910"></span>   or on the screen in sync with the audio. The header includes a content
+<span class="anchor" id="line-911"></span>   descriptor, represented with as terminated textstring. If no
+<span class="anchor" id="line-912"></span>   descriptor is entered, 'Content descriptor' is $00 (00) only.
+<span class="anchor" id="line-913"></span>
+<span class="anchor" id="line-914"></span>     Synced lyrics/text   "SLT"
+<span class="anchor" id="line-915"></span>     Frame size           $xx xx xx
+<span class="anchor" id="line-916"></span>     Text encoding        $xx
+<span class="anchor" id="line-917"></span>     Language             $xx xx xx
+<span class="anchor" id="line-918"></span>     Time stamp format    $xx
+<span class="anchor" id="line-919"></span>     Content type         $xx
+<span class="anchor" id="line-920"></span>     Content descriptor   &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-921"></span>
+<span class="anchor" id="line-922"></span>
+<span class="anchor" id="line-923"></span>   Encoding:   $00  ISO-8859-1 [ISO-8859-1] character set is used =&gt; $00
+<span class="anchor" id="line-924"></span>                    is sync identifier.
+<span class="anchor" id="line-925"></span>               $01  Unicode [UNICODE] character set is used =&gt; $00 00 is
+<span class="anchor" id="line-926"></span>                    sync identifier.
+<span class="anchor" id="line-927"></span>
+<span class="anchor" id="line-928"></span>   Content type:   $00 is other
+<span class="anchor" id="line-929"></span>                   $01 is lyrics
+<span class="anchor" id="line-930"></span>                   $02 is text transcription
+<span class="anchor" id="line-931"></span>                   $03 is movement/part name (e.g. "Adagio")
+<span class="anchor" id="line-932"></span>                   $04 is events (e.g. "Don Quijote enters the stage")
+<span class="anchor" id="line-933"></span>                   $05 is chord (e.g. "Bb F Fsus")
+<span class="anchor" id="line-934"></span>
+<span class="anchor" id="line-935"></span>   Time stamp format is:
+<span class="anchor" id="line-936"></span>     
+<span class="anchor" id="line-937"></span>     $01  Absolute time, 32 bit sized, using MPEG [MPEG] frames as unit
+<span class="anchor" id="line-938"></span>     $02  Absolute time, 32 bit sized, using milliseconds as unit
+<span class="anchor" id="line-939"></span>
+<span class="anchor" id="line-940"></span>   Abolute time means that every stamp contains the time from the
+<span class="anchor" id="line-941"></span>   beginning of the file.
+<span class="anchor" id="line-942"></span>
+<span class="anchor" id="line-943"></span>   The text that follows the frame header differs from that of the
+<span class="anchor" id="line-944"></span>   unsynchronised lyrics/text transcription in one major way. Each
+<span class="anchor" id="line-945"></span>   syllable (or whatever size of text is considered to be convenient by
+<span class="anchor" id="line-946"></span>   the encoder) is a null terminated string followed by a time stamp
+<span class="anchor" id="line-947"></span>   denoting where in the sound file it belongs. Each sync thus has the
+<span class="anchor" id="line-948"></span>   following structure:
+<span class="anchor" id="line-949"></span>
+<span class="anchor" id="line-950"></span>     Terminated text to be synced (typically a syllable)
+<span class="anchor" id="line-951"></span>     Sync identifier (terminator to above string)   $00 (00)
+<span class="anchor" id="line-952"></span>     Time stamp                                     $xx (xx ...)
+<span class="anchor" id="line-953"></span>
+<span class="anchor" id="line-954"></span>   The 'time stamp' is set to zero or the whole sync is omitted if
+<span class="anchor" id="line-955"></span>   located directly at the beginning of the sound. All time stamps should
+<span class="anchor" id="line-956"></span>   be sorted in chronological order. The sync can be considered as a
+<span class="anchor" id="line-957"></span>   validator of the subsequent string.
+<span class="anchor" id="line-958"></span>
+<span class="anchor" id="line-959"></span>   Newline characters are allowed in all "SLT" frames and should be used
+<span class="anchor" id="line-960"></span>   after every entry (name, event etc.) in a frame with the content type
+<span class="anchor" id="line-961"></span>   $03 - $04.
+<span class="anchor" id="line-962"></span>
+<span class="anchor" id="line-963"></span>   A few considerations regarding whitespace characters: Whitespace
+<span class="anchor" id="line-964"></span>   separating words should mark the beginning of a new word, thus
+<span class="anchor" id="line-965"></span>   occurring in front of the first syllable of a new word. This is also
+<span class="anchor" id="line-966"></span>   valid for new line characters. A syllable followed by a comma should
+<span class="anchor" id="line-967"></span>   not be broken apart with a sync (both the syllable and the comma
+<span class="anchor" id="line-968"></span>   should be before the sync).
+<span class="anchor" id="line-969"></span>
+<span class="anchor" id="line-970"></span>   An example: The "ULT" passage
+<span class="anchor" id="line-971"></span>
+<span class="anchor" id="line-972"></span>     "Strangers in the night" $0A "Exchanging glances"
+<span class="anchor" id="line-973"></span>
+<span class="anchor" id="line-974"></span>   would be "SLT" encoded as:
+<span class="anchor" id="line-975"></span>
+<span class="anchor" id="line-976"></span>     "Strang" $00 xx xx "ers" $00 xx xx " in" $00 xx xx " the" $00 xx xx
+<span class="anchor" id="line-977"></span>     " night" $00 xx xx 0A "Ex" $00 xx xx "chang" $00 xx xx "ing" $00 xx
+<span class="anchor" id="line-978"></span>     xx "glan" $00 xx xx "ces" $00 xx xx
+<span class="anchor" id="line-979"></span>
+<span class="anchor" id="line-980"></span>   There may be more than one "SLT" frame in each tag, but only one with
+<span class="anchor" id="line-981"></span>   the same language and content descriptor.
+<span class="anchor" id="line-982"></span>
+<span class="anchor" id="line-983"></span>
+<span class="anchor" id="line-984"></span>4.11.   Comments
+<span class="anchor" id="line-985"></span>
+<span class="anchor" id="line-986"></span>   This frame replaces the old 30-character comment field in ID3v1. It
+<span class="anchor" id="line-987"></span>   consists of a frame head followed by encoding, language and content
+<span class="anchor" id="line-988"></span>   descriptors and is ended with the actual comment as a text string.
+<span class="anchor" id="line-989"></span>   Newline characters are allowed in the comment text string. There may
+<span class="anchor" id="line-990"></span>   be more than one comment frame in each tag, but only one with the same
+<span class="anchor" id="line-991"></span>   language and content descriptor.
+<span class="anchor" id="line-992"></span>
+<span class="anchor" id="line-993"></span>     Comment                   "COM"
+<span class="anchor" id="line-994"></span>     Frame size                $xx xx xx
+<span class="anchor" id="line-995"></span>     Text encoding             $xx
+<span class="anchor" id="line-996"></span>     Language                  $xx xx xx
+<span class="anchor" id="line-997"></span>     Short content description &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-998"></span>     The actual text           &lt;textstring&gt;
+<span class="anchor" id="line-999"></span>
+<span class="anchor" id="line-1000"></span>
+<span class="anchor" id="line-1001"></span>4.12.   Relative volume adjustment
+<span class="anchor" id="line-1002"></span>
+<span class="anchor" id="line-1003"></span>   This is a more subjective function than the previous ones. It allows
+<span class="anchor" id="line-1004"></span>   the user to say how much he wants to increase/decrease the volume on
+<span class="anchor" id="line-1005"></span>   each channel while the file is played. The purpose is to be able to
+<span class="anchor" id="line-1006"></span>   align all files to a reference volume, so that you don't have to
+<span class="anchor" id="line-1007"></span>   change the volume constantly. This frame may also be used to balance
+<span class="anchor" id="line-1008"></span>   adjust the audio. If the volume peak levels are known then this could
+<span class="anchor" id="line-1009"></span>   be described with the 'Peak volume right' and 'Peak volume left'
+<span class="anchor" id="line-1010"></span>   field. If Peakvolume is not known these fields could be left zeroed
+<span class="anchor" id="line-1011"></span>   or completely omitted.  There may only be one "RVA" frame in each
+<span class="anchor" id="line-1012"></span>   tag.
+<span class="anchor" id="line-1013"></span>
+<span class="anchor" id="line-1014"></span>     Relative volume adjustment    "RVA"
+<span class="anchor" id="line-1015"></span>     Frame size                    $xx xx xx
+<span class="anchor" id="line-1016"></span>     Increment/decrement           %000000xx
+<span class="anchor" id="line-1017"></span>     Bits used for volume descr.   $xx
+<span class="anchor" id="line-1018"></span>     Relative volume change, right $xx xx (xx ...)
+<span class="anchor" id="line-1019"></span>     Relative volume change, left  $xx xx (xx ...)
+<span class="anchor" id="line-1020"></span>     Peak volume right             $xx xx (xx ...)
+<span class="anchor" id="line-1021"></span>     Peak volume left              $xx xx (xx ...)
+<span class="anchor" id="line-1022"></span>
+<span class="anchor" id="line-1023"></span>   In the increment/decrement field bit 0 is used to indicate the right
+<span class="anchor" id="line-1024"></span>   channel and bit 1 is used to indicate the left channel. 1 is
+<span class="anchor" id="line-1025"></span>   increment and 0 is decrement.
+<span class="anchor" id="line-1026"></span>
+<span class="anchor" id="line-1027"></span>   The 'bits used for volume description' field is normally $10 (16 bits)
+<span class="anchor" id="line-1028"></span>   for MPEG 2 layer I, II and III [MPEG] and MPEG 2.5. This value may not
+<span class="anchor" id="line-1029"></span>   be $00. The volume is always represented with whole bytes, padded in
+<span class="anchor" id="line-1030"></span>   the beginning (highest bits) when 'bits used for volume description'
+<span class="anchor" id="line-1031"></span>   is not a multiple of eight.
+<span class="anchor" id="line-1032"></span>
+<span class="anchor" id="line-1033"></span>
+<span class="anchor" id="line-1034"></span>4.13.   Equalisation
+<span class="anchor" id="line-1035"></span>
+<span class="anchor" id="line-1036"></span>   This is another subjective, alignment frame. It allows the user to
+<span class="anchor" id="line-1037"></span>   predefine an equalisation curve within the audio file. There may only
+<span class="anchor" id="line-1038"></span>   be one "EQU" frame in each tag.
+<span class="anchor" id="line-1039"></span>
+<span class="anchor" id="line-1040"></span>     Equalisation       "EQU"
+<span class="anchor" id="line-1041"></span>     Frame size         $xx xx xx
+<span class="anchor" id="line-1042"></span>     Adjustment bits    $xx
+<span class="anchor" id="line-1043"></span>
+<span class="anchor" id="line-1044"></span>   The 'adjustment bits' field defines the number of bits used for
+<span class="anchor" id="line-1045"></span>   representation of the adjustment. This is normally $10 (16 bits) for
+<span class="anchor" id="line-1046"></span>   MPEG 2 layer I, II and III [MPEG] and MPEG 2.5. This value may not be
+<span class="anchor" id="line-1047"></span>   $00.
+<span class="anchor" id="line-1048"></span>
+<span class="anchor" id="line-1049"></span>   This is followed by 2 bytes + ('adjustment bits' rounded up to the
+<span class="anchor" id="line-1050"></span>   nearest byte) for every equalisation band in the following format,
+<span class="anchor" id="line-1051"></span>   giving a frequency range of 0 - 32767Hz:
+<span class="anchor" id="line-1052"></span>
+<span class="anchor" id="line-1053"></span>     Increment/decrement   %x (MSB of the Frequency)
+<span class="anchor" id="line-1054"></span>     Frequency             (lower 15 bits)
+<span class="anchor" id="line-1055"></span>     Adjustment            $xx (xx ...)
+<span class="anchor" id="line-1056"></span>
+<span class="anchor" id="line-1057"></span>   The increment/decrement bit is 1 for increment and 0 for decrement.
+<span class="anchor" id="line-1058"></span>   The equalisation bands should be ordered increasingly with reference
+<span class="anchor" id="line-1059"></span>   to frequency. All frequencies don't have to be declared. Adjustments
+<span class="anchor" id="line-1060"></span>   with the value $00 should be omitted. A frequency should only be
+<span class="anchor" id="line-1061"></span>   described once in the frame.
+<span class="anchor" id="line-1062"></span>
+<span class="anchor" id="line-1063"></span>
+<span class="anchor" id="line-1064"></span>4.14.   Reverb
+<span class="anchor" id="line-1065"></span>
+<span class="anchor" id="line-1066"></span>   Yet another subjective one. You may here adjust echoes of different
+<span class="anchor" id="line-1067"></span>   kinds. Reverb left/right is the delay between every bounce in ms.
+<span class="anchor" id="line-1068"></span>   Reverb bounces left/right is the number of bounces that should be
+<span class="anchor" id="line-1069"></span>   made. $FF equals an infinite number of bounces. Feedback is the amount
+<span class="anchor" id="line-1070"></span>   of volume that should be returned to the next echo bounce. $00 is 0%,
+<span class="anchor" id="line-1071"></span>   $FF is 100%. If this value were $7F, there would be 50% volume
+<span class="anchor" id="line-1072"></span>   reduction on the first bounce, yet 50% on the second and so on. Left
+<span class="anchor" id="line-1073"></span>   to left means the sound from the left bounce to be played in the left
+<span class="anchor" id="line-1074"></span>   speaker, while left to right means sound from the left bounce to be
+<span class="anchor" id="line-1075"></span>   played in the right speaker.
+<span class="anchor" id="line-1076"></span>
+<span class="anchor" id="line-1077"></span>   'Premix left to right' is the amount of left sound to be mixed in the
+<span class="anchor" id="line-1078"></span>   right before any reverb is applied, where $00 id 0% and $FF is 100%.
+<span class="anchor" id="line-1079"></span>   'Premix right to left' does the same thing, but right to left. Setting
+<span class="anchor" id="line-1080"></span>   both premix to $FF would result in a mono output (if the reverb is
+<span class="anchor" id="line-1081"></span>   applied symmetric). There may only be one "REV" frame in each tag.
+<span class="anchor" id="line-1082"></span>
+<span class="anchor" id="line-1083"></span>     Reverb settings                  "REV"
+<span class="anchor" id="line-1084"></span>     Frame size                       $00 00 0C
+<span class="anchor" id="line-1085"></span>     Reverb left (ms)                 $xx xx
+<span class="anchor" id="line-1086"></span>     Reverb right (ms)                $xx xx
+<span class="anchor" id="line-1087"></span>     Reverb bounces, left             $xx
+<span class="anchor" id="line-1088"></span>     Reverb bounces, right            $xx
+<span class="anchor" id="line-1089"></span>     Reverb feedback, left to left    $xx
+<span class="anchor" id="line-1090"></span>     Reverb feedback, left to right   $xx
+<span class="anchor" id="line-1091"></span>     Reverb feedback, right to right  $xx
+<span class="anchor" id="line-1092"></span>     Reverb feedback, right to left   $xx
+<span class="anchor" id="line-1093"></span>     Premix left to right             $xx
+<span class="anchor" id="line-1094"></span>     Premix right to left             $xx
+<span class="anchor" id="line-1095"></span>
+<span class="anchor" id="line-1096"></span>
+<span class="anchor" id="line-1097"></span>4.15.   Attached picture
+<span class="anchor" id="line-1098"></span>
+<span class="anchor" id="line-1099"></span>   This frame contains a picture directly related to the audio file.
+<span class="anchor" id="line-1100"></span>   Image format is preferably "PNG" [PNG] or "JPG" [JFIF]. Description
+<span class="anchor" id="line-1101"></span>   is a short description of the picture, represented as a terminated
+<span class="anchor" id="line-1102"></span>   textstring. The description has a maximum length of 64 characters,
+<span class="anchor" id="line-1103"></span>   but may be empty. There may be several pictures attached to one file,
+<span class="anchor" id="line-1104"></span>   each in their individual "PIC" frame, but only one with the same
+<span class="anchor" id="line-1105"></span>   content descriptor. There may only be one picture with the picture
+<span class="anchor" id="line-1106"></span>   type declared as picture type $01 and $02 respectively. There is a
+<span class="anchor" id="line-1107"></span>   possibility to put only a link to the image file by using the 'image
+<span class="anchor" id="line-1108"></span>   format' "--&gt;" and having a complete URL [URL] instead of picture data.
+<span class="anchor" id="line-1109"></span>   The use of linked files should however be used restrictively since
+<span class="anchor" id="line-1110"></span>   there is the risk of separation of files.
+<span class="anchor" id="line-1111"></span>
+<span class="anchor" id="line-1112"></span>     Attached picture   "PIC"
+<span class="anchor" id="line-1113"></span>     Frame size         $xx xx xx
+<span class="anchor" id="line-1114"></span>     Text encoding      $xx
+<span class="anchor" id="line-1115"></span>     Image format       $xx xx xx
+<span class="anchor" id="line-1116"></span>     Picture type       $xx
+<span class="anchor" id="line-1117"></span>     Description        &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-1118"></span>     Picture data       &lt;binary data&gt;
+<span class="anchor" id="line-1119"></span>
+<span class="anchor" id="line-1120"></span>
+<span class="anchor" id="line-1121"></span>   Picture type:  $00  Other
+<span class="anchor" id="line-1122"></span>                  $01  32x32 pixels 'file icon' (PNG only)
+<span class="anchor" id="line-1123"></span>                  $02  Other file icon
+<span class="anchor" id="line-1124"></span>                  $03  Cover (front)
+<span class="anchor" id="line-1125"></span>                  $04  Cover (back)
+<span class="anchor" id="line-1126"></span>                  $05  Leaflet page
+<span class="anchor" id="line-1127"></span>                  $06  Media (e.g. lable side of CD)
+<span class="anchor" id="line-1128"></span>                  $07  Lead artist/lead performer/soloist
+<span class="anchor" id="line-1129"></span>                  $08  Artist/performer
+<span class="anchor" id="line-1130"></span>                  $09  Conductor
+<span class="anchor" id="line-1131"></span>                  $0A  Band/Orchestra
+<span class="anchor" id="line-1132"></span>                  $0B  Composer
+<span class="anchor" id="line-1133"></span>                  $0C  Lyricist/text writer
+<span class="anchor" id="line-1134"></span>                  $0D  Recording Location
+<span class="anchor" id="line-1135"></span>                  $0E  During recording
+<span class="anchor" id="line-1136"></span>                  $0F  During performance
+<span class="anchor" id="line-1137"></span>                  $10  Movie/video screen capture
+<span class="anchor" id="line-1138"></span>                  $11  A bright coloured fish
+<span class="anchor" id="line-1139"></span>                  $12  Illustration
+<span class="anchor" id="line-1140"></span>                  $13  Band/artist logotype
+<span class="anchor" id="line-1141"></span>                  $14  Publisher/Studio logotype
+<span class="anchor" id="line-1142"></span>
+<span class="anchor" id="line-1143"></span>
+<span class="anchor" id="line-1144"></span>4.16.   General encapsulated object
+<span class="anchor" id="line-1145"></span>
+<span class="anchor" id="line-1146"></span>   In this frame any type of file can be encapsulated. After the header,
+<span class="anchor" id="line-1147"></span>   'Frame size' and 'Encoding' follows 'MIME type' [MIME] and 'Filename'
+<span class="anchor" id="line-1148"></span>   for the encapsulated object, both represented as terminated strings
+<span class="anchor" id="line-1149"></span>   encoded with ISO 8859-1 [ISO-8859-1]. The filename is case sensitive.
+<span class="anchor" id="line-1150"></span>   Then follows a content description as terminated string, encoded as
+<span class="anchor" id="line-1151"></span>   'Encoding'. The last thing in the frame is the actual object. The
+<span class="anchor" id="line-1152"></span>   first two strings may be omitted, leaving only their terminations.
+<span class="anchor" id="line-1153"></span>   MIME type is always an ISO-8859-1 text string. There may be more than
+<span class="anchor" id="line-1154"></span>   one "GEO" frame in each tag, but only one with the same content
+<span class="anchor" id="line-1155"></span>   descriptor.
+<span class="anchor" id="line-1156"></span>
+<span class="anchor" id="line-1157"></span>     General encapsulated object "GEO"
+<span class="anchor" id="line-1158"></span>     Frame size                  $xx xx xx
+<span class="anchor" id="line-1159"></span>     Text encoding               $xx
+<span class="anchor" id="line-1160"></span>     MIME type                   &lt;textstring&gt; $00
+<span class="anchor" id="line-1161"></span>     Filename                    &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-1162"></span>     Content description         &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-1163"></span>     Encapsulated object         &lt;binary data&gt;
+<span class="anchor" id="line-1164"></span>
+<span class="anchor" id="line-1165"></span>
+<span class="anchor" id="line-1166"></span>4.17.   Play counter
+<span class="anchor" id="line-1167"></span>
+<span class="anchor" id="line-1168"></span>   This is simply a counter of the number of times a file has been
+<span class="anchor" id="line-1169"></span>   played. The value is increased by one every time the file begins to
+<span class="anchor" id="line-1170"></span>   play. There may only be one "CNT" frame in each tag. When the counter
+<span class="anchor" id="line-1171"></span>   reaches all one's, one byte is inserted in front of the counter thus
+<span class="anchor" id="line-1172"></span>   making the counter eight bits bigger.  The counter must be at least
+<span class="anchor" id="line-1173"></span>   32-bits long to begin with.
+<span class="anchor" id="line-1174"></span>
+<span class="anchor" id="line-1175"></span>     Play counter   "CNT"
+<span class="anchor" id="line-1176"></span>     Frame size     $xx xx xx
+<span class="anchor" id="line-1177"></span>     Counter        $xx xx xx xx (xx ...)
+<span class="anchor" id="line-1178"></span>
+<span class="anchor" id="line-1179"></span>
+<span class="anchor" id="line-1180"></span>4.18.   Popularimeter
+<span class="anchor" id="line-1181"></span>
+<span class="anchor" id="line-1182"></span>   The purpose of this frame is to specify how good an audio file is.
+<span class="anchor" id="line-1183"></span>   Many interesting applications could be found to this frame such as a
+<span class="anchor" id="line-1184"></span>   playlist that features better audiofiles more often than others or it
+<span class="anchor" id="line-1185"></span>   could be used to profile a persons taste and find other 'good' files
+<span class="anchor" id="line-1186"></span>   by comparing people's profiles. The frame is very simple. It contains
+<span class="anchor" id="line-1187"></span>   the email address to the user, one rating byte and a four byte play
+<span class="anchor" id="line-1188"></span>   counter, intended to be increased with one for every time the file is
+<span class="anchor" id="line-1189"></span>   played. The email is a terminated string. The rating is 1-255 where
+<span class="anchor" id="line-1190"></span>   1 is worst and 255 is best. 0 is unknown. If no personal counter is
+<span class="anchor" id="line-1191"></span>   wanted it may be omitted.  When the counter reaches all one's, one
+<span class="anchor" id="line-1192"></span>   byte is inserted in front of the counter thus making the counter
+<span class="anchor" id="line-1193"></span>   eight bits bigger in the same away as the play counter ("CNT").
+<span class="anchor" id="line-1194"></span>   There may be more than one "POP" frame in each tag, but only one with
+<span class="anchor" id="line-1195"></span>   the same email address.
+<span class="anchor" id="line-1196"></span>   
+<span class="anchor" id="line-1197"></span>     Popularimeter   "POP"
+<span class="anchor" id="line-1198"></span>     Frame size      $xx xx xx
+<span class="anchor" id="line-1199"></span>     Email to user   &lt;textstring&gt; $00
+<span class="anchor" id="line-1200"></span>     Rating          $xx
+<span class="anchor" id="line-1201"></span>     Counter         $xx xx xx xx (xx ...)
+<span class="anchor" id="line-1202"></span>
+<span class="anchor" id="line-1203"></span>
+<span class="anchor" id="line-1204"></span>4.19.   Recommended buffer size
+<span class="anchor" id="line-1205"></span>
+<span class="anchor" id="line-1206"></span>   Sometimes the server from which a audio file is streamed is aware of
+<span class="anchor" id="line-1207"></span>   transmission or coding problems resulting in interruptions in the
+<span class="anchor" id="line-1208"></span>   audio stream. In these cases, the size of the buffer can be
+<span class="anchor" id="line-1209"></span>   recommended by the server using this frame. If the 'embedded info
+<span class="anchor" id="line-1210"></span>   flag' is true (1) then this indicates that an ID3 tag with the
+<span class="anchor" id="line-1211"></span>   maximum size described in 'Buffer size' may occur in the audiostream.
+<span class="anchor" id="line-1212"></span>   In such case the tag should reside between two MPEG [MPEG] frames, if
+<span class="anchor" id="line-1213"></span>   the audio is MPEG encoded. If the position of the next tag is known,
+<span class="anchor" id="line-1214"></span>   'offset to next tag' may be used. The offset is calculated from the
+<span class="anchor" id="line-1215"></span>   end of tag in which this frame resides to the first byte of the header
+<span class="anchor" id="line-1216"></span>   in the next. This field may be omitted. Embedded tags is currently not
+<span class="anchor" id="line-1217"></span>   recommended since this could render unpredictable behaviour from
+<span class="anchor" id="line-1218"></span>   present software/hardware. The 'Buffer size' should be kept to a
+<span class="anchor" id="line-1219"></span>   minimum. There may only be one "BUF" frame in each tag.
+<span class="anchor" id="line-1220"></span>
+<span class="anchor" id="line-1221"></span>     Recommended buffer size   "BUF"
+<span class="anchor" id="line-1222"></span>     Frame size                $xx xx xx
+<span class="anchor" id="line-1223"></span>     Buffer size               $xx xx xx
+<span class="anchor" id="line-1224"></span>     Embedded info flag        %0000000x
+<span class="anchor" id="line-1225"></span>     Offset to next tag        $xx xx xx xx
+<span class="anchor" id="line-1226"></span>
+<span class="anchor" id="line-1227"></span>
+<span class="anchor" id="line-1228"></span>4.20.   Encrypted meta frame
+<span class="anchor" id="line-1229"></span>
+<span class="anchor" id="line-1230"></span>   This frame contains one or more encrypted frames. This enables
+<span class="anchor" id="line-1231"></span>   protection of copyrighted information such as pictures and text, that
+<span class="anchor" id="line-1232"></span>   people might want to pay extra for. Since standardisation of such an
+<span class="anchor" id="line-1233"></span>   encryption scheme is beyond this document, all "CRM" frames begin with
+<span class="anchor" id="line-1234"></span>   a terminated string with a URL [URL] containing an email address, or a
+<span class="anchor" id="line-1235"></span>   link to a location where an email adress can be found, that belongs to
+<span class="anchor" id="line-1236"></span>   the organisation responsible for this specific encrypted meta frame.
+<span class="anchor" id="line-1237"></span>
+<span class="anchor" id="line-1238"></span>   Questions regarding the encrypted frame should be sent to the
+<span class="anchor" id="line-1239"></span>   indicated email address. If a $00 is found directly after the 'Frame
+<span class="anchor" id="line-1240"></span>   size', the whole frame should be ignored, and preferably be removed.
+<span class="anchor" id="line-1241"></span>   The 'Owner identifier' is then followed by a short content description
+<span class="anchor" id="line-1242"></span>   and explanation as to why it's encrypted. After the
+<span class="anchor" id="line-1243"></span>   'content/explanation' description, the actual encrypted block follows.
+<span class="anchor" id="line-1244"></span>
+<span class="anchor" id="line-1245"></span>   When an ID3v2 decoder encounters a "CRM" frame, it should send the
+<span class="anchor" id="line-1246"></span>   datablock to the 'plugin' with the corresponding 'owner identifier'
+<span class="anchor" id="line-1247"></span>   and expect to receive either a datablock with one or several ID3v2
+<span class="anchor" id="line-1248"></span>   frames after each other or an error. There may be more than one "CRM"
+<span class="anchor" id="line-1249"></span>   frames in a tag, but only one with the same 'owner identifier'.
+<span class="anchor" id="line-1250"></span>
+<span class="anchor" id="line-1251"></span>     Encrypted meta frame  "CRM"
+<span class="anchor" id="line-1252"></span>     Frame size            $xx xx xx
+<span class="anchor" id="line-1253"></span>     Owner identifier      &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-1254"></span>     Content/explanation   &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-1255"></span>     Encrypted datablock   &lt;binary data&gt;
+<span class="anchor" id="line-1256"></span>
+<span class="anchor" id="line-1257"></span>
+<span class="anchor" id="line-1258"></span>4.21.   Audio encryption
+<span class="anchor" id="line-1259"></span>
+<span class="anchor" id="line-1260"></span>   This frame indicates if the actual audio stream is encrypted, and by
+<span class="anchor" id="line-1261"></span>   whom. Since standardisation of such encrypion scheme is beyond this
+<span class="anchor" id="line-1262"></span>   document, all "CRA" frames begin with a terminated string with a
+<span class="anchor" id="line-1263"></span>   URL containing an email address, or a link to a location where an
+<span class="anchor" id="line-1264"></span>   email address can be found, that belongs to the organisation
+<span class="anchor" id="line-1265"></span>   responsible for this specific encrypted audio file. Questions
+<span class="anchor" id="line-1266"></span>   regarding the encrypted audio should be sent to the email address
+<span class="anchor" id="line-1267"></span>   specified. If a $00 is found directly after the 'Frame size' and the
+<span class="anchor" id="line-1268"></span>   audiofile indeed is encrypted, the whole file may be considered
+<span class="anchor" id="line-1269"></span>   useless.
+<span class="anchor" id="line-1270"></span>
+<span class="anchor" id="line-1271"></span>   After the 'Owner identifier', a pointer to an unencrypted part of the
+<span class="anchor" id="line-1272"></span>   audio can be specified. The 'Preview start' and 'Preview length' is
+<span class="anchor" id="line-1273"></span>   described in frames. If no part is unencrypted, these fields should be
+<span class="anchor" id="line-1274"></span>   left zeroed. After the 'preview length' field follows optionally a
+<span class="anchor" id="line-1275"></span>   datablock required for decryption of the audio. There may be more than
+<span class="anchor" id="line-1276"></span>   one "CRA" frames in a tag, but only one with the same 'Owner
+<span class="anchor" id="line-1277"></span>   identifier'.
+<span class="anchor" id="line-1278"></span>
+<span class="anchor" id="line-1279"></span>     Audio encryption   "CRA"
+<span class="anchor" id="line-1280"></span>     Frame size         $xx xx xx
+<span class="anchor" id="line-1281"></span>     Owner identifier   &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-1282"></span>     Preview start      $xx xx
+<span class="anchor" id="line-1283"></span>     Preview length     $xx xx
+<span class="anchor" id="line-1284"></span>     Encryption info    &lt;binary data&gt;
+<span class="anchor" id="line-1285"></span>
+<span class="anchor" id="line-1286"></span>
+<span class="anchor" id="line-1287"></span>4.22.   Linked information
+<span class="anchor" id="line-1288"></span>
+<span class="anchor" id="line-1289"></span>   To keep space waste as low as possible this frame may be used to link
+<span class="anchor" id="line-1290"></span>   information from another ID3v2 tag that might reside in another audio
+<span class="anchor" id="line-1291"></span>   file or alone in a binary file. It is recommended that this method is
+<span class="anchor" id="line-1292"></span>   only used when the files are stored on a CD-ROM or other circumstances
+<span class="anchor" id="line-1293"></span>   when the risk of file seperation is low. The frame contains a frame
+<span class="anchor" id="line-1294"></span>   identifier, which is the frame that should be linked into this tag, a
+<span class="anchor" id="line-1295"></span>   URL [URL] field, where a reference to the file where the frame is
+<span class="anchor" id="line-1296"></span>   given, and additional ID data, if needed. Data should be retrieved
+<span class="anchor" id="line-1297"></span>   from the first tag found in the file to which this link points. There
+<span class="anchor" id="line-1298"></span>   may be more than one "LNK" frame in a tag, but only one with the same
+<span class="anchor" id="line-1299"></span>   contents. A linked frame is to be considered as part of the tag and
+<span class="anchor" id="line-1300"></span>   has the same restrictions as if it was a physical part of the tag
+<span class="anchor" id="line-1301"></span>   (i.e. only one "REV" frame allowed, whether it's linked or not).
+<span class="anchor" id="line-1302"></span>   
+<span class="anchor" id="line-1303"></span>     Linked information  "LNK"
+<span class="anchor" id="line-1304"></span>     Frame size          $xx xx xx
+<span class="anchor" id="line-1305"></span>     Frame identifier    $xx xx xx
+<span class="anchor" id="line-1306"></span>     URL                 &lt;textstring&gt; $00 (00)
+<span class="anchor" id="line-1307"></span>     Additional ID data  &lt;textstring(s)&gt;
+<span class="anchor" id="line-1308"></span>   
+<span class="anchor" id="line-1309"></span>   Frames that may be linked and need no additional data are "IPL",
+<span class="anchor" id="line-1310"></span>   "MCI", "ETC", "LLT", "STC", "RVA", "EQU", "REV", "BUF", the text
+<span class="anchor" id="line-1311"></span>   information frames and the URL link frames.
+<span class="anchor" id="line-1312"></span>   
+<span class="anchor" id="line-1313"></span>   The "TXX", "PIC", "GEO", "CRM" and "CRA" frames may be linked with the
+<span class="anchor" id="line-1314"></span>   content descriptor as additional ID data.
+<span class="anchor" id="line-1315"></span>   
+<span class="anchor" id="line-1316"></span>   The "COM", "SLT" and "ULT" frames may be linked with three bytes of
+<span class="anchor" id="line-1317"></span>   language descriptor directly followed by a content descriptor as
+<span class="anchor" id="line-1318"></span>   additional ID data.
+<span class="anchor" id="line-1319"></span>
+<span class="anchor" id="line-1320"></span>
+<span class="anchor" id="line-1321"></span>5.   The 'unsynchronisation scheme'
+<span class="anchor" id="line-1322"></span>
+<span class="anchor" id="line-1323"></span>   The only purpose of the 'unsychronisation scheme' is to make the ID3v2
+<span class="anchor" id="line-1324"></span>   tag as compatible as possible with existing software. There is no use
+<span class="anchor" id="line-1325"></span>   in 'unsynchronising' tags if the file is only to be processed by new
+<span class="anchor" id="line-1326"></span>   software. Unsynchronisation may only be made with MPEG 2 layer I, II
+<span class="anchor" id="line-1327"></span>   and III and MPEG 2.5 files.
+<span class="anchor" id="line-1328"></span>
+<span class="anchor" id="line-1329"></span>   Whenever a false synchronisation is found within the tag, one zeroed
+<span class="anchor" id="line-1330"></span>   byte is inserted after the first false synchronisation byte. The
+<span class="anchor" id="line-1331"></span>   format of a correct sync that should be altered by ID3 encoders is as
+<span class="anchor" id="line-1332"></span>   follows:
+<span class="anchor" id="line-1333"></span>
+<span class="anchor" id="line-1334"></span>         %11111111 111xxxxx
+<span class="anchor" id="line-1335"></span>
+<span class="anchor" id="line-1336"></span>   And should be replaced with:
+<span class="anchor" id="line-1337"></span>
+<span class="anchor" id="line-1338"></span>         %11111111 00000000 111xxxxx
+<span class="anchor" id="line-1339"></span>
+<span class="anchor" id="line-1340"></span>   This has the side effect that all $FF 00 combinations have to be
+<span class="anchor" id="line-1341"></span>   altered, so they won't be affected by the decoding process. Therefore
+<span class="anchor" id="line-1342"></span>   all the $FF 00 combinations have to be replaced with the $FF 00 00
+<span class="anchor" id="line-1343"></span>   combination during the unsynchonisation.
+<span class="anchor" id="line-1344"></span>
+<span class="anchor" id="line-1345"></span>   To indicate usage of the unsynchronisation, the first bit in 'ID3
+<span class="anchor" id="line-1346"></span>   flags' should be set. This bit should only be set if the tag
+<span class="anchor" id="line-1347"></span>   contained a, now corrected, false synchronisation. The bit should
+<span class="anchor" id="line-1348"></span>   only be clear if the tag does not contain any false synchronisations.
+<span class="anchor" id="line-1349"></span>   
+<span class="anchor" id="line-1350"></span>   Do bear in mind, that if a compression scheme is used by the encoder,
+<span class="anchor" id="line-1351"></span>   the unsyncronisation scheme should be applied *afterwards*. When
+<span class="anchor" id="line-1352"></span>   decoding a compressed, 'unsyncronised' file, the 'unsyncronisation
+<span class="anchor" id="line-1353"></span>   scheme' should be parsed first, compression afterwards.
+<span class="anchor" id="line-1354"></span>
+<span class="anchor" id="line-1355"></span>
+<span class="anchor" id="line-1356"></span>6.   Copyright
+<span class="anchor" id="line-1357"></span>
+<span class="anchor" id="line-1358"></span>   Copyright (C) Martin Nilsson 1998. All Rights Reserved.
+<span class="anchor" id="line-1359"></span>
+<span class="anchor" id="line-1360"></span>   This document and translations of it may be copied and furnished to
+<span class="anchor" id="line-1361"></span>   others, and derivative works that comment on or otherwise explain it
+<span class="anchor" id="line-1362"></span>   or assist in its implementation may be prepared, copied, published
+<span class="anchor" id="line-1363"></span>   and distributed, in whole or in part, without restriction of any
+<span class="anchor" id="line-1364"></span>   kind, provided that a reference to this document is included on all
+<span class="anchor" id="line-1365"></span>   such copies and derivative works. However, this document itself may
+<span class="anchor" id="line-1366"></span>   not be modified in any way and reissued as the original document.
+<span class="anchor" id="line-1367"></span>
+<span class="anchor" id="line-1368"></span>   The limited permissions granted above are perpetual and will not be
+<span class="anchor" id="line-1369"></span>   revoked.
+<span class="anchor" id="line-1370"></span>
+<span class="anchor" id="line-1371"></span>   This document and the information contained herein is provided on an
+<span class="anchor" id="line-1372"></span>   "AS IS" basis and THE AUTHORS DISCLAIMS ALL WARRANTIES, EXPRESS OR
+<span class="anchor" id="line-1373"></span>   IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+<span class="anchor" id="line-1374"></span>   INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+<span class="anchor" id="line-1375"></span>   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+<span class="anchor" id="line-1376"></span>
+<span class="anchor" id="line-1377"></span>
+<span class="anchor" id="line-1378"></span>7.   References
+<span class="anchor" id="line-1379"></span>
+<span class="anchor" id="line-1380"></span>   [CDDB] Compact Disc Data Base
+<span class="anchor" id="line-1381"></span>
+<span class="anchor" id="line-1382"></span>      &lt;url:http://www.cddb.com&gt;
+<span class="anchor" id="line-1383"></span>
+<span class="anchor" id="line-1384"></span>   [ISO-639-2] ISO/FDIS 639-2.
+<span class="anchor" id="line-1385"></span>   Codes for the representation of names of languages, Part 2: Alpha-3
+<span class="anchor" id="line-1386"></span>   code. Technical committee / subcommittee: TC 37 / SC 2
+<span class="anchor" id="line-1387"></span>
+<span class="anchor" id="line-1388"></span>   [ISO-8859-1] ISO/IEC DIS 8859-1.
+<span class="anchor" id="line-1389"></span>   8-bit single-byte coded graphic character sets, Part 1: Latin
+<span class="anchor" id="line-1390"></span>   alphabet No. 1. Technical committee / subcommittee: JTC 1 / SC 2
+<span class="anchor" id="line-1391"></span>
+<span class="anchor" id="line-1392"></span>   [ISRC] ISO 3901:1986
+<span class="anchor" id="line-1393"></span>   International Standard Recording Code (ISRC).
+<span class="anchor" id="line-1394"></span>   Technical committee / subcommittee: TC 46 / SC 9
+<span class="anchor" id="line-1395"></span>
+<span class="anchor" id="line-1396"></span>   [JFIF] JPEG File Interchange Format, version 1.02
+<span class="anchor" id="line-1397"></span>
+<span class="anchor" id="line-1398"></span>      &lt;url:http://www.w3.org/Graphics/JPEG/jfif.txt&gt;
+<span class="anchor" id="line-1399"></span>      
+<span class="anchor" id="line-1400"></span>   [MIME] Freed, N.  and N. Borenstein,  "Multipurpose Internet Mail
+<span class="anchor" id="line-1401"></span>   Extensions (MIME) Part One: Format of Internet Message Bodies",
+<span class="anchor" id="line-1402"></span>   RFC 2045, November 1996.
+<span class="anchor" id="line-1403"></span> 
+<span class="anchor" id="line-1404"></span>      &lt;url:ftp://ftp.isi.edu/in-notes/rfc2045.txt&gt;
+<span class="anchor" id="line-1405"></span>      
+<span class="anchor" id="line-1406"></span>   [MPEG] ISO/IEC 11172-3:1993.
+<span class="anchor" id="line-1407"></span>   Coding of moving pictures and associated audio for digital storage
+<span class="anchor" id="line-1408"></span>   media at up to about 1,5 Mbit/s, Part 3: Audio.
+<span class="anchor" id="line-1409"></span>   Technical committee / subcommittee: JTC 1 / SC 29
+<span class="anchor" id="line-1410"></span>   and   
+<span class="anchor" id="line-1411"></span>   ISO/IEC 13818-3:1995
+<span class="anchor" id="line-1412"></span>   Generic coding of moving pictures and associated audio information,
+<span class="anchor" id="line-1413"></span>   Part 3: Audio.
+<span class="anchor" id="line-1414"></span>   Technical committee / subcommittee: JTC 1 / SC 29
+<span class="anchor" id="line-1415"></span>   and   
+<span class="anchor" id="line-1416"></span>   ISO/IEC DIS 13818-3
+<span class="anchor" id="line-1417"></span>   Generic coding of moving pictures and associated audio information,
+<span class="anchor" id="line-1418"></span>   Part 3: Audio (Revision of ISO/IEC 13818-3:1995)
+<span class="anchor" id="line-1419"></span>
+<span class="anchor" id="line-1420"></span>
+<span class="anchor" id="line-1421"></span>   [PNG] Portable Network Graphics, version 1.0
+<span class="anchor" id="line-1422"></span>
+<span class="anchor" id="line-1423"></span>      &lt;url:http://www.w3.org/TR/REC-png-multi.html&gt;
+<span class="anchor" id="line-1424"></span>
+<span class="anchor" id="line-1425"></span>   [UNICODE] ISO/IEC 10646-1:1993.
+<span class="anchor" id="line-1426"></span>   Universal Multiple-Octet Coded Character Set (UCS), Part 1:
+<span class="anchor" id="line-1427"></span>   Architecture and Basic Multilingual Plane. Technical committee
+<span class="anchor" id="line-1428"></span>   / subcommittee: JTC 1 / SC 2
+<span class="anchor" id="line-1429"></span>
+<span class="anchor" id="line-1430"></span>      &lt;url:http://www.unicode.org&gt;
+<span class="anchor" id="line-1431"></span>
+<span class="anchor" id="line-1432"></span>   [URL] T. Berners-Lee, L. Masinter &amp; M. McCahill, "Uniform Resource
+<span class="anchor" id="line-1433"></span>   Locators (URL).", RFC 1738, December 1994.
+<span class="anchor" id="line-1434"></span>
+<span class="anchor" id="line-1435"></span>      &lt;url:ftp://ftp.isi.edu/in-notes/rfc1738.txt&gt;
+<span class="anchor" id="line-1436"></span>
+<span class="anchor" id="line-1437"></span>
+<span class="anchor" id="line-1438"></span>8.   Appendix
+<span class="anchor" id="line-1439"></span>
+<span class="anchor" id="line-1440"></span>
+<span class="anchor" id="line-1441"></span>A.   Appendix A - ID3-Tag Specification V1.1
+<span class="anchor" id="line-1442"></span>
+<span class="anchor" id="line-1443"></span>   ID3-Tag Specification V1.1 (12 dec 1997) by Michael Mutschler
+<span class="anchor" id="line-1444"></span>   &lt;amiga2@info2.rus.uni-stuttgart.de&gt;, edited for space and clarity
+<span class="anchor" id="line-1445"></span>   reasons.
+<span class="anchor" id="line-1446"></span>
+<span class="anchor" id="line-1447"></span>
+<span class="anchor" id="line-1448"></span>A.1.   Overview
+<span class="anchor" id="line-1449"></span>
+<span class="anchor" id="line-1450"></span>
+<span class="anchor" id="line-1451"></span>   The ID3-Tag is an information field for MPEG Layer 3 audio files.
+<span class="anchor" id="line-1452"></span>   Since a standalone MP3 doesn't provide a method of storing other
+<span class="anchor" id="line-1453"></span>   information than those directly needed for replay reasons, the
+<span class="anchor" id="line-1454"></span>   ID3-tag was invented by Eric Kemp in 1996.
+<span class="anchor" id="line-1455"></span>
+<span class="anchor" id="line-1456"></span>   A revision from ID3v1 to ID3v1.1 was made by Michael Mutschler to
+<span class="anchor" id="line-1457"></span>   support track number information is described in A.4.
+<span class="anchor" id="line-1458"></span>
+<span class="anchor" id="line-1459"></span>
+<span class="anchor" id="line-1460"></span>A.2.   ID3v1 Implementation
+<span class="anchor" id="line-1461"></span>
+<span class="anchor" id="line-1462"></span>   The Information is stored in the last 128 bytes of an MP3. The Tag
+<span class="anchor" id="line-1463"></span>   has got the following fields, and the offsets given here, are from
+<span class="anchor" id="line-1464"></span>   0-127.
+<span class="anchor" id="line-1465"></span>
+<span class="anchor" id="line-1466"></span>     Field      Length    Offsets
+<span class="anchor" id="line-1467"></span>     Tag        3           0-2
+<span class="anchor" id="line-1468"></span>     Songname   30          3-32
+<span class="anchor" id="line-1469"></span>     Artist     30         33-62
+<span class="anchor" id="line-1470"></span>     Album      30         63-92
+<span class="anchor" id="line-1471"></span>     Year       4          93-96
+<span class="anchor" id="line-1472"></span>     Comment    30         97-126
+<span class="anchor" id="line-1473"></span>     Genre      1           127
+<span class="anchor" id="line-1474"></span>
+<span class="anchor" id="line-1475"></span>
+<span class="anchor" id="line-1476"></span>   The string-fields contain ASCII-data, coded in ISO-Latin 1 codepage.
+<span class="anchor" id="line-1477"></span>   Strings which are smaller than the field length are padded with zero-
+<span class="anchor" id="line-1478"></span>   bytes.
+<span class="anchor" id="line-1479"></span>
+<span class="anchor" id="line-1480"></span>     Tag: The tag is valid if this field contains the string "TAG". This
+<span class="anchor" id="line-1481"></span>        has to be uppercase!
+<span class="anchor" id="line-1482"></span>
+<span class="anchor" id="line-1483"></span>     Songname: This field contains the title of the MP3 (string as
+<span class="anchor" id="line-1484"></span>        above).
+<span class="anchor" id="line-1485"></span>
+<span class="anchor" id="line-1486"></span>     Artist: This field contains the artist of the MP3 (string as above).
+<span class="anchor" id="line-1487"></span>
+<span class="anchor" id="line-1488"></span>     Album: this field contains the album where the MP3 comes from
+<span class="anchor" id="line-1489"></span>        (string as above).
+<span class="anchor" id="line-1490"></span>
+<span class="anchor" id="line-1491"></span>     Year: this field contains the year when this song has originally
+<span class="anchor" id="line-1492"></span>        been released (string as above).
+<span class="anchor" id="line-1493"></span>
+<span class="anchor" id="line-1494"></span>     Comment: this field contains a comment for the MP3 (string as
+<span class="anchor" id="line-1495"></span>        above). Revision to this field has been made in ID3v1.1. See
+<span class="anchor" id="line-1496"></span>        A.4.
+<span class="anchor" id="line-1497"></span>
+<span class="anchor" id="line-1498"></span>     Genre: this byte contains the offset of a genre in a predefined
+<span class="anchor" id="line-1499"></span>        list the byte is treated as an unsigned byte. The offset is
+<span class="anchor" id="line-1500"></span>        starting from 0. See A.3.
+<span class="anchor" id="line-1501"></span>
+<span class="anchor" id="line-1502"></span>
+<span class="anchor" id="line-1503"></span>A.3.   Genre List
+<span class="anchor" id="line-1504"></span>
+<span class="anchor" id="line-1505"></span>   The following genres is defined in ID3v1 
+<span class="anchor" id="line-1506"></span>
+<span class="anchor" id="line-1507"></span>      0.Blues
+<span class="anchor" id="line-1508"></span>      1.Classic Rock
+<span class="anchor" id="line-1509"></span>      2.Country
+<span class="anchor" id="line-1510"></span>      3.Dance
+<span class="anchor" id="line-1511"></span>      4.Disco
+<span class="anchor" id="line-1512"></span>      5.Funk
+<span class="anchor" id="line-1513"></span>      6.Grunge
+<span class="anchor" id="line-1514"></span>      7.Hip-Hop
+<span class="anchor" id="line-1515"></span>      8.Jazz
+<span class="anchor" id="line-1516"></span>      9.Metal
+<span class="anchor" id="line-1517"></span>     10.New Age
+<span class="anchor" id="line-1518"></span>     11.Oldies
+<span class="anchor" id="line-1519"></span>     12.Other
+<span class="anchor" id="line-1520"></span>     13.Pop
+<span class="anchor" id="line-1521"></span>     14.R&amp;B
+<span class="anchor" id="line-1522"></span>     15.Rap
+<span class="anchor" id="line-1523"></span>     16.Reggae
+<span class="anchor" id="line-1524"></span>     17.Rock
+<span class="anchor" id="line-1525"></span>     18.Techno
+<span class="anchor" id="line-1526"></span>     19.Industrial
+<span class="anchor" id="line-1527"></span>     20.Alternative
+<span class="anchor" id="line-1528"></span>     21.Ska
+<span class="anchor" id="line-1529"></span>     22.Death Metal
+<span class="anchor" id="line-1530"></span>     23.Pranks
+<span class="anchor" id="line-1531"></span>     24.Soundtrack
+<span class="anchor" id="line-1532"></span>     25.Euro-Techno
+<span class="anchor" id="line-1533"></span>     26.Ambient
+<span class="anchor" id="line-1534"></span>     27.Trip-Hop
+<span class="anchor" id="line-1535"></span>     28.Vocal
+<span class="anchor" id="line-1536"></span>     29.Jazz+Funk
+<span class="anchor" id="line-1537"></span>     30.Fusion
+<span class="anchor" id="line-1538"></span>     31.Trance
+<span class="anchor" id="line-1539"></span>     32.Classical
+<span class="anchor" id="line-1540"></span>     33.Instrumental
+<span class="anchor" id="line-1541"></span>     34.Acid
+<span class="anchor" id="line-1542"></span>     35.House
+<span class="anchor" id="line-1543"></span>     36.Game
+<span class="anchor" id="line-1544"></span>     37.Sound Clip
+<span class="anchor" id="line-1545"></span>     38.Gospel
+<span class="anchor" id="line-1546"></span>     39.Noise
+<span class="anchor" id="line-1547"></span>     40.AlternRock
+<span class="anchor" id="line-1548"></span>     41.Bass
+<span class="anchor" id="line-1549"></span>     42.Soul
+<span class="anchor" id="line-1550"></span>     43.Punk
+<span class="anchor" id="line-1551"></span>     44.Space
+<span class="anchor" id="line-1552"></span>     45.Meditative
+<span class="anchor" id="line-1553"></span>     46.Instrumental Pop
+<span class="anchor" id="line-1554"></span>     47.Instrumental Rock
+<span class="anchor" id="line-1555"></span>     48.Ethnic
+<span class="anchor" id="line-1556"></span>     49.Gothic
+<span class="anchor" id="line-1557"></span>     50.Darkwave
+<span class="anchor" id="line-1558"></span>     51.Techno-Industrial
+<span class="anchor" id="line-1559"></span>     52.Electronic
+<span class="anchor" id="line-1560"></span>     53.Pop-Folk
+<span class="anchor" id="line-1561"></span>     54.Eurodance
+<span class="anchor" id="line-1562"></span>     55.Dream
+<span class="anchor" id="line-1563"></span>     56.Southern Rock
+<span class="anchor" id="line-1564"></span>     57.Comedy
+<span class="anchor" id="line-1565"></span>     58.Cult
+<span class="anchor" id="line-1566"></span>     59.Gangsta
+<span class="anchor" id="line-1567"></span>     60.Top 40
+<span class="anchor" id="line-1568"></span>     61.Christian Rap
+<span class="anchor" id="line-1569"></span>     62.Pop/Funk
+<span class="anchor" id="line-1570"></span>     63.Jungle
+<span class="anchor" id="line-1571"></span>     64.Native American
+<span class="anchor" id="line-1572"></span>     65.Cabaret
+<span class="anchor" id="line-1573"></span>     66.New Wave
+<span class="anchor" id="line-1574"></span>     67.Psychadelic
+<span class="anchor" id="line-1575"></span>     68.Rave
+<span class="anchor" id="line-1576"></span>     69.Showtunes
+<span class="anchor" id="line-1577"></span>     70.Trailer
+<span class="anchor" id="line-1578"></span>     71.Lo-Fi
+<span class="anchor" id="line-1579"></span>     72.Tribal
+<span class="anchor" id="line-1580"></span>     73.Acid Punk
+<span class="anchor" id="line-1581"></span>     74.Acid Jazz
+<span class="anchor" id="line-1582"></span>     75.Polka
+<span class="anchor" id="line-1583"></span>     76.Retro
+<span class="anchor" id="line-1584"></span>     77.Musical
+<span class="anchor" id="line-1585"></span>     78.Rock &amp; Roll
+<span class="anchor" id="line-1586"></span>     79.Hard Rock
+<span class="anchor" id="line-1587"></span>     
+<span class="anchor" id="line-1588"></span>   The following genres are Winamp extensions
+<span class="anchor" id="line-1589"></span>     
+<span class="anchor" id="line-1590"></span>     80.Folk
+<span class="anchor" id="line-1591"></span>     81.Folk-Rock
+<span class="anchor" id="line-1592"></span>     82.National Folk
+<span class="anchor" id="line-1593"></span>     83.Swing
+<span class="anchor" id="line-1594"></span>     84.Fast Fusion
+<span class="anchor" id="line-1595"></span>     85.Bebob
+<span class="anchor" id="line-1596"></span>     86.Latin
+<span class="anchor" id="line-1597"></span>     87.Revival
+<span class="anchor" id="line-1598"></span>     88.Celtic
+<span class="anchor" id="line-1599"></span>     89.Bluegrass
+<span class="anchor" id="line-1600"></span>     90.Avantgarde
+<span class="anchor" id="line-1601"></span>     91.Gothic Rock
+<span class="anchor" id="line-1602"></span>     92.Progressive Rock
+<span class="anchor" id="line-1603"></span>     93.Psychedelic Rock
+<span class="anchor" id="line-1604"></span>     94.Symphonic Rock
+<span class="anchor" id="line-1605"></span>     95.Slow Rock
+<span class="anchor" id="line-1606"></span>     96.Big Band
+<span class="anchor" id="line-1607"></span>     97.Chorus
+<span class="anchor" id="line-1608"></span>     98.Easy Listening
+<span class="anchor" id="line-1609"></span>     99.Acoustic
+<span class="anchor" id="line-1610"></span>    100.Humour
+<span class="anchor" id="line-1611"></span>    101.Speech
+<span class="anchor" id="line-1612"></span>    102.Chanson
+<span class="anchor" id="line-1613"></span>    103.Opera
+<span class="anchor" id="line-1614"></span>    104.Chamber Music
+<span class="anchor" id="line-1615"></span>    105.Sonata
+<span class="anchor" id="line-1616"></span>    106.Symphony
+<span class="anchor" id="line-1617"></span>    107.Booty Bass
+<span class="anchor" id="line-1618"></span>    108.Primus
+<span class="anchor" id="line-1619"></span>    109.Porn Groove
+<span class="anchor" id="line-1620"></span>    110.Satire
+<span class="anchor" id="line-1621"></span>    111.Slow Jam
+<span class="anchor" id="line-1622"></span>    112.Club
+<span class="anchor" id="line-1623"></span>    113.Tango
+<span class="anchor" id="line-1624"></span>    114.Samba
+<span class="anchor" id="line-1625"></span>    115.Folklore
+<span class="anchor" id="line-1626"></span>    116.Ballad
+<span class="anchor" id="line-1627"></span>    117.Power Ballad
+<span class="anchor" id="line-1628"></span>    118.Rhythmic Soul
+<span class="anchor" id="line-1629"></span>    119.Freestyle
+<span class="anchor" id="line-1630"></span>    120.Duet
+<span class="anchor" id="line-1631"></span>    121.Punk Rock
+<span class="anchor" id="line-1632"></span>    122.Drum Solo
+<span class="anchor" id="line-1633"></span>    123.A capella
+<span class="anchor" id="line-1634"></span>    124.Euro-House
+<span class="anchor" id="line-1635"></span>    125.Dance Hall
+<span class="anchor" id="line-1636"></span>
+<span class="anchor" id="line-1637"></span>
+<span class="anchor" id="line-1638"></span>A.4.   Track addition - ID3v1.1
+<span class="anchor" id="line-1639"></span>
+<span class="anchor" id="line-1640"></span>   In ID3v1.1, Michael Mutschler revised the specification of the
+<span class="anchor" id="line-1641"></span>   comment field in order to implement the track number. The new format
+<span class="anchor" id="line-1642"></span>   of the comment field is a 28 character string followed by a mandatory
+<span class="anchor" id="line-1643"></span>   null ($00) character and the original album tracknumber stored as an
+<span class="anchor" id="line-1644"></span>   unsigned byte-size integer. In such cases where the 29th byte is not
+<span class="anchor" id="line-1645"></span>   the null character or when the 30th is a null character, the
+<span class="anchor" id="line-1646"></span>   tracknumber is to be considered undefined.
+<span class="anchor" id="line-1647"></span>
+<span class="anchor" id="line-1648"></span>
+<span class="anchor" id="line-1649"></span>9.   Author's Address
+<span class="anchor" id="line-1650"></span>
+<span class="anchor" id="line-1651"></span>   Martin Nilsson
+<span class="anchor" id="line-1652"></span>   Rydsv�gen 246 C. 30
+<span class="anchor" id="line-1653"></span>   S-584 34 Link�ping
+<span class="anchor" id="line-1654"></span>   Sweden
+<span class="anchor" id="line-1655"></span>
+<span class="anchor" id="line-1656"></span>   Email: nilsson at id3.org
+<span class="anchor" id="line-1657"></span>
+<span class="anchor" id="line-1658"></span>   Co-authors:
+<span class="anchor" id="line-1659"></span>
+<span class="anchor" id="line-1660"></span>   Johan Sundstr�m   Email: johan at id3.org
+<span class="anchor" id="line-1661"></span></pre><span class="anchor" id="line-1662"></span><span class="anchor" id="bottom"></span></div><div id="pagebottom"></div>
+<p id="pageinfo" class="info" lang="en" dir="ltr">id3v2-00  (last edited 2006-12-18 06:26:06 by <span title="DanONeill"><a generated="True" href="/DanONeill" title="DanONeill">DanONeill</a></span>)</p>
+
+<div id="pagebottom"></div>
+</div>
+
+<center><a href="/Copyright">Copyright</a> &copy; 1998-2009 by their respective owners</center>
+</body>
+</html>
+
