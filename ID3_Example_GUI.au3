@@ -6,7 +6,7 @@
 #Include <GuiListView.au3>
 #Include <File.au3>
 #Include <Sound.au3>
-#Include "ID3_v3.4.1.au3"
+#Include "ID3.au3"
 #Include <WindowsConstants.au3>
 #include <EditConstants.au3>
 #include <GDIPlus.au3>

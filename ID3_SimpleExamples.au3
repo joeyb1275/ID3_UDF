@@ -1,5 +1,5 @@
 #include-once
-#include <ID3_v3.4.1.au3>
+#include <ID3.au3>
 #include <Array.au3>
 #include <File.au3>
 #cs #ID3_SimpleExamples.au3  Latest Changes.......: ;========================================================
@@ -11,10 +11,10 @@
 ;Un-comment one at a time to try each example
 
 
-;~ _ID3Example_ReadShowAllExistingTags()
+_ID3Example_ReadShowAllExistingTags()
 
-_ID3Example_WritePOPM()
-_ID3Example_ReadPOPM()
+;~ _ID3Example_WritePOPM()
+;~ _ID3Example_ReadPOPM()
 
 ;~ _ID3Example_ReadShowTitle()
 
