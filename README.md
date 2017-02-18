@@ -1,28 +1,26 @@
-**ID3.au3 UDF Description:**
--Reads ID3v1.0, ID3v1.1, ID3v1.1+, ID3v2.2, ID3v2.3, ID3v2.4, APEv2 and MPEG frame header
--Writes ID3v1.1, ID3v2.3, ID3v2.4
+###ID3_UDF
 
-**Latest Version v3.4 20120610**
-AutoIt Version Required: 23rd December, 2011 - v3.3.8.0 of AutoIt
-ID3 functions only works with .mp3 files
+- **ID3.au3 UDF Description:**
+  -- Reads ID3v1.0, ID3v1.1, ID3v1.1+, ID3v2.2, ID3v2.3, ID3v2.4, APEv2 and MPEG frame header
+  -- Writes ID3v1.1, ID3v2.3, ID3v2.4
 
-**Notes:**
-More info on the ID3 format can be found at http://www.id3.org/Developer_Information and http://en.wikipedia.org/wiki/ID3
-More info on the APE tag format can be found at http://wiki.hydrogenaudio.org/index.php?title=APEv2_specification
-If you only care about getting the basic info ie. Album, Artist, Track and Song Title then look into using Udf: Get Extended FIle Properties
-More ID3 implementations http://www.id3.org/Implementations
+- **Latest Version v3.4 20120610**
+-- AutoIt Version Required: 23rd December, 2011 - v3.3.8.0 of AutoIt ID3 functions only works with .mp3 files
 
-**Changes in latest version (see files for all changes):**
-*ID3.au3 (06/10/2012)* [ID3_v3.4.1.au3]
+- **Notes:**
+-- More info on the ID3 format can be found at http://www.id3.org/Developer_Information and http://en.wikipedia.org/wiki/ID3
+-- More info on the APE tag format can be found at http://wiki.hydrogenaudio.org/index.php?title=APEv2_specification
+-- If you only care about getting the basic info ie. Album, Artist, Track and Song Title then look into using Udf: Get Extended FIle Properties
+-- More ID3 implementations http://www.id3.org/Implementations
 
-*ID3_Example_GUI.au3 (06/10/2012)* [ID3_Example_GUI_v3.4.1.au3]
-
-*ID3_SimpleExamples.au3 (06/10/2012)* [ID3_SimpleExamples_v3.4.au3]
-- I have realized that the GUI example has become overly complex, so I have added this file to help show how I intended ID3.au3   to be used.
+- **Changes in latest version (see files for all changes):**
+-- *ID3.au3 (06/10/2012)* [ID3_v3.4.1.au3]
+-- *ID3_Example_GUI.au3 (06/10/2012)* [ID3_Example_GUI_v3.4.1.au3]
+-- *ID3_SimpleExamples.au3 (06/10/2012)* [ID3_SimpleExamples_v3.4.au3]
+-- I have realized that the GUI example has become overly complex, so I have added this file to help show how I intended ID3.au3   to be used.
   
   
  **Simple Read Tag Example:**
-
 ```AutoIt
 $Filename = FileOpenDialog ( "Select Mp3 File", "", "Muisc (*.mp3)")
 $sTagInfo = _ID3ReadTag($Filename)
@@ -40,11 +38,12 @@ _ID3WriteTag($Filename)
 ```
   
   
-**Latest versions of the specification**
-- ID3v2.3TagSpec.pdf
-- ID3v2.4TagSpec.pdf
+- **Latest versions of the specification**
+-- ID3v2.3TagSpec.pdf
+-- ID3v2.4TagSpec.pdf
 
 **Example_GUI Screenshot**
+
 ![Screenshot](images/screenshot_main.png)
 
 
