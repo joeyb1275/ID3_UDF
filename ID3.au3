@@ -307,6 +307,7 @@
 		-fixed _ID3v2Frame_SetFields() for the POPM tag
     Working for 3.4.2 Release
 		 -renaming variables with UDF naming rules
+		 -merging in 3.4.2 from local and fixing bugs
 #ce ;========================================================================================================
 
 ; #VARIABLES# ===================================================================================================================
