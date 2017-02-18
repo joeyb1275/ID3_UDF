@@ -1,96 +1,144 @@
 #include-once
-#include <Array.au3>
+#include <Array.au3> ;need for UnSynchronisation
 
-#cs #ID3.au3 User-Defined Functions# ;=======================================================================
-UDF Description ..............:		Reads/Writes ID3v1.1 ID3v2.3, ID3v2.4 and APEv2 Tags in MP3 files
-UDF AutoIt Forum Link.........:		http://www.autoitscript.com/forum/index.php?showtopic=43950&st=0
-UDF AutoIt Version Required...:		23rd December, 2011 - v3.3.8.0 of AutoIt
-FUNCTIONS LIST ...............:
-		MAIN UDF FUNCTION LIST
-			_ID3ReadTag()
-			_ID3GetTagField()
-			_ID3SetTagField()
-			_ID3WriteTag()
-			_ID3RemoveTag()
-			_ID3CreateTag()
-			_ID3DeleteFiles()
-		ID3v1 EXTENDED FUNCTION LIST
-			_ID3v1Tag_ReadFromFile()
-			_ID3v1Tag_GetVersion()
-			_ID3v1Field_GetString()
-			_ID3v1Field_SetString()
-			_ID3v1Tag_WriteToFile()
-		ID3v1 HELPER FUNCTION LIST
-			_h_ID3v1_GetGenreFromID()
-			_h_ID3v1_GetGenreID()
-		ID3v2 EXTENDED FUNCTION LIST
-			_ID3v2Tag_ReadFromFile()
-			_ID3v2Tag_WriteToFile()
-			_ID3v2Tag_RemoveFrame()
-			_ID3v2Tag_GetVersion()
-			_ID3v2Tag_GetHeaderFlags()
-			_ID3v2Tag_GetTagSize()
-			_ID3v2Tag_GetExtendedHeader()
-			_ID3v2Tag_GetFooter()
-			_ID3v2Tag_GetZPAD()
-			_ID3v2Frame_GetBinary()
-			_ID3v2Frame_SetBinary()
-			_ID3v2Frame_GetFields()
-			_ID3v2Frame_SetFields()
-		ID3v2 HELPER FUNCTION LIST
-			_h_ID3v2Tag_EnumerateFrameIDs()
-			_h_ID3v2FrameHeader_GetFrameID()
-			_h_ID3v2FrameHeader_GetFrameSize()
-			_h_ID3v2FrameHeader_GetFlags()
+; #INDEX# =======================================================================================================================
+; Title .........: ID3 UDF
+; AutoIt Version : v3.3.8.0
+; Language ......: English
+; Description ...: Functions that Read/Write ID3v1.1 ID3v2.3, ID3v2.4 and APEv2 Tags in MP3 files.
+; Description ...: No Dll required
+; Author(s) .....: Joe Begnoche (joeyb1275)
+; UDF Forum Link.: http://www.autoitscript.com/forum/index.php?showtopic=43950&st=0
+; Feature List...:
+;					Added ID3v2.4 read/write compatability
+;					Added reading/writing of ID3v1.1+ Extended Tags
+;					Added ability to read/write multiple frameIDs (ID3v2 allows multiple TXXX,WXXX frames and others)
+;					Improved time to read tags for all versions by about 80%
+;					Added AlbumArt reading for jpeg and png
+;					Added _APEv2 functions _APEv2Tag_GetTagSize() _APEv2Tag_GetVersion() and _APEv2Tag_GetItemCount()
+;					Added _MPEG_... functions
+;					Tested Reading Tags from
+;						-Tag&Rename - ID3v1.1 & ID3v2.3
+;						-mp3Tag Pro - ID3v1.1 & ID3v2.3
+;						-Mp3tag - ID3v1.1, ID3v2.3 & APEv2
+;						-iTunes - APEv2 TagSize which includes header (Not to standard)
+; Function List..:
+;					MAIN UDF FUNCTION LIST
+;						_ID3ReadTag()
+;						_ID3GetTagField()
+;						_ID3SetTagField()
+;						_ID3WriteTag()
+;						_ID3RemoveTag()
+;						_ID3CreateTag()
+;						_ID3DeleteFiles()
+;					ID3v1 EXTENDED FUNCTION LIST
+;						_ID3v1Tag_ReadFromFile()
+;						_ID3v1Tag_GetVersion()
+;						_ID3v1Field_GetString()
+;						_ID3v1Field_SetString()
+;						_ID3v1Tag_WriteToFile()
+;					ID3v2 EXTENDED FUNCTION LIST
+;						_ID3v2Tag_ReadFromFile()
+;						_ID3v2Tag_WriteToFile()
+;						_ID3v2Tag_RemoveFrame()
+;						_ID3v2Tag_GetVersion()
+;						_ID3v2Tag_GetHeaderFlags()
+;						_ID3v2Tag_GetTagSize()
+;						_ID3v2Tag_GetExtendedHeader()
+;						_ID3v2Tag_GetFooter()
+;						_ID3v2Tag_GetZPAD()
+;						_ID3v2Frame_GetBinary()
+;						_ID3v2Frame_SetBinary()
+;						_ID3v2Frame_GetFields()
+;						_ID3v2Frame_SetFields()
+;					MPEG FUNCTION LIST
+;						_MPEG_GetFrameHeader()
+;						_MPEG_IsValidHeader()
+;						_MPEG_GetVersion()
+;						_MPEG_GetLayer()
+;						_MPEG_GetBitRate()
+;						_MPEG_GetSampleRate()
+;						_MPEG_GetChannelMode()
+;						_MPEG_GetChannelModeEx()
+;					APEv2 FUNCTION LIST
+;						_APEv2Tag_ReadFromFile()
+;						_APEv2Tag_GetTagSize()
+;						_APEv2_GetItemKeys()
+;						_APEv2_GetItemValueBinary()
+;						_APEv2_GetItemValueString()
+;						_APEv2_RemoveTag()
+;
+;					ID3v1 HELPER FUNCTION LIST
+;						_h_ID3v1_GetGenreFromID()
+;						_h_ID3v1_GetGenreID()
+;					ID3v2 HELPER FUNCTION LIST
+;						_h_ID3v2Tag_EnumerateFrameIDs()
+;						_h_ID3v2FrameHeader_GetFrameID()
+;						_h_ID3v2FrameHeader_GetFrameSize()
+;						_h_ID3v2FrameHeader_GetFlags()
+;						_h_ID3v2_GetFrameT000_TZZZ()
+;						_h_ID3v2_CreateFrameT000_TZZZ()
+;						_h_ID3v2_GetFrameTXXX()
+;						_h_ID3v2_CreateFrameTXXX()
+;						_h_ID3v2_GetFrameW000_WZZZ()
+;						_h_ID3v2_CreateFrameW000_WZZZ()
+;						_h_ID3v2_GetFrameWXXX()
+;						_h_ID3v2_CreateFrameWXXX()
+;						_h_ID3v2_GetFrameCOMM()
+;						_h_ID3v2_CreateFrameCOMM()
+;						_h_ID3v2_GetFrameAPIC()
+;						_h_ID3v2_CreateFrameAPIC()
+;						_h_ID3v2_GetFrameUSLT()
+;						_h_ID3v2_CreateFrameUSLT()
+;						_h_ID3v2_GetFramePCNT()
+;						_h_ID3v2_CreateFramePCNT()
+;						_h_ID3v2_GetFrameUFID()
+;						_h_ID3v2_CreateFrameUFID()
+;						_h_ID3v2_GetFramePOPM()
+;						_h_ID3v2_CreateFramePOPM()
+;						_h_ID3v2_GetFramePRIV()
+;						_h_ID3v2_CreateFramePRIV()
+;						_h_ID3v2_GetFrameRGAD()
+;						_h_ID3v2_DecodeTextToString()
+;						_h_ID3v2_EncodeStringToBinary()
+;						_h_ID3v2_ConvertFrameID()
+; Latest Version.: Release 3.4.0  - 20120610
+;				   	-Added resetting of all global ID3 variables in _ID3ReadTag() to make sure they are set back to the default values and ready to read a new file
+;				   	-changed _ID3WriteTag() to determine what tags have been read and to only write back those version if $iTagVersion=-1, edited _ID3WriteTag() comments
+;				   	-added $iReturnTypeFlag to _ID3GetTagField() inputs for ID3v2 functions
+;				   	-fixed _ID3GetTagField() so that @extended is set to the Number of frames that exist with same $sFrameIDRequest
+;				   	-fixed _h_ID3v2_EncodeStringToBinary() variable typo ($FrameData should be $bFrameData), thanks BrewManNH!
+; Latest Version.: Release 3.4.1  - 2013
+;					-removed File.au3, String.au3 & Array.au3 dependencies
+; ToDo List......:
+;				-working to fix RemoveUnsynchronization() functions, testing with COMM frame from Foobar2000 v2.4
+;				-TODO -ID3v2.4 - work with COMM frame from Foobar2000
+;				-TODO -_ID3RemoveTag add save raw MPEG data mode
+;				-TODO -ID3v2.4 add ability to remove unsychronization of each frame
+;
+;				-TODO -MPEG - handle VBR MP3 properly (XING Header) and (VBRI Header)
+;						-http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#SideInfo
+;				-TODO -ID3v1 - Test Read/write of TAG+ Extended Tags
+;				-TODO -ID3v2 - Add reading of extended header
+;				-TODO -add error flow up from _ID3v1 and _ID3v2 functions to _ID3 functions
+;				-TODO Clean up code comments
+;				-TODO check if File.au3 is actually needed by _h_ID3v2_CreateFrameAPIC
+;			Release 3.5 TODO
+;			   -TODO -MPEG - handle VBR MP3 properly (XING Header) and (VBRI Header)
+;				  -http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#SideInfo
+;			   -TODO -ID3v2.4 - work with COMM frame from Foobar2000
+;			   -TODO -ID3v1 - Test Read/write of TAG+ Extended Tags
+;			   -TODO -ID3v2 - Add reading of extended header
+;			   -TODO -ID3v2.4 add ability to remove unsychronization of each frame
+;			   -TODO -add error flow up from _ID3v1 and _ID3v2 functions to _ID3 functions
+;			   -TODO Clean up code comments
+; ===============================================================================================================================
 
-			_h_ID3v2_GetFrameT000_TZZZ()
-			_h_ID3v2_CreateFrameT000_TZZZ()
-			_h_ID3v2_GetFrameTXXX()
-			_h_ID3v2_CreateFrameTXXX()
-			_h_ID3v2_GetFrameW000_WZZZ()
-			_h_ID3v2_CreateFrameW000_WZZZ()
-			_h_ID3v2_GetFrameWXXX()
-			_h_ID3v2_CreateFrameWXXX()
-			_h_ID3v2_GetFrameCOMM()
-			_h_ID3v2_CreateFrameCOMM()
-			_h_ID3v2_GetFrameAPIC()
-			_h_ID3v2_CreateFrameAPIC()
-			_h_ID3v2_GetFrameUSLT()
-			_h_ID3v2_CreateFrameUSLT()
-			_h_ID3v2_GetFramePCNT()
-			_h_ID3v2_CreateFramePCNT()
-			_h_ID3v2_GetFrameUFID()
-			_h_ID3v2_CreateFrameUFID()
-			_h_ID3v2_GetFramePOPM()
-			_h_ID3v2_CreateFramePOPM()
-			_h_ID3v2_GetFramePRIV()
-			_h_ID3v2_CreateFramePRIV()
-			_h_ID3v2_GetFrameRGAD()
 
-			_h_ID3v2_DecodeTextToString()
-			_h_ID3v2_EncodeStringToBinary()
-			_h_ID3v2_ConvertFrameID()
-		MPEG FUNCTION LIST
-			_MPEG_GetFrameHeader()
-			_MPEG_IsValidHeader()
-			_MPEG_GetVersion()
-			_MPEG_GetLayer()
-			_MPEG_GetBitRate()
-			_MPEG_GetSampleRate()
-			_MPEG_GetChannelMode()
-			_MPEG_GetChannelModeEx()
-		APEv2 FUNCTION LIST
-			_APEv2Tag_ReadFromFile()
-			_APEv2Tag_GetTagSize()
-			_APEv2_GetItemKeys()
-			_APEv2_GetItemValueBinary()
-			_APEv2_GetItemValueString()
-			_APEv2_RemoveTag()
-#ce ;========================================================================================================
 
-#cs #ID3.au3 ID3v2 FrameID Definitions# ;====================================================================
+#cs #ID3.au3 ID3v2 FrameID Definitions# ;========================================================================================
 
-FrameIDs as of ID3v2.3,ID3v2.2 (not all may work in UDF)
+	FrameIDs as of ID3v2.3,ID3v2.2 (not all may work in UDF)
 	AENC,CRA	Audio encryption
 	APIC,PIC 	Attached picture
 	COMM,COM 	Comments
@@ -166,7 +214,7 @@ FrameIDs as of ID3v2.3,ID3v2.2 (not all may work in UDF)
 	WPAY 		Payment
 	WPUB,WPB 	Publishers official webpage
 	WXXX,WXX 	User defined URL link frame
-Unofficial Frames Seen in the Wild:
+	Unofficial Frames Seen in the Wild:
 	These are frames that are not in the specs that programs are writing:
 	http://www.id3.org/Developer_Information
 	COMM 		w. desc="iTunNORM": iTunes Normalization settings
@@ -175,37 +223,37 @@ Unofficial Frames Seen in the Wild:
 	TSO2 		iTunes uses this for Album Artist sort order
 	TSOC 		iTunes uses this for Composer sort order
 	XRVA 		Experimental RVA2
-Deprecated ID3v2 frames (Not in ID3v2.4)
+	Deprecated ID3v2 frames (Not in ID3v2.4)
 	EQUA 	 	Equalization (This frame is replaced by the EQU2 frame)
 	IPLS 		Involved people list (This frame is replaced by the two frames TMCL, 'Musician credits list', and TIPL, 'Involved people list')
 	RVAD  		Relative volume adjustment (This frame is replaced by the RVA2 frame, 'Relative volume adjustment (2)')
 	TDAT  		Date (This frame is replaced by the TDRC frame, 'Recording time')
 	TIME  		Time (This frame is replaced by the TDRC frame, 'Recording time')
 	TORY  		Original release year (This frame is replaced by the TDOR frame, 'Original release time')
-  	TRDA  		Recording dates (This frame is replaced by the TDRC frame, 'Recording time')
+	TRDA  		Recording dates (This frame is replaced by the TDRC frame, 'Recording time')
 	TSIZ  		Size (The information contained in this frame is in the general case either trivial to calculate for the player or impossible for the
 					tagger to calculate. There is however no good use for such information. The frame is therefore completely deprecated.
 	TYER  		Year (This frame is replaced by the TDRC frame, 'Recording time')
-New frames in ID3v2.4
- 	ASPI 		Audio seek point index
-   	EQU2 		Equalisation (2)
-   	RVA2 		Relative volume adjustment (2)
-   	SEEK 		Seek frame
-   	SIGN 		Signature frame
-   	TDEN 		Encoding time
-   	TDOR 		Original release time
-   	TDRC 		Recording time
-   	TDRL 		Release time
-   	TDTG 		Tagging time
-   	TIPL 		Involved people list
-   	TMCL 		Musician credits list
-   	TMOO 		Mood
-   	TPRO 		Produced notice
-   	TSOA 		Album sort order
-   	TSOP 		Performer sort order
-  	TSOT 		Title sort order
-   	TSST 		Set subtitle
-#ce ;========================================================================================================
+	New frames in ID3v2.4
+	ASPI 		Audio seek point index
+	EQU2 		Equalisation (2)
+	RVA2 		Relative volume adjustment (2)
+	SEEK 		Seek frame
+	SIGN 		Signature frame
+	TDEN 		Encoding time
+	TDOR 		Original release time
+	TDRC 		Recording time
+	TDRL 		Release time
+	TDTG 		Tagging time
+	TIPL 		Involved people list
+	TMCL 		Musician credits list
+	TMOO 		Mood
+	TPRO 		Produced notice
+	TSOA 		Album sort order
+	TSOP 		Performer sort order
+	TSOT 		Title sort order
+	TSST 		Set subtitle
+#ce ;============================================================================================================================
 
 #cs #ID3.au3 UDF Latest Changes.......: ;====================================================================
 	Release 3.0 - 20120501
@@ -257,35 +305,29 @@ New frames in ID3v2.4
 	Release 3.4.1  - 201312
 		-removed File.au3 and String.au3 dependencies
 		-fixed _ID3v2Frame_SetFields() for the POPM tag
-	Release 3.5 TODO
-		-TODO -MPEG - handle VBR MP3 properly (XING Header) and (VBRI Header)
-			-http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#SideInfo
-		-TODO -ID3v2.4 - work with COMM frame from Foobar2000
-		-TODO -ID3v1 - Test Read/write of TAG+ Extended Tags
-		-TODO -ID3v2 - Add reading of extended header
-		-TODO -ID3v2.4 add ability to remove unsychronization of each frame
-		-TODO -add error flow up from _ID3v1 and _ID3v2 functions to _ID3 functions
-		-TODO Clean up code comments
+    Working for 3.4.2 Release
+		 -renaming variables with UDF naming rules
 #ce ;========================================================================================================
 
+; #VARIABLES# ===================================================================================================================
+Dim $sID3_TagFiles_Global = "" ;used to hold the filenames of Album Art jpg and/or the lyrics text file
+Dim $bID3v1_RawTagData_Global = 0, $bID3v1Plus_RawTagData_Global = 0, $bID3v2_RawTagData_Global = 0, $bAPEv2_RawTagData_Global = 0
+Dim $sID3v2_TagFrameIndex_Global = "", $sAPEv2_TagFrameIndex_Global = "", $iID3v2_OriginalTagSize_Global = 0
+; ===============================================================================================================================
 
-Dim $ID3Filenames = ""
-Dim $ID3v1_RawDataBinary = 0, $ID3v1Plus_RawDataBinary = 0, $ID3v2_RawDataBinary = 0, $APEv2_RawDataBinary = 0
-Dim $ID3v2_TagFrameString = "",$APEv2_TagFrameString = "", $ID3v2_OriginalTagSize = 0
 
-
-; #FUNCTION# ;===============================================================================
-; Function Name:    _ID3ReadTag($Filename, $iVersion = 0)
-; Description:      Reads ID3v1, ID3v2, and APEv2 binary data and stores them into global variables
-; Parameter(s):     $Filename 		- Filename of mp3 file include full path
-;					$iTagVersion		- ID3 Version to read (Default: 0 => ID3v1 & ID3v2)
-;										0 => Read ID3v1 & ID3v2 & APEv2
+; #FUNCTION# ;===================================================================================================================
+; Function Name....: _ID3ReadTag($Filename, $iVersion = 0)
+; Description......: Reads ID3v1, ID3v2, and APEv2 binary data and stores them into global variables
+; Parameter(s).....: $Filename     - Filename of mp3 file include full path
+;					 $iTagVersion  - ID3 Version to read (Default: 0 => ID3v1 & ID3v2 & APEv2)
+;										0 => Read ID3v1 & ID3v2 & APEv2 (Default)
 ;										1 => Read ID3v1 only
 ;										2 => Read ID3v2 only
 ;										3 => Read ID3v1 & ID3v2
 ;										4 => Read APEv2 only
-; Requirement(s):   This function must be used first in order to use other ID3.au3 functions.
-; Return Value(s):  On Success - Returns a string that denotes the tags and fields that exist in file.
+; Requirement(s)...: This function must be used first in order to use other ID3.au3 functions.
+; Return Value(s)..: On Success - Returns a string that denotes the tags and fields that exist in file.
 ;									@extended = (Can be a combination of the following:)
 ;											0 -> No Tags Found
 ;											1 -> ID3v1 Found
@@ -298,30 +340,30 @@ Dim $ID3v2_TagFrameString = "",$APEv2_TagFrameString = "", $ID3v2_OriginalTagSiz
 ;									 APEv2|ARTIST|ALBUM|GENRE|..."
 ;										Note: for ID3v2 the number that follows the colon indicates the number of
 ;												Frames that were found with the same FrameIDs.
-;                   On Failure - Returns 0 and @error = 1 for File not found
-; Author ........: joeyb1275
-; Modified.......: 20120501 by joeyb1275
-; ;==========================================================================================
+;                    On Failure - Returns 0 and @error = 1 for File not found
+; Author ..........: joeyb1275
+; Modified.........: 20120501 by joeyb1275
+; ;==============================================================================================================================
 Func _ID3ReadTag($Filename, $iTagVersion = 0)
 
 	;Reset all global vairables
-	$ID3Filenames = ""
-	$ID3v1_RawDataBinary = 0
-	$ID3v1Plus_RawDataBinary = 0
-	$ID3v2_RawDataBinary = 0
-	$APEv2_RawDataBinary = 0
-	$ID3v2_TagFrameString = ""
-	$APEv2_TagFrameString = ""
-	$ID3v2_OriginalTagSize = 0
+	$sID3_TagFiles_Global = ""
+	$bID3v1_RawTagData_Global = 0
+	$bID3v1Plus_RawTagData_Global = 0
+	$bID3v2_RawTagData_Global = 0
+	$bAPEv2_RawTagData_Global = 0
+	$sID3v2_TagFrameIndex_Global = ""
+	$sAPEv2_TagFrameIndex_Global = ""
+	$iID3v2_OriginalTagSize_Global = 0
 
 	Local $sTAGINFO = $Filename & @CRLF, $iTagVersionsFound = 0
-	$ID3v2_TagFrameString = $Filename
+	$sID3v2_TagFrameIndex_Global = $Filename
 	If Not(FileExists($Filename)) Then
 		SetError(1)
 		Return 0
 	EndIf
 
-	;Read ID3 Data from file and store in $ID3v2_RawDataBinary, $ID3v1_RawDataBinary, $APEv2_RawDataBinary
+	;Read ID3 Data from file and store in $bID3v2_RawTagData_Global, $bID3v1_RawTagData_Global, $bAPEv2_RawTagData_Global
 	;****************************************************************************************
 	Switch $iTagVersion
 		Case 0 ;All Tags
@@ -439,12 +481,12 @@ Func _ID3WriteTag($sFilename,$iTagVersion = -1)
 	;try to determine what tags have been read into memory
 	If $iTagVersion == -1 Then
 		Local $ID3v1_TagFound = False, $ID3v2_TagFound = False
-		Local $ID3v1_ID = BinaryToString(BinaryMid($ID3v1_RawDataBinary,1,3))
+		Local $ID3v1_ID = BinaryToString(BinaryMid($bID3v1_RawTagData_Global,1,3))
 		If StringCompare($ID3v1_ID,"TAG") == 0 Then
 			$ID3v1_TagFound = True
 			$iTagVersion = 1
 		EndIf
-		Local $sID3v2_TagID = BinaryToString(BinaryMid($ID3v2_RawDataBinary,1,3))
+		Local $sID3v2_TagID = BinaryToString(BinaryMid($bID3v2_RawTagData_Global,1,3))
 		If StringCompare($sID3v2_TagID,"ID3") == 0 Then
 			$ID3v2_TagFound = True
 			$iTagVersion = 2
@@ -547,15 +589,15 @@ EndFunc
 ;============================================================================================
 Func _ID3DeleteFiles()
 
-	If $ID3Filenames == "" Then Return 1
-	$aID3File = StringSplit($ID3Filenames,"|")
+	If $sID3_TagFiles_Global == "" Then Return 1
+	$aID3File = StringSplit($sID3_TagFiles_Global,"|")
 	For $i = 1 To $aID3File[0]
 		If FileExists($aID3File[$i]) Then
 			$ret = FileDelete($aID3File[$i])
 			If $ret == 0 Then Return 0
 		EndIf
 	Next
-	$ID3Filenames = ""
+	$sID3_TagFiles_Global = ""
 
 	Return 1
 
@@ -576,24 +618,24 @@ Func _ID3v1Tag_ReadFromFile($Filename)
 	Local $hfile = FileOpen($Filename,16) ;open in binary mode
 
 	FileSetPos($hfile, -128, 2)
-	$ID3v1_RawDataBinary = FileRead($hfile)
+	$bID3v1_RawTagData_Global = FileRead($hfile)
 
 	;ID3v1 Extended Tag Test Code
 	FileSetPos($hfile, -(128+227), 2) ;include 227 bytes to check for Extended tag Header
-	$ID3v1Plus_RawDataBinary = FileRead($hfile,227)
+	$bID3v1Plus_RawTagData_Global = FileRead($hfile,227)
 	FileClose($hfile)
 
 
-	$ID3v1PlusID = BinaryToString(BinaryMid($ID3v1Plus_RawDataBinary,1,4))
+	$ID3v1PlusID = BinaryToString(BinaryMid($bID3v1Plus_RawTagData_Global,1,4))
 	If StringCompare($ID3v1PlusID,"TAG+") == 0 Then
 		$ID3v1Plus_TagFound = True
 ;~ 		MsgBox(0,"$ID3v1PlusID",$ID3v1PlusID)
 	Else
-		$ID3v1Plus_RawDataBinary = Binary(0)
+		$bID3v1Plus_RawTagData_Global = Binary(0)
 	EndIf
 
 
-	Local $ID3v1_ID = BinaryToString(BinaryMid($ID3v1_RawDataBinary,1,3))
+	Local $ID3v1_ID = BinaryToString(BinaryMid($bID3v1_RawTagData_Global,1,3))
 	;MsgBox(0,"ID3v1 Tag ID",$ID3v1ID)
 	If StringCompare($ID3v1_ID,"TAG") == 0 Then
 		$ID3v1_TagFound = True
@@ -616,7 +658,7 @@ Func _ID3v1Tag_ReadFromFile($Filename)
 			$ID3v1_TAGINFO &= "|Title|Artist|Album|Year|Comment|Track|Genre|Version1|Speed|Start-Time|End-Time" & @CRLF
 		EndIf
 	Else
-		$ID3v1_RawDataBinary = Binary(0)
+		$bID3v1_RawTagData_Global = Binary(0)
 	EndIf
 
 	If $ID3v1_TagFound Then
@@ -626,7 +668,7 @@ Func _ID3v1Tag_ReadFromFile($Filename)
 
 EndFunc
 Func _ID3v1Tag_GetVersion()
-	Local $Track = Dec(StringTrimLeft(BinaryMid($ID3v1_RawDataBinary,126,2),2))
+	Local $Track = Dec(StringTrimLeft(BinaryMid($bID3v1_RawTagData_Global,126,2),2))
 	If $Track == 0 Then
 		Return "0"
 	Else
@@ -662,53 +704,53 @@ Func _ID3v1Field_GetString($FieldName)
 
 
 	Local $FieldString = "", $ID3v1Plus_TagFound = False
-	If BinaryLen($ID3v1_RawDataBinary) <= 4 Then ;Tag does not exist
+	If BinaryLen($bID3v1_RawTagData_Global) <= 4 Then ;Tag does not exist
 		Return $FieldString
 	EndIf
-	If BinaryLen($ID3v1Plus_RawDataBinary) > 4 Then
+	If BinaryLen($bID3v1Plus_RawTagData_Global) > 4 Then
 		$ID3v1Plus_TagFound = True
 	EndIf
 
 	Switch $FieldName
 		Case "Title"
-			$FieldString = BinaryToString(BinaryMid($ID3v1_RawDataBinary,4,30))
+			$FieldString = BinaryToString(BinaryMid($bID3v1_RawTagData_Global,4,30))
 			If $ID3v1Plus_TagFound Then
-				$FieldString &= BinaryToString(BinaryMid($ID3v1Plus_RawDataBinary,4,60))
+				$FieldString &= BinaryToString(BinaryMid($bID3v1Plus_RawTagData_Global,4,60))
 			EndIf
 		Case "Artist"
-			$FieldString = BinaryToString(BinaryMid($ID3v1_RawDataBinary,34,30))
+			$FieldString = BinaryToString(BinaryMid($bID3v1_RawTagData_Global,34,30))
 			If $ID3v1Plus_TagFound Then
-				$FieldString &= BinaryToString(BinaryMid($ID3v1Plus_RawDataBinary,64,60))
+				$FieldString &= BinaryToString(BinaryMid($bID3v1Plus_RawTagData_Global,64,60))
 			EndIf
 		Case "Album"
-			$FieldString = BinaryToString(BinaryMid($ID3v1_RawDataBinary,64,30))
+			$FieldString = BinaryToString(BinaryMid($bID3v1_RawTagData_Global,64,30))
 			If $ID3v1Plus_TagFound Then
-				$FieldString &= BinaryToString(BinaryMid($ID3v1Plus_RawDataBinary,124,60))
+				$FieldString &= BinaryToString(BinaryMid($bID3v1Plus_RawTagData_Global,124,60))
 			EndIf
 		Case "Year"
-			$FieldString = BinaryToString(BinaryMid($ID3v1_RawDataBinary,94,4))
+			$FieldString = BinaryToString(BinaryMid($bID3v1_RawTagData_Global,94,4))
 		Case "Comment"
-			Local $Track = Dec(Hex(BinaryMid($ID3v1_RawDataBinary,126,2)))
+			Local $Track = Dec(Hex(BinaryMid($bID3v1_RawTagData_Global,126,2)))
 			If $Track < 1000 And $Track > 0 Then
-				$FieldString = BinaryToString(BinaryMid($ID3v1_RawDataBinary,98,28))
+				$FieldString = BinaryToString(BinaryMid($bID3v1_RawTagData_Global,98,28))
 			Else
-				$FieldString = BinaryToString(BinaryMid($ID3v1_RawDataBinary,98,30))
+				$FieldString = BinaryToString(BinaryMid($bID3v1_RawTagData_Global,98,30))
 			EndIf
 		Case "Track"
-			Local $Track = Dec(Hex(BinaryMid($ID3v1_RawDataBinary,126,2)))
+			Local $Track = Dec(Hex(BinaryMid($bID3v1_RawTagData_Global,126,2)))
 			If $Track < 1000 And $Track > 0 Then
 				$FieldString = $Track
 			Else
 				$FieldString = ""
 			EndIf
 		Case "Genre"
-			Local $GenreID = Dec(Hex(BinaryMid($ID3v1_RawDataBinary,128,1)))
+			Local $GenreID = Dec(Hex(BinaryMid($bID3v1_RawTagData_Global,128,1)))
 			$FieldString = _h_ID3v1_GetGenreFromID($GenreID)
 			If $ID3v1Plus_TagFound Then
-				$FieldString = BinaryToString(BinaryMid($ID3v1Plus_RawDataBinary,185,30))
+				$FieldString = BinaryToString(BinaryMid($bID3v1Plus_RawTagData_Global,185,30))
 			EndIf
 		Case "Version1"
-			Local $Track = Dec(Hex(BinaryMid($ID3v1_RawDataBinary,126,2)))
+			Local $Track = Dec(Hex(BinaryMid($bID3v1_RawTagData_Global,126,2)))
 			If $Track == 0 Then
 				$FieldString = "ID3v1.0"
 			Else
@@ -717,7 +759,7 @@ Func _ID3v1Field_GetString($FieldName)
 		Case "Speed" ;TAG+
 			;0=unset, 1=slow, 2= medium, 3=fast, 4=hardcore
 			If $ID3v1Plus_TagFound Then
-				Switch BinaryMid($ID3v1Plus_RawDataBinary,184,1)
+				Switch BinaryMid($bID3v1Plus_RawTagData_Global,184,1)
 					Case 0
 						$FieldString = "unset"
 					Case 1
@@ -729,16 +771,16 @@ Func _ID3v1Field_GetString($FieldName)
 					Case 4
 						$FieldString = "hardcore"
 					Case Else
-						$FieldString =  BinaryToString(BinaryMid($ID3v1Plus_RawDataBinary,184,1))
+						$FieldString =  BinaryToString(BinaryMid($bID3v1Plus_RawTagData_Global,184,1))
 				EndSwitch
 			EndIf
 		Case "Start-Time" ;TAG+
 			If $ID3v1Plus_TagFound Then
-				$FieldString = BinaryToString(BinaryMid($ID3v1Plus_RawDataBinary,215,6))
+				$FieldString = BinaryToString(BinaryMid($bID3v1Plus_RawTagData_Global,215,6))
 			EndIf
 		Case "End-Time" ;TAG+
 			If $ID3v1Plus_TagFound Then
-				$FieldString = BinaryToString(BinaryMid($ID3v1Plus_RawDataBinary,221,6))
+				$FieldString = BinaryToString(BinaryMid($bID3v1Plus_RawTagData_Global,221,6))
 			EndIf
 	EndSwitch
 
@@ -754,7 +796,7 @@ Func _ID3v1Field_SetString($sFieldName,$sFieldString,$iPaddingType = -1)
 
 
 	;Create tag if it does not exist
-	Local $ID3v1_ID = BinaryToString(BinaryMid($ID3v1_RawDataBinary,1,3))
+	Local $ID3v1_ID = BinaryToString(BinaryMid($bID3v1_RawTagData_Global,1,3))
 	If StringCompare($ID3v1_ID,"TAG") <> 0 Then
 		_ID3v1Tag_CreateTag()
 	EndIf
@@ -780,62 +822,62 @@ Func _ID3v1Field_SetString($sFieldName,$sFieldString,$iPaddingType = -1)
 	Switch $sFieldName
 		 Case "Title"
 			$sFieldString = StringLeft($sFieldString,30)
-			$bID3v1_RawDataBinary_Temp = BinaryMid($ID3v1_RawDataBinary,1,3) & Binary($sFieldString)
+			$bID3v1_RawDataBinary_Temp = BinaryMid($bID3v1_RawTagData_Global,1,3) & Binary($sFieldString)
 			For $iPAD = 1 to (30 - BinaryLen($sFieldString))
 				$bID3v1_RawDataBinary_Temp &= $bPad
 			Next
-			$bID3v1_RawDataBinary_Temp &= BinaryMid($ID3v1_RawDataBinary,34)
-			$ID3v1_RawDataBinary = $bID3v1_RawDataBinary_Temp
+			$bID3v1_RawDataBinary_Temp &= BinaryMid($bID3v1_RawTagData_Global,34)
+			$bID3v1_RawTagData_Global = $bID3v1_RawDataBinary_Temp
 		 Case "Artist"
 			$sFieldString = StringLeft($sFieldString,30)
-			$bID3v1_RawDataBinary_Temp = BinaryMid($ID3v1_RawDataBinary,1,33) & Binary($sFieldString)
+			$bID3v1_RawDataBinary_Temp = BinaryMid($bID3v1_RawTagData_Global,1,33) & Binary($sFieldString)
 			For $iPAD = 1 to (30 - BinaryLen($sFieldString))
 				$bID3v1_RawDataBinary_Temp &= $bPad
 			Next
-			$bID3v1_RawDataBinary_Temp &= BinaryMid($ID3v1_RawDataBinary,64)
-			$ID3v1_RawDataBinary = $bID3v1_RawDataBinary_Temp
+			$bID3v1_RawDataBinary_Temp &= BinaryMid($bID3v1_RawTagData_Global,64)
+			$bID3v1_RawTagData_Global = $bID3v1_RawDataBinary_Temp
 		Case "Album"
 			$sFieldString = StringLeft($sFieldString,30)
-			$bID3v1_RawDataBinary_Temp = BinaryMid($ID3v1_RawDataBinary,1,63) & Binary($sFieldString)
+			$bID3v1_RawDataBinary_Temp = BinaryMid($bID3v1_RawTagData_Global,1,63) & Binary($sFieldString)
 			For $iPAD = 1 to (30 - BinaryLen($sFieldString))
 				$bID3v1_RawDataBinary_Temp &= $bPad
 			Next
-			$bID3v1_RawDataBinary_Temp &= BinaryMid($ID3v1_RawDataBinary,94)
-			$ID3v1_RawDataBinary = $bID3v1_RawDataBinary_Temp
+			$bID3v1_RawDataBinary_Temp &= BinaryMid($bID3v1_RawTagData_Global,94)
+			$bID3v1_RawTagData_Global = $bID3v1_RawDataBinary_Temp
 		Case "Year"
 			$sFieldString = StringLeft($sFieldString,4)
-			$bID3v1_RawDataBinary_Temp = BinaryMid($ID3v1_RawDataBinary,1,93) & Binary($sFieldString)
+			$bID3v1_RawDataBinary_Temp = BinaryMid($bID3v1_RawTagData_Global,1,93) & Binary($sFieldString)
 			For $iPAD = 1 to (4 - BinaryLen($sFieldString))
 				$bID3v1_RawDataBinary_Temp &= $bPad
 			Next
-			$bID3v1_RawDataBinary_Temp &= BinaryMid($ID3v1_RawDataBinary,98)
-			$ID3v1_RawDataBinary = $bID3v1_RawDataBinary_Temp
+			$bID3v1_RawDataBinary_Temp &= BinaryMid($bID3v1_RawTagData_Global,98)
+			$bID3v1_RawTagData_Global = $bID3v1_RawDataBinary_Temp
 		Case "Comment"
 			$sFieldString = StringLeft($sFieldString,28)
-			$bID3v1_RawDataBinary_Temp = BinaryMid($ID3v1_RawDataBinary,1,97) & Binary($sFieldString)
+			$bID3v1_RawDataBinary_Temp = BinaryMid($bID3v1_RawTagData_Global,1,97) & Binary($sFieldString)
 			For $iPAD = 1 to (28 - BinaryLen($sFieldString))
 				$bID3v1_RawDataBinary_Temp &= $bPad
 			Next
-			$bID3v1_RawDataBinary_Temp &= BinaryMid($ID3v1_RawDataBinary,126)
-			$ID3v1_RawDataBinary = $bID3v1_RawDataBinary_Temp
+			$bID3v1_RawDataBinary_Temp &= BinaryMid($bID3v1_RawTagData_Global,126)
+			$bID3v1_RawTagData_Global = $bID3v1_RawDataBinary_Temp
 
 		Case "Track"
 			$sFieldString = Binary("0x" & Hex(Number($sFieldString),4))
-			$bID3v1_RawDataBinary_Temp = BinaryMid($ID3v1_RawDataBinary,1,125) & $sFieldString
+			$bID3v1_RawDataBinary_Temp = BinaryMid($bID3v1_RawTagData_Global,1,125) & $sFieldString
 			For $iPAD = 1 to (2 - BinaryLen($sFieldString))
 				$bID3v1_RawDataBinary_Temp &= $bPad
 			Next
-			$bID3v1_RawDataBinary_Temp &= BinaryMid($ID3v1_RawDataBinary,128)
-			$ID3v1_RawDataBinary = $bID3v1_RawDataBinary_Temp
+			$bID3v1_RawDataBinary_Temp &= BinaryMid($bID3v1_RawTagData_Global,128)
+			$bID3v1_RawTagData_Global = $bID3v1_RawDataBinary_Temp
 		Case "Genre"
 			Local $GenreID = _h_ID3v1_GetGenreID($sFieldString)
 			$GenreID = Binary("0x" & Hex($GenreID,2))
-			$ID3v1_RawDataBinary = BinaryMid($ID3v1_RawDataBinary,1,127) & $GenreID
+			$bID3v1_RawTagData_Global = BinaryMid($bID3v1_RawTagData_Global,1,127) & $GenreID
 	EndSwitch
 EndFunc
 Func _ID3v1Tag_WriteToFile($sFilename)
 
-	Local $bID3v1TagToWrite = $ID3v1_RawDataBinary, $iFileSetPos = 0
+	Local $bID3v1TagToWrite = $bID3v1_RawTagData_Global, $iFileSetPos = 0
 
 	;Check if tag exists
 	If _ID3v1Tag_ReadFromFile($sFilename) <> "" Then
@@ -848,7 +890,7 @@ Func _ID3v1Tag_WriteToFile($sFilename)
 	FileWrite($hFile,$bID3v1TagToWrite)						;Write new tag
 	FileClose($hFile)
 
-	$ID3v1_RawDataBinary = $bID3v1TagToWrite
+	$bID3v1_RawTagData_Global = $bID3v1TagToWrite
 
 EndFunc
 Func _ID3v1Tag_RemoveTag($sFilename)
@@ -856,7 +898,7 @@ Func _ID3v1Tag_RemoveTag($sFilename)
 	Local $bFileData, $hOldFile, $hNewFile
 
 	If _ID3v1Tag_ReadFromFile($sFilename) <> "" Then
-		$ID3v1_RawDataBinary = Binary("0x00")
+		$bID3v1_RawTagData_Global = Binary("0x00")
 		$hOldFile = FileOpen($sFilename,16) 								;Open for read force binary
 		$bFileData = FileRead($hOldFile)									;Read all file data
 		FileClose($hOldFile)
@@ -866,53 +908,53 @@ Func _ID3v1Tag_RemoveTag($sFilename)
 		FileClose($hNewFile)
 	EndIf
 
-EndFunc
+EndFunc   ;==>_ID3v1Tag_RemoveTag
 Func _ID3v1Tag_CreateTag()
 	;Creates an empty ID3v1 Tag
-	$ID3v1_RawDataBinary = Binary("TAG")
+	$bID3v1_RawTagData_Global = Binary("TAG")
 	For $i=1 To 125
-		$ID3v1_RawDataBinary &= Binary("0x00")
+		$bID3v1_RawTagData_Global &= Binary("0x00")
 	Next
-EndFunc
+EndFunc   ;==>_ID3v1Tag_CreateTag
 
 Func _h_ID3v1_GetGenreFromID($iID)
 	;Author: YDY (Lazycat)  Thank you for writing all this out
-    Local $asGenre = StringSplit("Blues,Classic Rock,Country,Dance,Disco,Funk,Grunge,Hip-Hop," & _
-    "Jazz,Metal,New Age, Oldies,Other,Pop,R&B,Rap,Reggae,Rock,Techno,Industrial,Alternative," & _
-    "Ska,Death Metal,Pranks,Soundtrack,Euro-Techno,Ambient,Trip-Hop,Vocal,Jazz+Funk,Fusion," & _
-    "Trance,Classical,Instrumental,Acid,House,Game,Sound Clip,Gospel,Noise,Alternative Rock," & _
-    "Bass,Soul,Punk,Space,Meditative,Instrumental Pop,Instrumental Rock,Ethnic,Gothic,Darkwave," & _
-    "Techno-Industrial,Electronic,Pop-Folk,Eurodance,Dream,Southern Rock,Comedy,Cult,Gangsta," & _
-    "Top 40,Christian Rap,Pop/Funk,Jungle,Native US,Cabaret,New Wave,Psychadelic,Rave,Showtunes," & _
-    "Trailer,Lo-Fi,Tribal,Acid Punk,Acid Jazz,Polka,Retro,Musical,Rock & Roll,Hard Rock,Folk," & _
-    "Folk-Rock,National Folk,Swing,Fast Fusion,Bebob,Latin,Revival,Celtic,Bluegrass,Avantgarde," & _
-    "Gothic Rock,Progressive Rock,Psychedelic Rock,Symphonic Rock,Slow Rock,Big Band,Chorus," & _
-    "Easy Listening,Acoustic,Humour,Speech,Chanson,Opera,Chamber Music,Sonata,Symphony,Booty Bass," & _
-    "Primus,Porn Groove,Satire,Slow Jam,Club,Tango,Samba,Folklore,Ballad,Power Ballad,Rhytmic Soul," & _
-    "Freestyle,Duet,Punk Rock,Drum Solo,Acapella,Euro-House,Dance Hall,Goa,Drum & Bass,Club-House," & _
-    "Hardcore,Terror,Indie,BritPop,Negerpunk,Polsk Punk,Beat,Christian Gangsta,Heavy Metal,Black Metal," & _
-    "Crossover,Contemporary C,Christian Rock,Merengue,Salsa,Thrash Metal,Anime,JPop,SynthPop", ",")
-    If ($iID >= 0) and ($iID < 148) Then Return $asGenre[$iID + 1]
-    Return("")
-EndFunc
+	Local $asGenre = StringSplit("Blues,Classic Rock,Country,Dance,Disco,Funk,Grunge,Hip-Hop," & _
+			"Jazz,Metal,New Age, Oldies,Other,Pop,R&B,Rap,Reggae,Rock,Techno,Industrial,Alternative," & _
+			"Ska,Death Metal,Pranks,Soundtrack,Euro-Techno,Ambient,Trip-Hop,Vocal,Jazz+Funk,Fusion," & _
+			"Trance,Classical,Instrumental,Acid,House,Game,Sound Clip,Gospel,Noise,Alternative Rock," & _
+			"Bass,Soul,Punk,Space,Meditative,Instrumental Pop,Instrumental Rock,Ethnic,Gothic,Darkwave," & _
+			"Techno-Industrial,Electronic,Pop-Folk,Eurodance,Dream,Southern Rock,Comedy,Cult,Gangsta," & _
+			"Top 40,Christian Rap,Pop/Funk,Jungle,Native US,Cabaret,New Wave,Psychadelic,Rave,Showtunes," & _
+			"Trailer,Lo-Fi,Tribal,Acid Punk,Acid Jazz,Polka,Retro,Musical,Rock & Roll,Hard Rock,Folk," & _
+			"Folk-Rock,National Folk,Swing,Fast Fusion,Bebob,Latin,Revival,Celtic,Bluegrass,Avantgarde," & _
+			"Gothic Rock,Progressive Rock,Psychedelic Rock,Symphonic Rock,Slow Rock,Big Band,Chorus," & _
+			"Easy Listening,Acoustic,Humour,Speech,Chanson,Opera,Chamber Music,Sonata,Symphony,Booty Bass," & _
+			"Primus,Porn Groove,Satire,Slow Jam,Club,Tango,Samba,Folklore,Ballad,Power Ballad,Rhytmic Soul," & _
+			"Freestyle,Duet,Punk Rock,Drum Solo,Acapella,Euro-House,Dance Hall,Goa,Drum & Bass,Club-House," & _
+			"Hardcore,Terror,Indie,BritPop,Negerpunk,Polsk Punk,Beat,Christian Gangsta,Heavy Metal,Black Metal," & _
+			"Crossover,Contemporary C,Christian Rock,Merengue,Salsa,Thrash Metal,Anime,JPop,SynthPop", ",")
+	If ($iID >= 0) And ($iID < 148) Then Return $asGenre[$iID + 1]
+	Return ("")
+EndFunc   ;==>_h_ID3v1_GetGenreFromID
 Func _h_ID3v1_GetGenreID($sGrenre)
 	Local $asGenre = StringSplit("Blues,Classic Rock,Country,Dance,Disco,Funk,Grunge,Hip-Hop," & _
-    "Jazz,Metal,New Age, Oldies,Other,Pop,R&B,Rap,Reggae,Rock,Techno,Industrial,Alternative," & _
-    "Ska,Death Metal,Pranks,Soundtrack,Euro-Techno,Ambient,Trip-Hop,Vocal,Jazz+Funk,Fusion," & _
-    "Trance,Classical,Instrumental,Acid,House,Game,Sound Clip,Gospel,Noise,Alternative Rock," & _
-    "Bass,Soul,Punk,Space,Meditative,Instrumental Pop,Instrumental Rock,Ethnic,Gothic,Darkwave," & _
-    "Techno-Industrial,Electronic,Pop-Folk,Eurodance,Dream,Southern Rock,Comedy,Cult,Gangsta," & _
-    "Top 40,Christian Rap,Pop/Funk,Jungle,Native US,Cabaret,New Wave,Psychadelic,Rave,Showtunes," & _
-    "Trailer,Lo-Fi,Tribal,Acid Punk,Acid Jazz,Polka,Retro,Musical,Rock & Roll,Hard Rock,Folk," & _
-    "Folk-Rock,National Folk,Swing,Fast Fusion,Bebob,Latin,Revival,Celtic,Bluegrass,Avantgarde," & _
-    "Gothic Rock,Progressive Rock,Psychedelic Rock,Symphonic Rock,Slow Rock,Big Band,Chorus," & _
-    "Easy Listening,Acoustic,Humour,Speech,Chanson,Opera,Chamber Music,Sonata,Symphony,Booty Bass," & _
-    "Primus,Porn Groove,Satire,Slow Jam,Club,Tango,Samba,Folklore,Ballad,Power Ballad,Rhytmic Soul," & _
-    "Freestyle,Duet,Punk Rock,Drum Solo,Acapella,Euro-House,Dance Hall,Goa,Drum & Bass,Club-House," & _
-    "Hardcore,Terror,Indie,BritPop,Negerpunk,Polsk Punk,Beat,Christian Gangsta,Heavy Metal,Black Metal," & _
-    "Crossover,Contemporary C,Christian Rock,Merengue,Salsa,Thrash Metal,Anime,JPop,SynthPop", ",")
+			"Jazz,Metal,New Age, Oldies,Other,Pop,R&B,Rap,Reggae,Rock,Techno,Industrial,Alternative," & _
+			"Ska,Death Metal,Pranks,Soundtrack,Euro-Techno,Ambient,Trip-Hop,Vocal,Jazz+Funk,Fusion," & _
+			"Trance,Classical,Instrumental,Acid,House,Game,Sound Clip,Gospel,Noise,Alternative Rock," & _
+			"Bass,Soul,Punk,Space,Meditative,Instrumental Pop,Instrumental Rock,Ethnic,Gothic,Darkwave," & _
+			"Techno-Industrial,Electronic,Pop-Folk,Eurodance,Dream,Southern Rock,Comedy,Cult,Gangsta," & _
+			"Top 40,Christian Rap,Pop/Funk,Jungle,Native US,Cabaret,New Wave,Psychadelic,Rave,Showtunes," & _
+			"Trailer,Lo-Fi,Tribal,Acid Punk,Acid Jazz,Polka,Retro,Musical,Rock & Roll,Hard Rock,Folk," & _
+			"Folk-Rock,National Folk,Swing,Fast Fusion,Bebob,Latin,Revival,Celtic,Bluegrass,Avantgarde," & _
+			"Gothic Rock,Progressive Rock,Psychedelic Rock,Symphonic Rock,Slow Rock,Big Band,Chorus," & _
+			"Easy Listening,Acoustic,Humour,Speech,Chanson,Opera,Chamber Music,Sonata,Symphony,Booty Bass," & _
+			"Primus,Porn Groove,Satire,Slow Jam,Club,Tango,Samba,Folklore,Ballad,Power Ballad,Rhytmic Soul," & _
+			"Freestyle,Duet,Punk Rock,Drum Solo,Acapella,Euro-House,Dance Hall,Goa,Drum & Bass,Club-House," & _
+			"Hardcore,Terror,Indie,BritPop,Negerpunk,Polsk Punk,Beat,Christian Gangsta,Heavy Metal,Black Metal," & _
+			"Crossover,Contemporary C,Christian Rock,Merengue,Salsa,Thrash Metal,Anime,JPop,SynthPop", ",")
 
-	For $i = 1 to $asGenre[0]
+	For $i = 1 To $asGenre[0]
 		If $sGrenre == $asGenre[$i] Then
 			Return $i - 1
 		EndIf
@@ -921,7 +963,7 @@ Func _h_ID3v1_GetGenreID($sGrenre)
 	Return 12 ;Other
 
 
-EndFunc
+EndFunc   ;==>_h_ID3v1_GetGenreID
 
 
 
@@ -932,7 +974,7 @@ Func _ID3v2Tag_ReadFromFile($sFilename)
 	Local $bID3v2_TagData, $sTAGINFO = ""
 	Local $hID3v2_File = FileOpen($sFilename,16) ;mode = Force binary
 
-	$ID3v2_TagFrameString = ""
+	$sID3v2_TagFrameIndex_Global = ""
 	If Not(FileExists($sFilename)) Then
 		SetError(1)
 		Return $sTAGINFO
@@ -940,9 +982,9 @@ Func _ID3v2Tag_ReadFromFile($sFilename)
 
 
 	;Local $bID3v2_TagHeader = FileRead($hID3v2_File, 10) ;not true for ID3v2.2
-	$ID3v2_RawDataBinary = FileRead($hID3v2_File, 10) ;not true for ID3v2.2
+	$bID3v2_RawTagData_Global = FileRead($hID3v2_File, 10) ;not true for ID3v2.2
 
-	Local $sID3v2_TagID = BinaryToString(BinaryMid($ID3v2_RawDataBinary,1,3))
+	Local $sID3v2_TagID = BinaryToString(BinaryMid($bID3v2_RawTagData_Global,1,3))
 	If (StringCompare($sID3v2_TagID,"ID3") <> 0) Then
 		FileClose($hID3v2_File)
 		SetError(1)
@@ -950,7 +992,7 @@ Func _ID3v2Tag_ReadFromFile($sFilename)
 	EndIf
 
 
-	If $ID3v2_RawDataBinary == -1 Then  ;ID3v2 Tag was not found
+	If $bID3v2_RawTagData_Global == -1 Then  ;ID3v2 Tag was not found
 		FileClose($hID3v2_File)
 		SetError(1)
 		Return $sTAGINFO
@@ -958,11 +1000,11 @@ Func _ID3v2Tag_ReadFromFile($sFilename)
 
 	Local $iID3v2_TagSize = _ID3v2Tag_GetTagSize()
 ;~ 	MsgBox(0,"$iID3v2_TagSize",$iID3v2_TagSize)
-	$ID3v2_OriginalTagSize = $iID3v2_TagSize
+	$iID3v2_OriginalTagSize_Global = $iID3v2_TagSize
 	;Read in Rest of ID3v2 Tag Data
-	$ID3v2_RawDataBinary &= Binary(FileRead($hID3v2_File,$iID3v2_TagSize))
+	$bID3v2_RawTagData_Global &= Binary(FileRead($hID3v2_File,$iID3v2_TagSize))
 
-;~ 	$ID3v2_RawDataBinary &= Binary(FileRead($hID3v2_File,50)) ;add 50 to get MPEG Header
+;~ 	$bID3v2_RawTagData_Global &= Binary(FileRead($hID3v2_File,50)) ;add 50 to get MPEG Header
 
 	FileClose($hID3v2_File)
 
@@ -983,7 +1025,7 @@ Func _h_ID3v2Tag_EnumerateFrameIDs()
 	Local $bFrameHeader, $iTagVersion = 3, $iFrameSize, $sFrameID = "", $iZPAD = 0, $sID3v2_TAGINFO = ""
 	Local $iReadBytesOffset = 10, $iFrameHeaderLen
 	Local $iTagSize = _ID3v2Tag_GetTagSize()
-	$ID3v2_TagFrameString = ""
+	$sID3v2_TagFrameIndex_Global = ""
 	If _ID3v2Tag_GetHeaderFlags("ExtendedHeader") <> 0 Then
 		;ID3v2_TagSize include this ExtendedHeader
 ;~ 		MsgBox(0,"_GetID3v2_TagFlags",_ID3v2Tag_GetHeaderFlags("ExtendedHeader"))
@@ -1004,7 +1046,7 @@ Func _h_ID3v2Tag_EnumerateFrameIDs()
 	;Scan Tag for all Fields
 	While $iBytesRead < $iTagSize
 
-		$bFrameHeader = BinaryMid($ID3v2_RawDataBinary,$iBytesRead + 1,$iFrameHeaderLen)
+		$bFrameHeader = BinaryMid($bID3v2_RawTagData_Global,$iBytesRead + 1,$iFrameHeaderLen)
 		$iBytesRead += $iFrameHeaderLen
 		$sFrameID = _h_ID3v2FrameHeader_GetFrameID($bFrameHeader)
 
@@ -1024,9 +1066,9 @@ Func _h_ID3v2Tag_EnumerateFrameIDs()
 ;~ 					;FrameSize is the number of bytes NOT including Unsynchronisation
 ;~ 					Local $iOriginalFrameSize = $iFrameSize
 ;~ 					For $ibytestep=0 To $iFrameSize
-;~ 						MsgBox(0,"Binary",BinaryMid($ID3v2_RawDataBinary,$iBytesRead + 1 + $ibytestep,3))
-;~ 						If BinaryMid($ID3v2_RawDataBinary,$iBytesRead + 1 + $ibytestep,1) == Binary("0xFF") Then
-;~ 							If BinaryMid($ID3v2_RawDataBinary,$iBytesRead + 1 + $ibytestep + 1,1) == Binary("0x00") Then
+;~ 						MsgBox(0,"Binary",BinaryMid($bID3v2_RawTagData_Global,$iBytesRead + 1 + $ibytestep,3))
+;~ 						If BinaryMid($bID3v2_RawTagData_Global,$iBytesRead + 1 + $ibytestep,1) == Binary("0xFF") Then
+;~ 							If BinaryMid($bID3v2_RawTagData_Global,$iBytesRead + 1 + $ibytestep + 1,1) == Binary("0x00") Then
 ;~ 								$iFrameSize += 1
 ;~ 								$iBytesRead += 1
 ;~ 								MsgBox(0,"$iFrameSize",$iFrameSize)
@@ -1043,19 +1085,19 @@ Func _h_ID3v2Tag_EnumerateFrameIDs()
 			If Dec(Hex(BinaryMid($bFrameHeader,1,2),4)) == 0 Then
 ;~ 				MsgBox(0,"$bFrameHeader",$bFrameHeader)
 				$iZPAD = ($iTagSize + 10) - ($iBytesRead - $iFrameHeaderLen)
-;~ 				MsgBox(0,"ZPAD Start",BinaryToString(BinaryMid($ID3v2_RawDataBinary,$iBytesRead - $iFrameHeaderLen)))
-				$ID3v2_TagFrameString &= "ZPAD" & "|" & String($iBytesRead - $iFrameHeaderLen + 1) & "|" & $iZPAD & @CRLF
+;~ 				MsgBox(0,"ZPAD Start",BinaryToString(BinaryMid($bID3v2_RawTagData_Global,$iBytesRead - $iFrameHeaderLen)))
+				$sID3v2_TagFrameIndex_Global &= "ZPAD" & "|" & String($iBytesRead - $iFrameHeaderLen + 1) & "|" & $iZPAD & @CRLF
 				ExitLoop
 			Else
 ;~ 				MsgBox(0,"Error Check Scan Frame 1",$sFrameID) ;Need to error check scan
 ;~ 				MsgBox(0,"$bFrameHeader",$bFrameHeader)
 				;This could be ZPAD with first byte wrong
 ;~ 				MsgBox(0,"$iBytesRead",$iBytesRead & " of " & $iTagSize)
-;~ 				MsgBox(0,"20 bytes",BinaryMid($ID3v2_RawDataBinary,$iBytesRead - 6,20))
+;~ 				MsgBox(0,"20 bytes",BinaryMid($bID3v2_RawTagData_Global,$iBytesRead - 6,20))
 				$iBytesRead -= Round(($iFrameSize/8 + 2))
 ;~ 				MsgBox(0,"$iBytesRead",$iBytesRead)
 				For $itest = 1 To ($iBytesRead + $iFrameSize + 20)
-					$bFrameHeader = BinaryMid($ID3v2_RawDataBinary,$iBytesRead + 1 + $itest,$iFrameHeaderLen)
+					$bFrameHeader = BinaryMid($bID3v2_RawTagData_Global,$iBytesRead + 1 + $itest,$iFrameHeaderLen)
 					$sFrameID = _h_ID3v2FrameHeader_GetFrameID($bFrameHeader)
 					If $sFrameID <> -1 Then
 						$iBytesRead += $itest
@@ -1072,8 +1114,8 @@ Func _h_ID3v2Tag_EnumerateFrameIDs()
 		;****************************************************************************************
 
 
-		$ID3v2_TagFrameString &= $sFrameID & "|" & String($iBytesRead + 1) & "|" & String($iFrameSize) & @CRLF
-;~ 		MsgBox(0,"$ID3v2_TagFrameString",$ID3v2_TagFrameString)
+		$sID3v2_TagFrameIndex_Global &= $sFrameID & "|" & String($iBytesRead + 1) & "|" & String($iFrameSize) & @CRLF
+;~ 		MsgBox(0,"$sID3v2_TagFrameIndex_Global",$sID3v2_TagFrameIndex_Global)
 		$iBytesRead += $iFrameSize
 ;~ 		MsgBox(0,"$iBytesRead",$iBytesRead & " of " & $iTagSize)
 		$sFrameIndex = StringInStr($sID3v2_TAGINFO,$sFrameID)
@@ -1093,7 +1135,7 @@ Func _h_ID3v2Tag_EnumerateFrameIDs()
 	;TODO Check MPEG Header
 ;~ 	Local $sMPEG_TagHeader = _MPEG_GetTagHeader()
 ;~ 	If $sMPEG_TagHeader <> -1 Then
-;~ 		$ID3v2_TagFrameString &= "MPEG" & "|" & $sMPEG_TagHeader & @CRLF
+;~ 		$sID3v2_TagFrameIndex_Global &= "MPEG" & "|" & $sMPEG_TagHeader & @CRLF
 ;~ 	EndIf
 
 	Return $sID3v2_TAGINFO & @CRLF
@@ -1120,9 +1162,9 @@ Func _h_ID3v2Tag_RemoveUnsynchronisation()
 	;Find all %11111111 00000000 111xxxxx = 0xFF 0x00 0xE0 and 0xFF 0x00 0x00
 	Local $aIndex[1]
 	$aIndex[0] = 0
-	For $ibyte=1 To BinaryLen($ID3v2_RawDataBinary)-1
-		If BinaryMid($ID3v2_RawDataBinary,$ibyte,1) == Binary("0xFF") Then
-			If BinaryMid($ID3v2_RawDataBinary,$ibyte+1,1) == Binary("0x00") Then
+	For $ibyte=1 To BinaryLen($bID3v2_RawTagData_Global)-1
+		If BinaryMid($bID3v2_RawTagData_Global,$ibyte,1) == Binary("0xFF") Then
+			If BinaryMid($bID3v2_RawTagData_Global,$ibyte+1,1) == Binary("0x00") Then
 				_ArrayAdd($aIndex,$ibyte)
 				$aIndex[0] += 1
 			EndIf
@@ -1130,27 +1172,27 @@ Func _h_ID3v2Tag_RemoveUnsynchronisation()
 	Next
 ;~ 	_ArrayDisplay($aIndex)
 
-	Local $ID3v2_RawDataBinary_Temp = BinaryMid($ID3v2_RawDataBinary,1,5)
-	Local $bCurrentTagFlags = BinaryMid($ID3v2_RawDataBinary,6,1)
-	$ID3v2_RawDataBinary_Temp &= Binary("0x" & Hex(BitAND(127, Dec(Hex($bCurrentTagFlags,2))),2)) ;Clear unsynchronisation flag in Tag header
-	$ID3v2_RawDataBinary_Temp &= BinaryMid($ID3v2_RawDataBinary,7,$aIndex[1])
+	Local $bID3v2_RawTagData_Global_Temp = BinaryMid($bID3v2_RawTagData_Global,1,5)
+	Local $bCurrentTagFlags = BinaryMid($bID3v2_RawTagData_Global,6,1)
+	$bID3v2_RawTagData_Global_Temp &= Binary("0x" & Hex(BitAND(127, Dec(Hex($bCurrentTagFlags,2))),2)) ;Clear unsynchronisation flag in Tag header
+	$bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global,7,$aIndex[1])
 	Local $Start, $Length = $aIndex[1]
 	For $ibyte = 1 To $aIndex[0]-1
-		$ID3v2_RawDataBinary_Temp &= BinaryMid($ID3v2_RawDataBinary,$aIndex[$ibyte] + 2,$aIndex[$ibyte+1]-$aIndex[$ibyte]-1)
+		$bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global,$aIndex[$ibyte] + 2,$aIndex[$ibyte+1]-$aIndex[$ibyte]-1)
 	Next
-	$ID3v2_RawDataBinary_Temp &= BinaryMid($ID3v2_RawDataBinary,$aIndex[$aIndex[0]]+2)
+	$bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global,$aIndex[$aIndex[0]]+2)
 
-	$ID3v2_RawDataBinary = $ID3v2_RawDataBinary_Temp
+	$bID3v2_RawTagData_Global = $bID3v2_RawTagData_Global_Temp
 
 EndFunc
 Func _ID3v2Tag_WriteToFile($sFilename)
 
 	Local $hNewFile, $hFile
-	Local $bNewFileData = $ID3v2_RawDataBinary
-	Local $bNewID3v2_RawDataBinary = $ID3v2_RawDataBinary
+	Local $bNewFileData = $bID3v2_RawTagData_Global
+	Local $bNewID3v2_RawDataBinary = $bID3v2_RawTagData_Global
 
 	;Check if tag does not exist
-	Local $sID3v2_TagID = BinaryToString(BinaryMid($ID3v2_RawDataBinary,1,3))
+	Local $sID3v2_TagID = BinaryToString(BinaryMid($bID3v2_RawTagData_Global,1,3))
 	If (StringCompare($sID3v2_TagID,"ID3") <> 0) Then
 		_ID3v2Tag_CreateTag(4)
 	EndIf
@@ -1158,7 +1200,7 @@ Func _ID3v2Tag_WriteToFile($sFilename)
 	;Write MP3 Data
 	;****************************************************************************************
 	$hFile = FileOpen($sFilename,16) 				;Read mode force binary
-	FileSetPos($hFile,$ID3v2_OriginalTagSize,0)  	;Skip old tag data
+	FileSetPos($hFile,$iID3v2_OriginalTagSize_Global,0)  	;Skip old tag data
 	$bNewFileData &= FileRead($hFile)				;Read all file data after old tag
 	FileClose($hFile)
 	$hNewFile = Fileopen($sFilename,2+8+16) 		;Open File and Erase all
@@ -1166,7 +1208,7 @@ Func _ID3v2Tag_WriteToFile($sFilename)
 	FileClose($hNewFile)
 	;****************************************************************************************
 
-    $ID3v2_RawDataBinary = $bNewID3v2_RawDataBinary
+    $bID3v2_RawTagData_Global = $bNewID3v2_RawDataBinary
 EndFunc
 Func _ID3v2Tag_RemoveTag($sFilename)
 
@@ -1190,24 +1232,24 @@ Func _ID3v2Tag_CreateTag($iVersion)
 	;ID3v2 size 			4 * %0xxxxxxx
 
 	;ID3v2/file identifier
-	$ID3v2_RawDataBinary = Binary("ID3")
+	$bID3v2_RawTagData_Global = Binary("ID3")
 
 	;ID3v2 version
 	Switch $iVersion
 		Case 2
-			$ID3v2_RawDataBinary &= Binary("0x02")
+			$bID3v2_RawTagData_Global &= Binary("0x02")
 		Case 3
-			$ID3v2_RawDataBinary &= Binary("0x03")
+			$bID3v2_RawTagData_Global &= Binary("0x03")
 		Case 4
-			$ID3v2_RawDataBinary &= Binary("0x04")
+			$bID3v2_RawTagData_Global &= Binary("0x04")
 	EndSwitch
-	$ID3v2_RawDataBinary &= Binary("0x00")
+	$bID3v2_RawTagData_Global &= Binary("0x00")
 
 	;ID3v2 Flags set to zero
-	$ID3v2_RawDataBinary &= Binary("0x00")
+	$bID3v2_RawTagData_Global &= Binary("0x00")
 
 	;ID3v2 Size (Tag Bytes - 10) not including tag header - SyncSafe integer
-	$ID3v2_RawDataBinary &= Binary("0x00") &  Binary("0x00") &  Binary("0x00") &  Binary("0x00")
+	$bID3v2_RawTagData_Global &= Binary("0x00") &  Binary("0x00") &  Binary("0x00") &  Binary("0x00")
 
 	;Could add ZPAD
 
@@ -1225,7 +1267,7 @@ EndFunc
 Func _ID3v2Tag_GetVersion()
 	;Get Tag Version
 
-	Local $sVersion = String(Number(BinaryMid($ID3v2_RawDataBinary,4,1))) & "." & String(Number(BinaryMid($ID3v2_RawDataBinary,5,1)))
+	Local $sVersion = String(Number(BinaryMid($bID3v2_RawTagData_Global,4,1))) & "." & String(Number(BinaryMid($bID3v2_RawTagData_Global,5,1)))
 ;~ 	MsgBox(0,"$sVersion",$sVersion)
 
 	Return $sVersion
@@ -1241,7 +1283,7 @@ Func _ID3v2Tag_GetHeaderFlags($sFlagReturnType = -1)
 		;b - Extended header
 		;c - Experimental indicator
 		;d - Footer present (ID3v2.4)
-	Local $bTagFlags = BinaryMid($ID3v2_RawDataBinary,6,1)
+	Local $bTagFlags = BinaryMid($bID3v2_RawTagData_Global,6,1)
 
 	If $sFlagReturnType == "RawBinary" Then
 		Return $bTagFlags
@@ -1296,13 +1338,13 @@ Func _ID3v2Tag_GetTagSize($bTagHeaderData = -1)
 	Local $byte1, $byte2, $byte3, $byte4
 
 	If $bTagHeaderData == -1 Then
-		If BinaryLen($ID3v2_RawDataBinary) < 10 Then
+		If BinaryLen($bID3v2_RawTagData_Global) < 10 Then
 			Return 0
 		EndIf
-		$byte1 = BitAND(BinaryMid($ID3v2_RawDataBinary,7,1),127)
-		$byte2 = BitAND(BinaryMid($ID3v2_RawDataBinary,8,1),127)
-		$byte3 = BitAND(BinaryMid($ID3v2_RawDataBinary,9,1),127)
-		$byte4 = BitAND(BinaryMid($ID3v2_RawDataBinary,10,1),127)
+		$byte1 = BitAND(BinaryMid($bID3v2_RawTagData_Global,7,1),127)
+		$byte2 = BitAND(BinaryMid($bID3v2_RawTagData_Global,8,1),127)
+		$byte3 = BitAND(BinaryMid($bID3v2_RawTagData_Global,9,1),127)
+		$byte4 = BitAND(BinaryMid($bID3v2_RawTagData_Global,10,1),127)
 	Else
 		$byte1 = BitAND(BinaryMid($bTagHeaderData,7,1),127)
 		$byte2 = BitAND(BinaryMid($bTagHeaderData,8,1),127)
@@ -1338,15 +1380,15 @@ Func _ID3v2Tag_GetExtendedHeader($sReturnType = -1)
 		Case "2.0"
 
 		Case "3.0"
-;~ 			$bExtendedHeader = BinaryMid($ID3v2_RawDataBinary,11,10)
-;~ 			$iExtHeaderSize = Number(BinaryMid($ID3v2_RawDataBinary,11,4))
-;~ 			$sExtFlagsBin = _HexToBin_ID3(StringTrimLeft(BinaryMid($ID3v2_RawDataBinary,15,2),2))
-;~ 			$iSizeOfPadding = Number(BinaryMid($ID3v2_RawDataBinary,17,4))
+;~ 			$bExtendedHeader = BinaryMid($bID3v2_RawTagData_Global,11,10)
+;~ 			$iExtHeaderSize = Number(BinaryMid($bID3v2_RawTagData_Global,11,4))
+;~ 			$sExtFlagsBin = _HexToBin_ID3(StringTrimLeft(BinaryMid($bID3v2_RawTagData_Global,15,2),2))
+;~ 			$iSizeOfPadding = Number(BinaryMid($bID3v2_RawTagData_Global,17,4))
 ;~ 			$sExtendedHeader = "ExtendedHeaderSize" & "|" & $iExtHeaderSize & @CRLF & _
 ;~ 							   "ExtendedFlags" & "|" & $sExtFlagsBin & @CRLF & _
 ;~ 							   "SizeOfPadding" & "|" & $iSizeOfPadding
 		Case "4.0"
-			$bExtendedHeader = BinaryMid($ID3v2_RawDataBinary,11,10)
+			$bExtendedHeader = BinaryMid($bID3v2_RawTagData_Global,11,10)
 			;MsgBox(0,"$bExtendedHeader",$bExtendedHeader)
 		Case Else
 
@@ -1354,7 +1396,7 @@ Func _ID3v2Tag_GetExtendedHeader($sReturnType = -1)
 
 
 	If $sReturnType == "Binary" Then
-		Return BinaryMid($ID3v2_RawDataBinary,11,10)
+		Return BinaryMid($bID3v2_RawTagData_Global,11,10)
 	EndIf
 
 	If $sReturnType == -1 Then
@@ -1367,12 +1409,12 @@ Func _ID3v2Tag_GetFooter()
 
 EndFunc
 Func _ID3v2Tag_GetZPAD()
-	Local $iFrameInfo = StringInStr($ID3v2_TagFrameString,"ZPAD")
-	Local $aFrameIDSplit = StringSplit($ID3v2_TagFrameString, "ZPAD", 1)
+	Local $iFrameInfo = StringInStr($sID3v2_TagFrameIndex_Global,"ZPAD")
+	Local $aFrameIDSplit = StringSplit($sID3v2_TagFrameIndex_Global, "ZPAD", 1)
 	Local $iNumFrameIDs = $aFrameIDSplit[0] - 1
 ;~ 	_ArrayDisplay($aFrameIDSplit)
 
-	Local $FrameInfoCut = StringMid($ID3v2_TagFrameString,$iFrameInfo)
+	Local $FrameInfoCut = StringMid($sID3v2_TagFrameIndex_Global,$iFrameInfo)
 	Local $iFrameInfoEnd = StringInStr($FrameInfoCut,@CRLF)
 	$FrameInfoCut = StringMid($FrameInfoCut,1,$iFrameInfoEnd-1)
 
@@ -1392,16 +1434,16 @@ Func _ID3v2Frame_GetBinary($sFrameID,$iFrameID_Index = 1, $fIncludeHeader = Fals
 	;TODO include FRAMEID and Frame Header
 
 	;First check to make sure the tag was scanned for FrameIDs
-	Local $aFrameSplit = StringSplit($ID3v2_TagFrameString, @CRLF, 1)
+	Local $aFrameSplit = StringSplit($sID3v2_TagFrameIndex_Global, @CRLF, 1)
 	Local $iNumFrames = $aFrameSplit[0]
 	If $iNumFrames <= 1 Then
 		_h_ID3v2Tag_EnumerateFrameIDs()
 	EndIf
 
 
-	;First Get Start Byte and Frame Length from $ID3v2_TagFrameString
-	Local $iFrameInfo = StringInStr($ID3v2_TagFrameString,$sFrameID,-1,$iFrameID_Index)
-    Local $aFrameIDSplit = StringSplit($ID3v2_TagFrameString, $sFrameID, 1)
+	;First Get Start Byte and Frame Length from $sID3v2_TagFrameIndex_Global
+	Local $iFrameInfo = StringInStr($sID3v2_TagFrameIndex_Global,$sFrameID,-1,$iFrameID_Index)
+    Local $aFrameIDSplit = StringSplit($sID3v2_TagFrameIndex_Global, $sFrameID, 1)
 	Local $iNumFrameIDs = $aFrameIDSplit[0] - 1
 
 	If $iFrameInfo == 0 Then ;$iFrameID_Index was higher then Number of Frames that Exist
@@ -1410,7 +1452,7 @@ Func _ID3v2Frame_GetBinary($sFrameID,$iFrameID_Index = 1, $fIncludeHeader = Fals
 	EndIf
 
 
-	Local $FrameInfoCut = StringMid($ID3v2_TagFrameString,$iFrameInfo)
+	Local $FrameInfoCut = StringMid($sID3v2_TagFrameIndex_Global,$iFrameInfo)
 	Local $iFrameInfoEnd = StringInStr($FrameInfoCut,@CRLF)
 	$FrameInfoCut = StringMid($FrameInfoCut,1,$iFrameInfoEnd-1)
 
@@ -1428,7 +1470,7 @@ Func _ID3v2Frame_GetBinary($sFrameID,$iFrameID_Index = 1, $fIncludeHeader = Fals
 	EndIf
 
 
-	Local $bFrameData = BinaryMid($ID3v2_RawDataBinary,$FrameStart,$FrameSize)
+	Local $bFrameData = BinaryMid($bID3v2_RawTagData_Global,$FrameStart,$FrameSize)
 
 ;~ 	MsgBox(0,"bFrameData",$bFrameData)
 
@@ -1455,7 +1497,7 @@ Func _ID3v2Frame_SetBinary($sFrameID,$bNewFrameData,$iFrameID_Index = 1)
 	EndIf
 
 	;If ID3v2 does not exists then add new ID3v2.4 Tag
-	If BinaryLen($ID3v2_RawDataBinary) < 10 Then
+	If BinaryLen($bID3v2_RawTagData_Global) < 10 Then
 		_ID3v2Tag_CreateTag(4)
 	EndIf
 
@@ -1489,16 +1531,16 @@ Func _ID3v2Frame_SetBinary($sFrameID,$bNewFrameData,$iFrameID_Index = 1)
 	Local $iTagSizeSyncSafe =  BitShift($byte4,-24) + BitShift($byte3,-16) + BitShift($byte2,-8) + $byte1
 
 
-	Local $ID3v2_RawDataBinary_Temp = BinaryMid($ID3v2_RawDataBinary,1,6)
-	$ID3v2_RawDataBinary_Temp &= Binary("0x" & Hex($iTagSizeSyncSafe,8))
+	Local $bID3v2_RawTagData_Global_Temp = BinaryMid($bID3v2_RawTagData_Global,1,6)
+	$bID3v2_RawTagData_Global_Temp &= Binary("0x" & Hex($iTagSizeSyncSafe,8))
 
 
 	If Not $fAddNewFrame Then
 		;Find Old Frame and Replace
-		Local $iFrameInfo = StringInStr($ID3v2_TagFrameString,$sFrameID,-1,$iFrameID_Index)
-		Local $aFrameIDSplit = StringSplit($ID3v2_TagFrameString, $sFrameID, 1)
+		Local $iFrameInfo = StringInStr($sID3v2_TagFrameIndex_Global,$sFrameID,-1,$iFrameID_Index)
+		Local $aFrameIDSplit = StringSplit($sID3v2_TagFrameIndex_Global, $sFrameID, 1)
 		Local $iNumFrameIDs = $aFrameIDSplit[0] - 1
-		Local $FrameInfoCut = StringMid($ID3v2_TagFrameString,$iFrameInfo)
+		Local $FrameInfoCut = StringMid($sID3v2_TagFrameIndex_Global,$iFrameInfo)
 		Local $iFrameInfoEnd = StringInStr($FrameInfoCut,@CRLF)
 		$FrameInfoCut = StringMid($FrameInfoCut,1,$iFrameInfoEnd-1)
 		$Firstpipe = StringInStr($FrameInfoCut,'|')
@@ -1506,29 +1548,29 @@ Func _ID3v2Frame_SetBinary($sFrameID,$bNewFrameData,$iFrameID_Index = 1)
 		Local $FrameStart = Number(StringMid($FrameInfoCut,$Firstpipe+1,($Lastpipe)-($Firstpipe+1)))
 		Local $FrameSize = Number(StringMid($FrameInfoCut,$Lastpipe+1))
 
-		Local $bOldFrameData = BinaryMid($ID3v2_RawDataBinary,$FrameStart,$FrameSize)
+		Local $bOldFrameData = BinaryMid($bID3v2_RawTagData_Global,$FrameStart,$FrameSize)
 
 		If ($FrameStart - 20) > 1 Then
-			$ID3v2_RawDataBinary_Temp &= BinaryMid($ID3v2_RawDataBinary,11,$FrameStart - 21) ;read up to old frame
+			$bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global,11,$FrameStart - 21) ;read up to old frame
 		EndIf
 		If $bNewFrameData <> -1 Then
-			$ID3v2_RawDataBinary_Temp &= $bNewFrameData ;read in new Frame
+			$bID3v2_RawTagData_Global_Temp &= $bNewFrameData ;read in new Frame
 		EndIf
 
-;~ 		MsgBox(0,"Compare",$ID3v2_RawDataBinary_Temp & @CRLF & @CRLF & BinaryMid($ID3v2_RawDataBinary,1,$FrameStart + $iOldFrameSize - 1))
+;~ 		MsgBox(0,"Compare",$bID3v2_RawTagData_Global_Temp & @CRLF & @CRLF & BinaryMid($bID3v2_RawTagData_Global,1,$FrameStart + $iOldFrameSize - 1))
 
 
-		$ID3v2_RawDataBinary_Temp &= BinaryMid($ID3v2_RawDataBinary,$FrameStart + $FrameSize) ;read in rest of TAG
+		$bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global,$FrameStart + $FrameSize) ;read in rest of TAG
 
 	Else
 
 		Local $FrameStart = $iOldTagSize + 10 + 1
-		Local $iFrameInfo = StringInStr($ID3v2_TagFrameString,"ZPAD")
+		Local $iFrameInfo = StringInStr($sID3v2_TagFrameIndex_Global,"ZPAD")
 		If $iFrameInfo <> 0 Then
 			;Add New to end of frame before ZPAD
-			Local $aFrameIDSplit = StringSplit($ID3v2_TagFrameString, "ZPAD", 1)
+			Local $aFrameIDSplit = StringSplit($sID3v2_TagFrameIndex_Global, "ZPAD", 1)
 			Local $iNumFrameIDs = $aFrameIDSplit[0] - 1
-			Local $FrameInfoCut = StringMid($ID3v2_TagFrameString,$iFrameInfo)
+			Local $FrameInfoCut = StringMid($sID3v2_TagFrameIndex_Global,$iFrameInfo)
 			Local $iFrameInfoEnd = StringInStr($FrameInfoCut,@CRLF)
 			$FrameInfoCut = StringMid($FrameInfoCut,1,$iFrameInfoEnd-1)
 			$Firstpipe = StringInStr($FrameInfoCut,'|')
@@ -1537,15 +1579,15 @@ Func _ID3v2Frame_SetBinary($sFrameID,$bNewFrameData,$iFrameID_Index = 1)
 		EndIf
 
 
-		$ID3v2_RawDataBinary_Temp &= BinaryMid($ID3v2_RawDataBinary,11,$FrameStart - 10 -1) ;read up to ZPAD
-		$ID3v2_RawDataBinary_Temp &= $bNewFrameData ;read in new Frame
-		$ID3v2_RawDataBinary_Temp &= BinaryMid($ID3v2_RawDataBinary,$FrameStart)
+		$bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global,11,$FrameStart - 10 -1) ;read up to ZPAD
+		$bID3v2_RawTagData_Global_Temp &= $bNewFrameData ;read in new Frame
+		$bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global,$FrameStart)
 
 	EndIf
 	;****************************************************************************************
 
 
-	$ID3v2_RawDataBinary = $ID3v2_RawDataBinary_Temp
+	$bID3v2_RawTagData_Global = $bID3v2_RawTagData_Global_Temp
 	_h_ID3v2Tag_EnumerateFrameIDs()
 
 EndFunc
@@ -1690,7 +1732,7 @@ Func _ID3v2Frame_SetFields($sFrameID,$vNewFrameData,$iFrameID_Index = 1,$sDelimi
 
    ;Check if tag does not exist and create it
    ;----------------------------------------------------------------------------
-	Local $sID3v2_TagID = BinaryToString(BinaryMid($ID3v2_RawDataBinary,1,3))
+	Local $sID3v2_TagID = BinaryToString(BinaryMid($bID3v2_RawTagData_Global,1,3))
 	If (StringCompare($sID3v2_TagID,"ID3") <> 0) Then
 		_ID3v2Tag_CreateTag(4)
 	EndIf
@@ -2387,7 +2429,7 @@ Func _h_ID3v2_GetFrameAPIC(ByRef $bFrameData)
 	$aFrameInfo[0] = 5
 
 	$sPictureFileName = @ScriptDir & "\" & "AlbumArt"
-	$ID3Filenames &= $sPictureFileName & "|"
+	$sID3_TagFiles_Global &= $sPictureFileName & "|"
 ;~ 	MsgBox(0,"APIC",BinaryMid($bFrameData,1,32))
 
 	$bText_Encoding = BinaryMid($bFrameData,1,1)
@@ -2440,10 +2482,10 @@ Func _h_ID3v2_GetFrameAPIC(ByRef $bFrameData)
 
 	If StringInStr($sMIMEType,"jpg") Or StringInStr($sMIMEType,"jpeg") Then
 		$sPictureFileName &= ".jpg"
-		$ID3Filenames &= $sPictureFileName & "|"
+		$sID3_TagFiles_Global &= $sPictureFileName & "|"
 	ElseIf StringInStr($sMIMEType,"png") Then
 		$sPictureFileName &= ".png"
-		$ID3Filenames &= $sPictureFileName & "|"
+		$sID3_TagFiles_Global &= $sPictureFileName & "|"
 	Else
 		$sPictureFileName = "File Type Unknown"
 	EndIf
@@ -2542,7 +2584,7 @@ Func _h_ID3v2_GetFrameUSLT(ByRef $bFrameData)
 	$aFrameInfo[0] = 4
 
 	$sLyricsFilename = @ScriptDir & "\" & "SongLyrics.txt"
-	$ID3Filenames &= $sLyricsFilename & "|"
+	$sID3_TagFiles_Global &= $sLyricsFilename & "|"
 
 	$bText_Encoding = BinaryMid($bFrameData,1,1)
 	$sLanguage = BinaryToString(BinaryMid($bFrameData,2,3))
@@ -3469,7 +3511,7 @@ Func _APEv2Tag_ReadFromFile($sFilename)
 
 	$APE_Footer = FileRead($hfile,32)
 	$APETAG_ID = BinaryToString(BinaryMid($APE_Footer,1,8))
-	$APEv2_TagFrameString = $sFilename
+	$sAPEv2_TagFrameIndex_Global = $sFilename
 	;APE TAG Test Code
 ;~ 	MsgBox(0,"$APETAG_ID",$APETAG_ID)
 	If StringCompare($APETAG_ID,"APETAGEX") == 0 Then
@@ -3488,15 +3530,15 @@ Func _APEv2Tag_ReadFromFile($sFilename)
 
 ;~ 		MsgBox(0,"$APETAG",$APETAG_ID & @CRLF & "TagVersion = " & $APE_Version & @CRLF & "TagSize = " & $APE_TagSize)
 		FileSetPos($hFile, -($iID3v1_ByteOffset+$APE_TagSize + 32), 2)
-		$APEv2_RawDataBinary = FileRead($hfile,$APE_TagSize)
-;~ 		MsgBox(0,"$APEv2_RawDataBinary",$APEv2_RawDataBinary)
+		$bAPEv2_RawTagData_Global = FileRead($hfile,$APE_TagSize)
+;~ 		MsgBox(0,"$bAPEv2_RawTagData_Global",$bAPEv2_RawTagData_Global)
 		FileClose($hfile)
 		;iTunes TagSize includes header (Not to standard)
-		Dim $iTunesTest = StringInStr(BinaryToString($APEv2_RawDataBinary),"APETAGEX")
-		$APEv2_RawDataBinary = BinaryMid($APEv2_RawDataBinary,$iTunesTest)
+		Dim $iTunesTest = StringInStr(BinaryToString($bAPEv2_RawTagData_Global),"APETAGEX")
+		$bAPEv2_RawTagData_Global = BinaryMid($bAPEv2_RawTagData_Global,$iTunesTest)
 		$sAPE_ItemKeys = _h_APEv2_EnumerateItemKeys()
 	Else
-		$APEv2_RawDataBinary = 0
+		$bAPEv2_RawTagData_Global = 0
 	EndIf
 
 	If $APE_TagFound Then
@@ -3512,59 +3554,59 @@ Func _APEv2Tag_ReadFromFile($sFilename)
 EndFunc
 Func _h_APEv2_EnumerateItemKeys()
 	Local $APE_TAGINFO = ""
-	If BinaryLen($APEv2_RawDataBinary) < 32 Then
+	If BinaryLen($bAPEv2_RawTagData_Global) < 32 Then
 		Return $APE_TAGINFO
 	EndIf
 	Local $APE_TagSize = _APEv2Tag_GetTagSize()
 	Local $iStartByte = 32,$APE_ItemSize,$APE_ItemKeyterm,$APE_ItemKey
 	While ($iStartByte+1) < ($APE_TagSize-32)
-		$APE_ItemSize = Hex(BinaryMid($APEv2_RawDataBinary,$iStartByte + 4,1),2)
-		$APE_ItemSize &= Hex(BinaryMid($APEv2_RawDataBinary,$iStartByte + 3,1),2)
-		$APE_ItemSize &= Hex(BinaryMid($APEv2_RawDataBinary,$iStartByte + 2,1),2)
-		$APE_ItemSize &= Hex(BinaryMid($APEv2_RawDataBinary,$iStartByte + 1,1),2)
+		$APE_ItemSize = Hex(BinaryMid($bAPEv2_RawTagData_Global,$iStartByte + 4,1),2)
+		$APE_ItemSize &= Hex(BinaryMid($bAPEv2_RawTagData_Global,$iStartByte + 3,1),2)
+		$APE_ItemSize &= Hex(BinaryMid($bAPEv2_RawTagData_Global,$iStartByte + 2,1),2)
+		$APE_ItemSize &= Hex(BinaryMid($bAPEv2_RawTagData_Global,$iStartByte + 1,1),2)
 		$APE_ItemSize = Dec($APE_ItemSize)
 ;~ 		MsgBox(0,"$APE_ItemSize",$APE_ItemSize)
 
-		$APE_ItemKeyterm = StringInStr(BinaryToString(BinaryMid($APEv2_RawDataBinary,$iStartByte + 9)),chr(0))
-		$APE_ItemKey = BinaryToString(BinaryMid($APEv2_RawDataBinary,$iStartByte + 9,$APE_ItemKeyterm-1))
+		$APE_ItemKeyterm = StringInStr(BinaryToString(BinaryMid($bAPEv2_RawTagData_Global,$iStartByte + 9)),chr(0))
+		$APE_ItemKey = BinaryToString(BinaryMid($bAPEv2_RawTagData_Global,$iStartByte + 9,$APE_ItemKeyterm-1))
 ;~ 		MsgBox(0,"$APE_ItemKey",$APE_ItemKey)
 		$APE_TAGINFO &= "|" & $APE_ItemKey
 
-		$APEv2_TagFrameString &= @CRLF & $APE_ItemKey & "|" & String($iStartByte + $APE_ItemKeyterm  + 9) & "|" & String($APE_ItemSize)
+		$sAPEv2_TagFrameIndex_Global &= @CRLF & $APE_ItemKey & "|" & String($iStartByte + $APE_ItemKeyterm  + 9) & "|" & String($APE_ItemSize)
 
 		$iStartByte = $iStartByte + 8 + $APE_ItemKeyterm + $APE_ItemSize
 ;~ 		MsgBox(0,"$iStartByte",$iStartByte & " of " & ($APE_TagSize-32))
 	WEnd
 
-;~ 	MsgBox(0,"$APEv2_TagFrameString",$APEv2_TagFrameString)
+;~ 	MsgBox(0,"$sAPEv2_TagFrameIndex_Global",$sAPEv2_TagFrameIndex_Global)
 	Return $APE_TAGINFO
 EndFunc
 Func _APEv2Tag_GetVersion()
-	If BinaryLen($APEv2_RawDataBinary) < 32 Then
+	If BinaryLen($bAPEv2_RawTagData_Global) < 32 Then
 		Return 0
 	EndIf
 
-	Local $APE_Version = BinaryMid($APEv2_RawDataBinary,9,4)
+	Local $APE_Version = BinaryMid($bAPEv2_RawTagData_Global,9,4)
 	$APE_Version = Number($APE_Version)
 
 	Return $APE_Version
 EndFunc
 Func _APEv2Tag_GetTagSize()
-	If BinaryLen($APEv2_RawDataBinary) < 32 Then
+	If BinaryLen($bAPEv2_RawTagData_Global) < 32 Then
 		Return 0
 	EndIf
 
-	Local $APE_TagSize = BinaryMid($APEv2_RawDataBinary,13,4)
+	Local $APE_TagSize = BinaryMid($bAPEv2_RawTagData_Global,13,4)
 	$APE_TagSize = Number($APE_TagSize)
 
 	Return $APE_TagSize
 EndFunc
 Func _APEv2Tag_GetItemCount()
-	If BinaryLen($APEv2_RawDataBinary) < 32 Then
+	If BinaryLen($bAPEv2_RawTagData_Global) < 32 Then
 		Return 0
 	EndIf
 
-	Local $APE_ItemCount = BinaryMid($APEv2_RawDataBinary,17,4)
+	Local $APE_ItemCount = BinaryMid($bAPEv2_RawTagData_Global,17,4)
 	$APE_ItemCount = Number($APE_ItemCount)
 
 	Return $APE_ItemCount
@@ -3572,11 +3614,11 @@ EndFunc
 Func _APEv2_GetItemKeys($StringLineDelimiter = @CRLF)
 	;If $StringLineDelimiter == -1 then return an array
 	Local $vAPE_ItemKeys
-	If BinaryLen($APEv2_RawDataBinary) < 32 Then
+	If BinaryLen($bAPEv2_RawTagData_Global) < 32 Then
 		Return ""
 	EndIf
 
-	Local $sItemKeyList = StringSplit($APEv2_TagFrameString,@CRLF,1)
+	Local $sItemKeyList = StringSplit($sAPEv2_TagFrameIndex_Global,@CRLF,1)
 	If $StringLineDelimiter == -1 Then
 		Dim $vAPE_ItemKeys[1]
 		$vAPE_ItemKeys[0] = $sItemKeyList[0]-1
@@ -3603,10 +3645,10 @@ Func _APEv2_GetItemKeys($StringLineDelimiter = @CRLF)
 	Return $vAPE_ItemKeys
 EndFunc
 Func _APEv2_GetItemValueBinary($sAPE_ItemKey)
-	;First Get Start Byte and Frame Length from $ID3v2_TagFrameString
-	Local $iFrameInfo = StringInStr($APEv2_TagFrameString,$sAPE_ItemKey,-1)
+	;First Get Start Byte and Frame Length from $sID3v2_TagFrameIndex_Global
+	Local $iFrameInfo = StringInStr($sAPEv2_TagFrameIndex_Global,$sAPE_ItemKey,-1)
 
-	Local $FrameInfoCut = StringMid($APEv2_TagFrameString,$iFrameInfo)
+	Local $FrameInfoCut = StringMid($sAPEv2_TagFrameIndex_Global,$iFrameInfo)
 	Local $iFrameInfoEnd = StringInStr($FrameInfoCut,@CRLF)
 	$FrameInfoCut = StringMid($FrameInfoCut,1,$iFrameInfoEnd-1)
 
@@ -3618,7 +3660,7 @@ Func _APEv2_GetItemValueBinary($sAPE_ItemKey)
 	;MsgBox(0,"$FrameStart",$FrameStart)
 	;MsgBox(0,"$FrameSize",$FrameSize)
 
-	Local $bItemValueData = BinaryMid($APEv2_RawDataBinary,$FrameStart,$FrameSize)
+	Local $bItemValueData = BinaryMid($bAPEv2_RawTagData_Global,$FrameStart,$FrameSize)
 
 ;~ 	MsgBox(0,$sAPE_ItemKey,$bItemValueData)
 
@@ -3630,13 +3672,13 @@ Func _APEv2_GetItemValueBinary($sAPE_ItemKey)
 EndFunc
 Func _APEv2_GetItemValueString($sAPE_ItemKey = -1,$StringLineDelimiter = @CRLF)
 	;TODO Test when $sAPE_ItemKey = -1
-	If BinaryLen($APEv2_RawDataBinary) < 9 Then
+	If BinaryLen($bAPEv2_RawTagData_Global) < 9 Then
 		Return ""
 	EndIf
 	Local $iNumValues = 1
 	Local $sAPEv2_ReturnString = ""
 	If $sAPE_ItemKey == -1 Then
-		Local $ataginfo = StringSplit($APEv2_TagFrameString, @CRLF, 1)
+		Local $ataginfo = StringSplit($sAPEv2_TagFrameIndex_Global, @CRLF, 1)
 		For $istr = 2 to $ataginfo[0]
 			Dim $a2taginfo = StringSplit($ataginfo[$istr], "|")
 			If $a2taginfo[0] > 1 Then
@@ -3728,7 +3770,7 @@ Func _APEv2_RemoveTag($Filename)
 	FileDelete($TagFilename)
 
 
-	$APEv2_RawDataBinary = 0
+	$bAPEv2_RawTagData_Global = 0
 
 EndFunc
 
