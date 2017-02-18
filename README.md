@@ -1,8 +1,8 @@
 ###ID3_UDF
 
- **ID3.au3 UDF Description:**
-   Reads ID3v1.0, ID3v1.1, ID3v1.1+, ID3v2.2, ID3v2.3, ID3v2.4, APEv2 and MPEG frame header
-   Writes ID3v1.1, ID3v2.3, ID3v2.4
+**ID3.au3 Description:**
+* Reads ID3v1.0, ID3v1.1, ID3v1.1+, ID3v2.2, ID3v2.3, ID3v2.4, APEv2 and MPEG frame header
+* Writes ID3v1.1, ID3v2.3, ID3v2.4
 
 - **Latest Version v3.4 20120610**<Enter>
 -- AutoIt Version Required: 23rd December, 2011 - v3.3.8.0 of AutoIt ID3 functions only works with .mp3 files
