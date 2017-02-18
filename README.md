@@ -45,6 +45,6 @@ _ID3WriteTag($Filename)
 - ID3v2.4TagSpec.pdf
 
 **Example_GUI Screenshot**
-![Screenshot](/home/joe/Pictures/screenshot_main.png)
+![Screenshot](images/screenshot_main.png)
 
 
