@@ -1,8 +1,8 @@
 ###ID3_UDF
 
-- **ID3.au3 UDF Description:**<Enter>
--- Reads ID3v1.0, ID3v1.1, ID3v1.1+, ID3v2.2, ID3v2.3, ID3v2.4, APEv2 and MPEG frame header<Enter>
--- Writes ID3v1.1, ID3v2.3, ID3v2.4
+ **ID3.au3 UDF Description:**
+   Reads ID3v1.0, ID3v1.1, ID3v1.1+, ID3v2.2, ID3v2.3, ID3v2.4, APEv2 and MPEG frame header
+   Writes ID3v1.1, ID3v2.3, ID3v2.4
 
 - **Latest Version v3.4 20120610**<Enter>
 -- AutoIt Version Required: 23rd December, 2011 - v3.3.8.0 of AutoIt ID3 functions only works with .mp3 files
@@ -36,11 +36,6 @@ $sTagInfo = _ID3ReadTag($Filename)
 _ID3SetTagField("COMM","TEST COMMENT - ID3v2 Comment Tag")
 _ID3WriteTag($Filename)
 ```
-  
-  
-- **Latest versions of the specification**<Enter>
--- ID3v2.3TagSpec.pdf<Enter>
--- ID3v2.4TagSpec.pdf
 
 **Example_GUI Screenshot**
 
