@@ -1,28 +1,44 @@
 #include-once
 #include <Array.au3> ;need for UnSynchronisation
 #include <String.au3>
-; #INDEX# =======================================================================================================================
-; Title .........: ID3 UDF
-; AutoIt Version : v3.3.8.0
-; Language ......: English
-; Description ...: Functions that Read/Write ID3v1.1 ID3v2.3, ID3v2.4 and APEv2 Tags in MP3 files.
-; Description ...: No Dll required
-; Author(s) .....: Joe Begnoche (joeyb1275)
-; UDF Forum Link.: http://www.autoitscript.com/forum/index.php?showtopic=43950&st=0
-; Feature List...:
-;					Added ID3v2.4 read/write compatability
-;					Added reading/writing of ID3v1.1+ Extended Tags
-;					Added ability to read/write multiple frameIDs (ID3v2 allows multiple TXXX,WXXX frames and others)
-;					Improved time to read tags for all versions by about 80%
-;					Added AlbumArt reading for jpeg and png
-;					Added _APEv2 functions _APEv2Tag_GetTagSize() _APEv2Tag_GetVersion() and _APEv2Tag_GetItemCount()
-;					Added _MPEG_... functions
-;					Tested Reading Tags from
-;						-Tag&Rename - ID3v1.1 & ID3v2.3
-;						-mp3Tag Pro - ID3v1.1 & ID3v2.3
-;						-Mp3tag - ID3v1.1, ID3v2.3 & APEv2
-;						-iTunes - APEv2 TagSize which includes header (Not to standard)
-; Function List..:
+#cs  #INDEX# ================================================================================================
+ Title .........: ID3 UDF
+ AutoIt Version : v3.3.8.0
+ Language ......: English
+ Description ...: Functions that Read/Write ID3v1.1 ID3v2.3, ID3v2.4 and APEv2 Tags in MP3 files.
+ Description ...: No Dll required
+ Author(s) .....: Joe Begnoche (joeyb1275)
+ UDF Forum Link.: http://www.autoitscript.com/forum/index.php?showtopic=43950&st=0
+ Feature List...:
+					Added ID3v2.4 read/write compatability
+					Added reading/writing of ID3v1.1+ Extended Tags
+					Added ability to read/write multiple frameIDs (ID3v2 allows multiple TXXX,WXXX frames and others)
+					Improved time to read tags for all versions by about 80%
+					Added AlbumArt reading for jpeg and png
+					Added _APEv2 functions _APEv2Tag_GetTagSize() _APEv2Tag_GetVersion() and _APEv2Tag_GetItemCount()
+					Added _MPEG_... functions
+					Tested Reading Tags from
+						-Tag&Rename - ID3v1.1 & ID3v2.3
+						-mp3Tag Pro - ID3v1.1 & ID3v2.3
+						-Mp3tag - ID3v1.1, ID3v2.3 & APEv2
+						-iTunes - APEv2 TagSize which includes header (Not to standard)
+ ToDo List......:
+			Release 3.4.2 ToDo
+				-TODO -add error flow up from _ID3v1 and _ID3v2 functions to _ID3 functions
+				-TODO Clean up code comments
+				-TODO check if File.au3 is actually needed by _h_ID3v2_CreateFrameAPIC
+			Release 3.5 ToDo
+				-working to fix RemoveUnsynchronization() functions, testing with COMM frame from Foobar2000 v2.4
+			    -ID3v2.4 add ability to remove unsychronization of each frame
+			    -MPEG - handle VBR MP3 properly (XING Header) and (VBRI Header)
+				  -http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#SideInfo
+			    -_ID3RemoveTag add save raw MPEG data mode
+			    -ID3v2.4 - work with COMM frame from Foobar2000
+			    -ID3v1 - Test Read/write of TAG+ Extended Tags
+			    -ID3v2 - Add reading of extended header
+#ce ;========================================================================================================
+
+#cs  #UDF Function List# ;===================================================================================
 ;					MAIN UDF FUNCTION LIST
 ;						_ID3ReadTag()
 ;						_ID3GetTagField()
@@ -102,41 +118,9 @@
 ;						_h_ID3v2_DecodeTextToString()
 ;						_h_ID3v2_EncodeStringToBinary()
 ;						_h_ID3v2_ConvertFrameID()
-; Latest Version.: Release 3.4.0  - 20120610
-;				   	-Added resetting of all global ID3 variables in _ID3ReadTag() to make sure they are set back to the default values and ready to read a new file
-;				   	-changed _ID3WriteTag() to determine what tags have been read and to only write back those version if $iTagVersion=-1, edited _ID3WriteTag() comments
-;				   	-added $iReturnTypeFlag to _ID3GetTagField() inputs for ID3v2 functions
-;				   	-fixed _ID3GetTagField() so that @extended is set to the Number of frames that exist with same $sFrameIDRequest
-;				   	-fixed _h_ID3v2_EncodeStringToBinary() variable typo ($FrameData should be $bFrameData), thanks BrewManNH!
-; Latest Version.: Release 3.4.1  - 2013
-;					-removed File.au3, String.au3 & Array.au3 dependencies
-; ToDo List......:
-;				-working to fix RemoveUnsynchronization() functions, testing with COMM frame from Foobar2000 v2.4
-;				-TODO -ID3v2.4 - work with COMM frame from Foobar2000
-;				-TODO -_ID3RemoveTag add save raw MPEG data mode
-;				-TODO -ID3v2.4 add ability to remove unsychronization of each frame
-;
-;				-TODO -MPEG - handle VBR MP3 properly (XING Header) and (VBRI Header)
-;						-http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#SideInfo
-;				-TODO -ID3v1 - Test Read/write of TAG+ Extended Tags
-;				-TODO -ID3v2 - Add reading of extended header
-;				-TODO -add error flow up from _ID3v1 and _ID3v2 functions to _ID3 functions
-;				-TODO Clean up code comments
-;				-TODO check if File.au3 is actually needed by _h_ID3v2_CreateFrameAPIC
-;			Release 3.5 TODO
-;			   -TODO -MPEG - handle VBR MP3 properly (XING Header) and (VBRI Header)
-;				  -http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#SideInfo
-;			   -TODO -ID3v2.4 - work with COMM frame from Foobar2000
-;			   -TODO -ID3v1 - Test Read/write of TAG+ Extended Tags
-;			   -TODO -ID3v2 - Add reading of extended header
-;			   -TODO -ID3v2.4 add ability to remove unsychronization of each frame
-;			   -TODO -add error flow up from _ID3v1 and _ID3v2 functions to _ID3 functions
-;			   -TODO Clean up code comments
-; ===============================================================================================================================
+#ce ;========================================================================================================
 
-
-
-#cs #ID3.au3 ID3v2 FrameID Definitions# ;========================================================================================
+#cs #ID3.au3 ID3v2 FrameID Definitions# ;====================================================================
 
 	FrameIDs as of ID3v2.3,ID3v2.2 (not all may work in UDF)
 	AENC,CRA	Audio encryption
@@ -253,7 +237,7 @@
 	TSOP 		Performer sort order
 	TSOT 		Title sort order
 	TSST 		Set subtitle
-#ce ;============================================================================================================================
+#ce ;========================================================================================================
 
 #cs #ID3.au3 UDF Latest Changes.......: ;====================================================================
 	Release 3.0 - 20120501
@@ -296,7 +280,7 @@
 		-Added a check if tag exists in _ID3v1Field_SetString() and creates it if it does not exist
 		-Changed _ID3v2Frame_SetFields() for TXXX so that the delimited string format is $sDescription:$sValue, where more then 1 field in string is passed in
 		-Commented some message boxes used for debugging
-	Release 3.4  - 20120610
+	Release 3.4.0  - 20120610
 		-Added resetting of all global ID3 variables in _ID3ReadTag() to make sure they are set back to the default values and ready to read a new file
 		-changed _ID3WriteTag() to determine what tags have been read and to only write back those version if $iTagVersion=-1, edited _ID3WriteTag() comments
 		-added $iReturnTypeFlag to _ID3GetTagField() inputs for ID3v2 functions
@@ -316,14 +300,14 @@
 			need to check why the Tag Header flags show unsync = 1
 #ce ;========================================================================================================
 
-; #VARIABLES# ===================================================================================================================
+; #VARIABLES# ===============================================================================================
 Dim $sID3_TagFiles_Global = "" ;used to hold the filenames of Album Art jpg and/or the lyrics text file
 Dim $bID3v1_RawTagData_Global = 0, $bID3v1Plus_RawTagData_Global = 0, $bID3v2_RawTagData_Global = 0, $bAPEv2_RawTagData_Global = 0
 Dim $sID3v2_TagFrameIndex_Global = "", $sAPEv2_TagFrameIndex_Global = "", $iID3v2_OriginalTagSize_Global = 0
-; ===============================================================================================================================
+; ===========================================================================================================
 
 
-; #FUNCTION# ;===================================================================================================================
+; #FUNCTION# ;===============================================================================================
 ; Function Name....: _ID3ReadTag($Filename, $iVersion = 0)
 ; Description......: Reads ID3v1, ID3v2, and APEv2 binary data and stores them into global variables
 ; Parameter(s).....: $Filename     - Filename of mp3 file include full path
@@ -350,7 +334,7 @@ Dim $sID3v2_TagFrameIndex_Global = "", $sAPEv2_TagFrameIndex_Global = "", $iID3v
 ;                    On Failure - Returns 0 and @error = 1 for File not found
 ; Author ..........: joeyb1275
 ; Modified.........: 20120501 by joeyb1275
-; ;==============================================================================================================================
+; ;===========================================================================================================
 Func _ID3ReadTag($Filename, $iTagVersion = 0)
 
 	;Reset all global vairables

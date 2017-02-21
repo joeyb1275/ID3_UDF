@@ -1,7 +1,12 @@
 Features Not currently implemented:
 
+3.4.2
 - Update ID3RemoveTag to sync to MPEG data remove all tag data
 - Update all function comments
+- add error flow up from _ID3v1 and _ID3v2 functions to _ID3 functions
+- check if File.au3 is actually needed by _h_ID3v2_CreateFrameAPIC
+
+3.5
 - Unsynchronization
 - Compression
 - Padding/cluster size alignment
