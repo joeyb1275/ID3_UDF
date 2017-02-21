@@ -1,6 +1,6 @@
 #include-once
 #include <Array.au3> ;need for UnSynchronisation
-
+#include <String.au3>
 ; #INDEX# =======================================================================================================================
 ; Title .........: ID3 UDF
 ; AutoIt Version : v3.3.8.0
@@ -308,6 +308,12 @@
     Working for 3.4.2 Release
 		 -renaming variables with UDF naming rules
 		 -merging in 3.4.2 from local and fixing bugs
+
+		 Pushed Unsync work to another release
+		 -working on _h_ID3v2Tag_RemoveUnsynchronisation()
+			_h_ID3v2Frame_RemoveUnsynchronisation() needs to be finished
+			Foobar2000 only added an unsync frame to the COMM frame
+			need to check why the Tag Header flags show unsync = 1
 #ce ;========================================================================================================
 
 ; #VARIABLES# ===================================================================================================================
@@ -374,12 +380,16 @@ Func _ID3ReadTag($Filename, $iTagVersion = 0)
 	Switch $iTagVersion
 		Case 0 ;ID3v1 & ID3v2 & APEv2
 
+			Local $begin = TimerInit()
 			$sID3_TagInfo_RetVal &= _ID3v2Tag_ReadFromFile($Filename)
 			$iTagVersionsFound += @extended
-			;Local $begin = TimerInit()
+			$TimeToReadTags = TimerDiff($begin)
+			ConsoleWrite("Time To ID3v2ReadFile: " & Round($TimeToReadTags,2) & @CRLF)
+			$begin = TimerInit()
 			$sID3_TagInfo_RetVal &= _h_ID3v2Tag_EnumerateFrameIDs() ; takes most of the time
-			;$TimeToReadTags = TimerDiff($begin)
-			;MsgBox(0, "Timer", $TimeToReadTags)
+			$TimeToReadTags = TimerDiff($begin)
+			ConsoleWrite("Time To ID3v2ReadFrames: " & Round($TimeToReadTags,2) & @CRLF)
+			;MsgBox(0, "Time To ID3v2Tag", Round($TimeToReadTags,2))
 
 			$sID3_TagInfo_RetVal &= _ID3v1Tag_ReadFromFile($Filename)
 			$iTagVersionsFound += @extended
@@ -1040,19 +1050,9 @@ Func _ID3v2Tag_ReadFromFile($sFilename)
 	;Read in Rest of ID3v2 Tag Data
 	$bID3v2_RawTagData_Global &= Binary(FileRead($hID3v2_File, $iID3v2_TagSize))
 
-
 	FileClose($hID3v2_File)
 
 	$sID3v2_TagInfo_RetVal = "ID3v2." & _ID3v2Tag_GetVersion()
-
-	If _ID3v2Tag_GetHeaderFlags("Unsynchronisation") = 1 Then
-		MsgBox(0, "Unsynchronisation", "Entire Tag Found")
-		_h_ID3v2Tag_RemoveUnsynchronisation()
-	EndIf
-
-	If _ID3v2Tag_GetHeaderFlags("ExtendedHeader") = 1 Then
-		MsgBox(0, "ExtendedHeader", "Found")
-	EndIf
 
 	SetError(0)
 	SetExtended(2)
@@ -1060,145 +1060,114 @@ Func _ID3v2Tag_ReadFromFile($sFilename)
 
 EndFunc   ;==>_ID3v2Tag_ReadFromFile
 Func _h_ID3v2Tag_EnumerateFrameIDs()
-	;This function gets a list of all frame IDs -> TXXX:2
-	;This function sets $sID3v2_TagFrameIndex_Global
+   ;This function can be fast if the frames line-up with the reading of bytes
+   ;Some error checking is built in but can slow down the reading of the frameIDs
+   ;This function gets a list of all frame IDs -> TXXX:2
+   ;This function sets $sID3v2_TagFrameIndex_Global
 
 	Local $bFrameHeader, $iTagVersion = 3, $iFrameSize, $sFrameID = "", $iZPAD = 0, $sID3v2_FrameIDList_RetVal = ""
 	Local $iReadBytesOffset = 10, $iFrameHeaderLen
 	Local $iTagSize = _ID3v2Tag_GetTagSize()
 	$sID3v2_TagFrameIndex_Global = ""
+
 	If _ID3v2Tag_GetHeaderFlags("ExtendedHeader") <> 0 Then
 		;ID3v2_TagSize include this ExtendedHeader
-;~ 		MsgBox(0,"_GetID3v2_TagFlags",_ID3v2Tag_GetHeaderFlags("ExtendedHeader"))
 		$iReadBytesOffset += 10
 	EndIf
 
-	Local $iBytesRead = $iReadBytesOffset
+   ;$iBytesRead is used to step through Tag data and is used to terminate loop
+   Local $iBytesRead = $iReadBytesOffset
 
 	;MsgBox(0,"Version",_ID3v2Tag_GetVersion())
 
+   ;Set the header length depending on Tag Version
+   ;****************************************************************************************
 	Local $iTagVersion = Number(StringLeft(_ID3v2Tag_GetVersion(), 1))
 	If $iTagVersion = 2 Then
 		$iFrameHeaderLen = 6
 	Else
 		$iFrameHeaderLen = 10
 	EndIf
-
-
-
+   ;****************************************************************************************
 
 	;Scan Tag for all Fields - takes most of the time!!!
-	While $iBytesRead < $iTagSize
+	;Some have found errors in reading the tag size and this while loop will hang if thats wrong
+	;need to clean this part of code up - use something other than while loop?
+;~ 	Local $WhileLoopbegin = TimerInit()
+   $iID3v2_RawTagDataLen = BinaryLen($bID3v2_RawTagData_Global)
+   While ($iBytesRead < $iTagSize)
+	  ;check if all the binary data has been scanned
+	  If ($iBytesRead >= $iID3v2_RawTagDataLen) Then
+		 ExitLoop
+	  EndIf
 
-		$bFrameHeader = BinaryMid($bID3v2_RawTagData_Global, $iBytesRead + 1, $iFrameHeaderLen)
-		$iBytesRead += $iFrameHeaderLen
-		$sFrameID = _h_ID3v2FrameHeader_GetFrameID($bFrameHeader)
+	  ;First field should start right after 10 byte header
+	  $bFrameHeader = BinaryMid($bID3v2_RawTagData_Global, $iBytesRead + 1, $iFrameHeaderLen)
+	  $iBytesRead += $iFrameHeaderLen
+	  $sFrameID = _h_ID3v2FrameHeader_GetFrameID($bFrameHeader)
 
-		If StringLeft($sFrameID, 3) == "3DI" Then
-			MsgBox(0, $sFrameID, "Footer Found!!")
-		EndIf
+	  ;Show that a Footer was found (I have not seen these in any tags yet)
+	  If StringLeft($sFrameID, 3) == "3DI" Then
+		 ConsoleWrite($sFrameID & ": Footer Found!!")
+	  EndIf
 
+	  ;Check for a valid frameID string
+	  ;****************************************************************************************
+	  If $sFrameID <> -1 Then
+		 ;if frameID is good get FrameSize
+		 $iFrameSize = _h_ID3v2FrameHeader_GetFrameSize($bFrameHeader)
 
+	  Else
+		 ;check for padding
+		 If Dec(Hex(BinaryMid($bFrameHeader, 1, 2), 4)) = 0 Then
+			$iZPAD = ($iTagSize + 10) - ($iBytesRead - $iFrameHeaderLen)
+			$sID3v2_TagFrameIndex_Global &= "ZPAD" & "|" & String($iBytesRead - $iFrameHeaderLen + 1) & "|" & $iZPAD & @CRLF
+			ExitLoop
+		 Else
+			;Need to error check and byte scan (This will slow down the frame enumeration)
+			;****************************************************************************************
+			;This could be ZPAD with first byte wrong (need exit loop if ZPAD is found during scan
+			$iBytesRead -= Round(($iFrameSize / 8 + 2)) ;go back before starting the byte scan
+			ConsoleWrite("Unexpected data found...")
+			ConsoleWrite("Scanning bytes to correct...")
+			For $itest = 1 To ($iBytesRead + $iFrameSize + 20)
+			   $bFrameHeader = BinaryMid($bID3v2_RawTagData_Global, $iBytesRead + 1 + $itest, $iFrameHeaderLen)
+			   $sFrameID = _h_ID3v2FrameHeader_GetFrameID($bFrameHeader)
+			   If $sFrameID <> -1 Then
+				  $iBytesRead += $itest
+				  $iFrameSize = _h_ID3v2FrameHeader_GetFrameSize($bFrameHeader)
+				  ConsoleWrite("Valid FrameID found during byte scan" & " => " & $FrameID & " at " & String($iBytesRead + 1 + $itest) & " bytes")
+				  ExitLoop 1
+			   EndIf
+			Next
+			;****************************************************************************************
+		 EndIf
+   EndIf
+   ;****************************************************************************************
 
-;~ 		MsgBox(0,$sFrameID,$bFrameHeader)
+	  ;set line to the tag frame index string (used later if need to get frame data)
+	  $sID3v2_TagFrameIndex_Global &= $sFrameID & "|" & String($iBytesRead + 1) & "|" & String($iFrameSize) & @CRLF
 
-		;Check for a valid frameID string
-		;****************************************************************************************
-		If $sFrameID <> -1 Then
-			;check flags
+	  ;go to next frame
+	  $iBytesRead += $iFrameSize
 
-			$iFrameSize = _h_ID3v2FrameHeader_GetFrameSize($bFrameHeader)
+	  ;set return value $sID3v2_FrameIDList_RetVal for a simple return list of what is found
+	  $sFrameIndex = StringInStr($sID3v2_FrameIDList_RetVal, $sFrameID)
+	  If $sFrameIndex = 0 Then
+		 $sID3v2_FrameIDList_RetVal &= "|" & $sFrameID & ":" & "1"
+	  Else
+		 $sFrameIndexEnd = StringInStr(StringMid($sID3v2_FrameIDList_RetVal, $sFrameIndex), ":")
+		 $iNumFrameID = 1 + Number(StringMid($sID3v2_FrameIDList_RetVal, $sFrameIndex + $sFrameIndexEnd, 1))
+		 $sNewFrameIDString = $sFrameID & ":" & $iNumFrameID
+		 $sID3v2_FrameIDList_RetVal = StringReplace($sID3v2_FrameIDList_RetVal, $sFrameID & ":" & $iNumFrameID - 1, $sNewFrameIDString)
+	  EndIf
 
-			;This can be handled by Removing Unsync for the frame
-			;Test Code for Foobar2000 ID3v2.4 COMM tag is not conforming to Spec
-			If _h_ID3v2FrameHeader_GetFlags($bFrameHeader, "Unsynchronisation") == 1 Then
-				MsgBox(0, "Unsynchronisation Frame", $sFrameID)
-				If _h_ID3v2FrameHeader_GetFlags($bFrameHeader, "DataLengthIndicator") == 1 Then
-					MsgBox(0, "DataLengthIndicator Frame", $sFrameID)
+   WEnd
 
-					;_h_ID3v2Frame_RemoveUnsynchronisation()
+;~    $WhileLoopTimeToReadTags = TimerDiff($WhileLoopbegin)
+;~    MsgBox(0,"$SlowTimeToReadTags",Round($WhileLoopTimeToReadTags,2) & " ms")
 
-
-;~ 					;FrameLength does not include extra bytes from Unsynchronisation
-;~ 					;Issue is with Unicode BOM $FF $FE
-;~ 					MsgBox(0, "$iFrameSize", $iFrameSize)
-;~ 					;FrameSize is the number of bytes NOT including Unsynchronisation
-;~ 					Local $iOriginalFrameSize = $iFrameSize
-;~ 					Local $iBytesStart = $iBytesRead
-;~ 					Local $ibytestep = 0
-;~ 					For $istep = 0 To $iFrameSize
-;~ 						MsgBox(0, "Binary", BinaryMid($bID3v2_RawTagData_Global, $iBytesRead + 1 + $ibytestep, 3))
-;~ 						If BinaryMid($bID3v2_RawTagData_Global, $iBytesRead + 1 + $ibytestep, 1) = Binary("0xFF") Then
-;~ 							If BinaryMid($bID3v2_RawTagData_Global, $iBytesRead + 1 + $ibytestep + 1, 1) = Binary("0x00") Then
-;~ 								$iOriginalFrameSize += 1
-;~ 								$ibytestep += 1
-;~ 								$iBytesRead += 1
-;~ 								MsgBox(0, "$iOriginalFrameSize", $iOriginalFrameSize)
-;~ 							EndIf
-;~ 						EndIf
-;~ 						$ibytestep += 1
-;~ 					Next
-;~ 					MsgBox(0, "$BytesRead", $iBytesRead - $iBytesStart)
-;~ 					MsgBox(0, "$iFrameSize", $iFrameSize)
-;~ 					MsgBox(0, "$iOriginalFrameSize", $iOriginalFrameSize)
-;~ 				Else
-;~ 					;FrameSize is the number of bytes including Unsynchronisation
-				EndIf
-			EndIf
-
-
-		Else
-			If Dec(Hex(BinaryMid($bFrameHeader, 1, 2), 4)) = 0 Then ;check for padding
-;~ 				MsgBox(0,"$bFrameHeader",$bFrameHeader)
-				$iZPAD = ($iTagSize + 10) - ($iBytesRead - $iFrameHeaderLen)
-;~ 				MsgBox(0,"ZPAD Start",BinaryToString(BinaryMid($bID3v2_RawTagData_Global,$iBytesRead - $iFrameHeaderLen)))
-				$sID3v2_TagFrameIndex_Global &= "ZPAD" & "|" & String($iBytesRead - $iFrameHeaderLen + 1) & "|" & $iZPAD & @CRLF
-				ExitLoop
-			Else
-;~ 				MsgBox(0,"Error Check Scan Frame 1",$sFrameID) ;Need to error check scan
-;~ 				MsgBox(0,"$bFrameHeader",$bFrameHeader)
-				;This could be ZPAD with first byte wrong
-;~ 				MsgBox(0,"$iBytesRead",$iBytesRead & " of " & $iTagSize)
-;~ 				MsgBox(0,"20 bytes",BinaryMid($bID3v2_RawTagData_Global,$iBytesRead - 6,20))
-				$iBytesRead -= Round(($iFrameSize / 8 + 2))
-;~ 				MsgBox(0,"$iBytesRead",$iBytesRead)
-				For $itest = 1 To ($iBytesRead + $iFrameSize + 20)
-					$bFrameHeader = BinaryMid($bID3v2_RawTagData_Global, $iBytesRead + 1 + $itest, $iFrameHeaderLen)
-					$sFrameID = _h_ID3v2FrameHeader_GetFrameID($bFrameHeader)
-					If $sFrameID <> -1 Then
-						$iBytesRead += $itest
-;~ 						MsgBox(0,"$iBytesRead Really in Frame",$itest)
-						$iFrameSize = _h_ID3v2FrameHeader_GetFrameSize($bFrameHeader)
-;~ 						MsgBox(0,"$FrameSize",$iFrameSize)
-						ExitLoop 1
-					Else
-;~ 						MsgBox(0,"Error Check Scan Frame",String($iBytesRead + 1 + $itest) & " => " & $FrameID)
-					EndIf
-				Next
-			EndIf
-		EndIf
-		;****************************************************************************************
-
-
-		$sID3v2_TagFrameIndex_Global &= $sFrameID & "|" & String($iBytesRead + 1) & "|" & String($iFrameSize) & @CRLF
-;~ 		MsgBox(0,"$sID3v2_TagFrameIndex_Global",$sID3v2_TagFrameIndex_Global)
-		$iBytesRead += $iFrameSize ;go to next frame
-;~ 		MsgBox(0,"$iBytesRead",$iBytesRead & " of " & $iTagSize)
-
-		$sFrameIndex = StringInStr($sID3v2_FrameIDList_RetVal, $sFrameID)
-		If $sFrameIndex = 0 Then
-			$sID3v2_FrameIDList_RetVal &= "|" & $sFrameID & ":" & "1"
-		Else
-			$sFrameIndexEnd = StringInStr(StringMid($sID3v2_FrameIDList_RetVal, $sFrameIndex), ":")
-			$iNumFrameID = 1 + Number(StringMid($sID3v2_FrameIDList_RetVal, $sFrameIndex + $sFrameIndexEnd, 1))
-			$sNewFrameIDString = $sFrameID & ":" & $iNumFrameID
-			$sID3v2_FrameIDList_RetVal = StringReplace($sID3v2_FrameIDList_RetVal, $sFrameID & ":" & $iNumFrameID - 1, $sNewFrameIDString)
-		EndIf
-
-	WEnd
-
-
-	Return $sID3v2_FrameIDList_RetVal & @CRLF ;do I need @CRLF here?
+   Return $sID3v2_FrameIDList_RetVal & @CRLF
 
 EndFunc   ;==>_h_ID3v2Tag_EnumerateFrameIDs
 Func _h_ID3v2Tag_RemoveUnsynchronisation()
@@ -1218,6 +1187,8 @@ Func _h_ID3v2Tag_RemoveUnsynchronisation()
 	;the tag contains a, now corrected, false synchronisation. The bit should only be clear if the
 	;tag does not contain any false synchronisations.
 
+;~    I think the file I am testing with only has the COMM frame with unsync bytes
+; looking at the spec again I found that the frame header flags also indicate unsync
 
 	;Find all %11111111 00000000 111xxxxx = 0xFF 0x00 0xE0 and 0xFF 0x00 0x00
 	Local $bID3v2_RawTagData_Global_Temp = BinaryMid($bID3v2_RawTagData_Global, 1, 5)
@@ -1233,9 +1204,18 @@ Func _h_ID3v2Tag_RemoveUnsynchronisation()
 ;~ 			EndIf
 ;~ 		EndIf
 
+		 ;if 0x00 is found check bytes before and after
 		If BinaryMid($bID3v2_RawTagData_Global, $ibyte, 1) = Binary("0x00") Then
-			If BinaryMid($bID3v2_RawTagData_Global, $ibyte-1, 1) <> Binary("0xFF") Then
-				$bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global, $ibyte, 1)
+			;then check the prev. byte for an FF
+			If BinaryMid($bID3v2_RawTagData_Global, $ibyte-1, 1) == Binary("0xFF") Then
+			   ;then check the next byte for > E0
+			   If BinaryMid($bID3v2_RawTagData_Global, $ibyte+1, 1) < Binary("0xE0") Then
+				  $bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global, $ibyte, 1)
+			   Else
+				  _ArrayAdd($aIndex,$ibyte)
+			   EndIf
+			Else
+			   $bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global, $ibyte, 1)
 			EndIf
 		Else
 			$bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global, $ibyte, 1)
@@ -1244,7 +1224,13 @@ Func _h_ID3v2Tag_RemoveUnsynchronisation()
 
 
 	Next
-;~ 	_ArrayDisplay($aIndex)
+
+
+;when i ignore unsync the APIC frame and ZPAD look OK but bad picture data
+;When I allow the unsync of the bytes things get messed up after the COMM frame
+	$bID3v2_RawTagData_Global = $bID3v2_RawTagData_Global_Temp
+
+	_ArrayDisplay($aIndex)
 
 ;~ 	Local $bID3v2_RawTagData_Global_Temp = BinaryMid($bID3v2_RawTagData_Global, 1, 5)
 ;~ 	Local $bCurrentTagFlags = BinaryMid($bID3v2_RawTagData_Global, 6, 1)
@@ -1258,8 +1244,6 @@ Func _h_ID3v2Tag_RemoveUnsynchronisation()
 ;~ 	$bID3v2_RawTagData_Global_Temp &= BinaryMid($bID3v2_RawTagData_Global, $aIndex[$aIndex[0]] + 2)
 
 
-
-	$bID3v2_RawTagData_Global = $bID3v2_RawTagData_Global_Temp
 
 EndFunc   ;==>_h_ID3v2Tag_RemoveUnsynchronisation
 Func _ID3v2Tag_WriteToFile($sFilename)
@@ -2290,7 +2274,22 @@ Func _h_ID3v2FrameHeader_GetFlags($bFrameHeaderData, $sFlagReturnType = -1)
 	;k - Compression
 	;m - Encryption
 	;n - Unsynchronisation
+		 ;This flag indicates whether or not unsynchronisation was applied
+		 ;to this frame. See section 6 for details on unsynchronisation.
+		 ;If this flag is set all data from the end of this header to the
+		 ;end of this frame has been unsynchronised. Although desirable, the
+		 ;presence of a 'Data Length Indicator' is not made mandatory by
+		 ;unsynchronisation.
+		 ;	0 Frame has not been unsynchronised.
+		 ;	1 Frame has been unsyrchronised.
 	;p - Data length indicator
+		 ;This flag indicates that a data length indicator has been added to
+		 ;the frame. The data length indicator is the value one would write
+		 ;as the 'Frame length' if all of the frame format flags were
+		 ;zeroed, represented as a 32 bit synchsafe integer.
+		 ;	0 There is no Data Length Indicator.
+		 ;	1 A data length Indicator has been added to the frame
+
 	Local $bFrameFlags = BinaryMid($bFrameHeaderData, 9, 2)
 
 	If $sFlagReturnType == "RawBinary" Then
@@ -2347,9 +2346,39 @@ EndFunc   ;==>_h_ID3v2FrameHeader_GetFlags
 
 
 Func _h_ID3v2Frame_RemoveUnsynchronisation() ;_h_ID3v2Frame_RemoveUnsynchronisation(ByRef $bFrameData)
+   ;The only purpose of unsynchronisation is to make the ID3v2 tag as
+   ;compatible as possible with existing software and hardware. There is
+   ;no use in 'unsynchronising' tags if the file is only to be processed
+   ;only by ID3v2 aware software and hardware. Unsynchronisation is only
+   ;useful with tags in MPEG 1/2 layer I, II and III, MPEG 2.5 and AAC
+   ;files
+   ;To indicate usage of the unsynchronisation, the unsynchronisation
+   ;flag in the frame header should be set. This bit MUST be set if the
+   ;frame was altered by the unsynchronisation and SHOULD NOT be set if
+   ;unaltered. If all frames in the tag are unsynchronised the
+   ;unsynchronisation flag in the tag header SHOULD be set. It MUST NOT
+   ;be set if the tag has a frame which is not unsynchronised.
+   ;Assume the first byte of the audio to be $FF. The special case when
+   ;the last byte of the last frame is $FF and no padding nor footer is
+   ;used will then introduce a false synchronisation. This can be solved
+   ;by adding a footer, adding padding or unsynchronising the frame and
+   ;add $00 to the end of the frame data, thus adding more byte to the
+   ;frame size than a normal unsynchronisation would. Although not
+   ;preferred, it is allowed to apply the last method on all frames
+   ;ending with $FF.
+   ;It is preferred that the tag is either completely unsynchronised or
+   ;not unsynchronised at all. A completely unsynchronised tag has no
+   ;false synchonisations in it, as defined above, and does not end with
+   ;$FF. A completely non-unsynchronised tag contains no unsynchronised
+   ;frames, and thus the unsynchronisation flag in the header is cleared.
+   ;Do bear in mind, that if compression or encryption is used, the
+   ;unsynchronisation scheme MUST be applied afterwards. When decoding an
+   ;unsynchronised frame, the unsynchronisation scheme MUST be reversed
+   ;first, encryption and decompression afterwards.
 
 	;$bFrameData does not include header
 
+   ;Foobar2000 seems to just set every other byte to 0x00 so I need to check for this too
 
 	Local $bFrameData_Temp = BinaryMid($bFrameData, 1, 1)
 
@@ -3946,6 +3975,7 @@ Func _APEv2Tag_ReadFromFile($sFilename)
 		SetExtended(4)
 	EndIf
 
+    FileClose($hfile)
 	Return $APEv2_TAGINFO
 
 EndFunc   ;==>_APEv2Tag_ReadFromFile
