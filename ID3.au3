@@ -1,7 +1,6 @@
 #include-once
 #include <Array.au3> ;need for UnSynchronisation
-#include <String.au3>
-#cs  #UDF INDEX# ================================================================================================
+#cs  #UDF Project Information# ================================================================================================
  Title .........: ID3 UDF
  AutoIt Version : v3.3.8.0
  Language ......: English
@@ -10,240 +9,172 @@
  Author(s) .....: Joe Begnoche (joeyb1275)
  UDF Forum Link.: http://www.autoitscript.com/forum/index.php?showtopic=43950&st=0
  Feature List...:
-					Added ID3v2.4 read/write compatability
-					Added reading/writing of ID3v1.1+ Extended Tags
-					Added ability to read/write multiple frameIDs (ID3v2 allows multiple TXXX,WXXX frames and others)
-					Improved time to read tags for all versions by about 80%
-					Added AlbumArt reading for jpeg and png
-					Added _APEv2 functions _APEv2Tag_GetTagSize() _APEv2Tag_GetVersion() and _APEv2Tag_GetItemCount()
-					Added _MPEG_... functions
-					Tested Reading Tags from
-						-Tag&Rename - ID3v1.1 & ID3v2.3
-						-mp3Tag Pro - ID3v1.1 & ID3v2.3
-						-Mp3tag - ID3v1.1, ID3v2.3 & APEv2
-						-iTunes - APEv2 TagSize which includes header (Not to standard)
+				  Reads ID3v1.0, ID3v1.1, ID3v1.1+, ID3v2.2, ID3v2.3, ID3v2.4, APEv2 and MPEG frame header
+				  Writes ID3v1.1, ID3v2.3, ID3v2.4
+				  ID3v2.4 Read/Write compatability
+				  Reading of ID3v1.1+ Extended Tags (experimental - not tested much, not many programs do these extended tags)
+				  Read/Write multiple frameIDs (ID3v2 allows multiple TXXX,WXXX frames and others)
+				  Tested for fast tag reads
+				  Read/Write AlbumArt (jpeg or png) & SongLyrics without writing file to disk option
+				  _APEv2 functions to read/remove APE tag information (experimental with some testing)
+				  _MPEG_... functions to read MPEG information (experimental will not work with VBR MP3s)
+				  Tested Reading Tags from
+					 -Tag&Rename - ID3v1.1 & ID3v2.3
+					 -mp3Tag Pro - ID3v1.1 & ID3v2.3
+					 -Mp3tag - ID3v1.1, ID3v2.3 & APEv2
+					 -iTunes - APEv2 TagSize which includes header (Not to standard)
+			   MAIN UDF FUNCTION LIST
+				  _ID3ReadTag()
+				  _ID3GetTagField()
+				  _ID3SetTagField()
+				  _ID3WriteTag()
+				  _ID3RemoveTag()
+				  _ID3CreateTag()
+				  _ID3DeleteFiles()
+			   Always us _ID3ReadTag() first before reading or writing tag data. Then use _ID3GetTagField() or
+			   _ID3SetTagField() to get or set tag field values.  To finish writing a tag finally use _ID3WriteTag()
+			   after setting tag field values.
+			   _ID3ReadTag() used to open a file and checks all tag information.
+			   _ID3GetTagField() used to read tag frame/field values
+			   _ID3SetTagField() used to set tag frame/field values (does not saved to file)
+			   _ID3WriteTag() used to save all tag changes to the file.
+			   _ID3RemoveTag() can be used after _ID3ReadTag() to remove any/all tags.
+			   _ID3CreateTag() can be used after _ID3ReadTag() to create a new tag.
+			   _ID3DeleteFiles() is used to clean up AlbumArt & SongLyrics files creating when reading a tag.
+				  This is not needed in lastest version 3.4.2 if these fields are read out using option to read raw
+				  binary data in array output format of _ID3GetTagField() (option 1 or 2), no files are writtin to HD.
  ToDo List......:
-			Release 3.4.2 ToDo
-				-TODO -add error flow up from _ID3v1 and _ID3v2 functions to _ID3 functions
-				-TODO Clean up code comments
-				-TODO check if File.au3 is actually needed by _h_ID3v2_CreateFrameAPIC
-			Release 3.5 ToDo
-				-working to fix RemoveUnsynchronization() functions, testing with COMM frame from Foobar2000 v2.4
-			    -ID3v2.4 add ability to remove unsychronization of each frame
-			    -MPEG - handle VBR MP3 properly (XING Header) and (VBRI Header)
+			-handle ID3v2.4 unsynchronization of tag and/or tag frames, testing with COMM frame from Foobar2000 v2.4
+			-MPEG - handle VBR MP3 properly (XING Header) and (VBRI Header)
 				  -http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#SideInfo
-			    -_ID3RemoveTag add save raw MPEG data mode
-			    -ID3v2.4 - work with COMM frame from Foobar2000
-			    -ID3v1 - Test Read/write of TAG+ Extended Tags
-			    -ID3v2 - Add reading of extended header
-#ce ;========================================================================================================
-
-#cs  #UDF Function List# ;===================================================================================
-;					MAIN UDF FUNCTION LIST
-;						_ID3ReadTag()
-;						_ID3GetTagField()
-;						_ID3SetTagField()
-;						_ID3WriteTag()
-;						_ID3RemoveTag()
-;						_ID3CreateTag()
-;						_ID3DeleteFiles()
-;					ID3v1 EXTENDED FUNCTION LIST
-;						_ID3v1Tag_ReadFromFile()
-;						_ID3v1Tag_GetVersion()
-;						_ID3v1Field_GetString()
-;						_ID3v1Field_SetString()
-;						_ID3v1Tag_WriteToFile()
-;					ID3v2 EXTENDED FUNCTION LIST
-;						_ID3v2Tag_ReadFromFile()
-;						_ID3v2Tag_WriteToFile()
-;						_ID3v2Tag_RemoveFrame()
-;						_ID3v2Tag_GetVersion()
-;						_ID3v2Tag_GetHeaderFlags()
-;						_ID3v2Tag_GetTagSize()
-;						_ID3v2Tag_GetExtendedHeader()
-;						_ID3v2Tag_GetFooter()
-;						_ID3v2Tag_GetZPAD()
-;						_ID3v2Frame_GetBinary()
-;						_ID3v2Frame_SetBinary()
-;						_ID3v2Frame_GetFields()
-;						_ID3v2Frame_SetFields()
-;					MPEG FUNCTION LIST
-;						_MPEG_GetFrameHeader()
-;						_MPEG_IsValidHeader()
-;						_MPEG_GetVersion()
-;						_MPEG_GetLayer()
-;						_MPEG_GetBitRate()
-;						_MPEG_GetSampleRate()
-;						_MPEG_GetChannelMode()
-;						_MPEG_GetChannelModeEx()
-;					APEv2 FUNCTION LIST
-;						_APEv2Tag_ReadFromFile()
-;						_APEv2Tag_GetTagSize()
-;						_APEv2_GetItemKeys()
-;						_APEv2_GetItemValueBinary()
-;						_APEv2_GetItemValueString()
-;						_APEv2_RemoveTag()
-;
-;					ID3v1 HELPER FUNCTION LIST
-;						_h_ID3v1_GetGenreFromID()
-;						_h_ID3v1_GetGenreID()
-;					ID3v2 HELPER FUNCTION LIST
-;						_h_ID3v2Tag_EnumerateFrameIDs()
-;						_h_ID3v2FrameHeader_GetFrameID()
-;						_h_ID3v2FrameHeader_GetFrameSize()
-;						_h_ID3v2FrameHeader_GetFlags()
-;						_h_ID3v2_GetFrameT000_TZZZ()
-;						_h_ID3v2_CreateFrameT000_TZZZ()
-;						_h_ID3v2_GetFrameTXXX()
-;						_h_ID3v2_CreateFrameTXXX()
-;						_h_ID3v2_GetFrameW000_WZZZ()
-;						_h_ID3v2_CreateFrameW000_WZZZ()
-;						_h_ID3v2_GetFrameWXXX()
-;						_h_ID3v2_CreateFrameWXXX()
-;						_h_ID3v2_GetFrameCOMM()
-;						_h_ID3v2_CreateFrameCOMM()
-;						_h_ID3v2_GetFrameAPIC()
-;						_h_ID3v2_CreateFrameAPIC()
-;						_h_ID3v2_GetFrameUSLT()
-;						_h_ID3v2_CreateFrameUSLT()
-;						_h_ID3v2_GetFramePCNT()
-;						_h_ID3v2_CreateFramePCNT()
-;						_h_ID3v2_GetFrameUFID()
-;						_h_ID3v2_CreateFrameUFID()
-;						_h_ID3v2_GetFramePOPM()
-;						_h_ID3v2_CreateFramePOPM()
-;						_h_ID3v2_GetFramePRIV()
-;						_h_ID3v2_CreateFramePRIV()
-;						_h_ID3v2_GetFrameRGAD()
-;						_h_ID3v2_DecodeTextToString()
-;						_h_ID3v2_EncodeStringToBinary()
-;						_h_ID3v2_ConvertFrameID()
+			-ID3v1.1+ more testing of Read/write of TAG+ Extended Tags
+			-ID3v2 more testing of reading of extended header
 #ce ;========================================================================================================
 
 #cs #ID3.au3 ID3v2 FrameID Definitions# ;====================================================================
 
-	FrameIDs as of ID3v2.3,ID3v2.2 (not all may work in UDF)
-	AENC,CRA	Audio encryption
-	APIC,PIC 	Attached picture
-	COMM,COM 	Comments
-	COMR 		Commercial frame.
-	CRM 		Encrypted meta frame (ID3v2.2 only)
-	ENCR 		Encryption method registration
-	EQUA,EQU 	Equalization
-	ETCO,ETC 	Event timing codes
-	GEOB,GEO 	General encapsulated object
-	GRID 		Group identification registration
-	IPLS,IPL 	Involved people list
-	LINK,LNK 	Linked information
-	MCDI,MCI 	Music CD identifier
-	MLLT,MLL 	MPEG location lookup table
-	OWNE 		Ownership frame
-	PRIV 		Private frame
-	PCNT,CNT 	Play counter
-	POPM,POP 	Popularimeter
-	POSS 		Position synchronisation frame
-	RBUF,BUF	Recommended buffer size
-	RVAD,RVA 	Relative volume adjustment
-	RVRB,REV 	Reverb
-	SYLT,SLT 	Synchronized lyric/text
-	SYTC,STC 	Synchronized tempo codes
-	TALB,TAL 	Album/Movie/Show title
-	TBPM,TBP 	BPM (beats per minute)
-	TCOM,TCM 	Composer
-	TCON,TCO 	Content type
-	TCOP,TCR 	Copyright message
-	TDAT,TDA 	Date
-	TDLY,TDY 	Playlist delay
-	TENC,TEN 	Encoded by
-	TEXT,TXT 	Lyricist/Text writer
-	TFLT,TFT 	File type
-	TIME,TIM 	Time
-	TIT1,TT1 	Content group description
-	TIT2,TT2 	Title/songname/content description
-	TIT3,TT3 	Subtitle/Description refinement
-	TKEY,TKE 	Initial key
-	TLAN,TLA 	Language(s)
-	TLEN,TLE 	Length
-	TMED,TMT 	Media type
-	TOAL,TOT 	Original album/movie/show title
-	TOFN,TOF 	Original filename
-	TOLY,TOL 	Original lyricist(s)/text writer(s)
-	TOPE,TOA 	Original artist(s)/performer(s)
-	TORY,TOR 	Original release year
-	TOWN 		File owner/licensee
-	TPE1,TP1 	Lead performer(s)/Soloist(s)
-	TPE2,TP2 	Band/orchestra/accompaniment
-	TPE3,TP3 	Conductor/performer refinement
-	TPE4,TP4 	Interpreted, remixed, or otherwise modified by
-	TPOS,TPA 	Part of a set
-	TPUB,TPB 	Publisher
-	TRCK,TRK 	Track number/Position in set
-	TRDA,TRD 	Recording dates
-	TRSN 		Internet radio station name
-	TRSO 		Internet radio station owner
-	TSIZ,TSI 	Size
-	TSRC,TRC	ISRC - International Standard Recording Code
-	TSSE,TSS 	Software/Hardware and settings used for encoding
-	TYER,TYE 	Year
-	TXXX,TXX 	User defined text information frame
-	UFID,UFI	Unique file identifier
-	USER 		Terms of use
-	USLT,ULT	Unsychronized lyric/text transcription
-	WCOM,WCM 	Commercial information
-	WCOP,WCP 	Copyright/Legal information
-	WOAF,WAF	Official audio file webpage
-	WOAR,WAR	Official artist/performer webpage
-	WOAS,WAS	Official audio source webpage
-	WORS 		Official internet radio station homepage
-	WPAY 		Payment
-	WPUB,WPB 	Publishers official webpage
-	WXXX,WXX 	User defined URL link frame
-	Unofficial Frames Seen in the Wild:
-	These are frames that are not in the specs that programs are writing:
-	http://www.id3.org/Developer_Information
-	COMM 		w. desc="iTunNORM": iTunes Normalization settings
-	RGAD 		Replay Gain Adjustment (This is not widely supported and I think it has been superseded by RVA2 in ID3v2.4 (and the XRVA tag for 2.3 compatibility).)
-	TCMP 		iTunes Compilation Flag
-	TSO2 		iTunes uses this for Album Artist sort order
-	TSOC 		iTunes uses this for Composer sort order
-	XRVA 		Experimental RVA2
-	Deprecated ID3v2 frames (Not in ID3v2.4)
-	EQUA 	 	Equalization (This frame is replaced by the EQU2 frame)
-	IPLS 		Involved people list (This frame is replaced by the two frames TMCL, 'Musician credits list', and TIPL, 'Involved people list')
-	RVAD  		Relative volume adjustment (This frame is replaced by the RVA2 frame, 'Relative volume adjustment (2)')
-	TDAT  		Date (This frame is replaced by the TDRC frame, 'Recording time')
-	TIME  		Time (This frame is replaced by the TDRC frame, 'Recording time')
-	TORY  		Original release year (This frame is replaced by the TDOR frame, 'Original release time')
-	TRDA  		Recording dates (This frame is replaced by the TDRC frame, 'Recording time')
-	TSIZ  		Size (The information contained in this frame is in the general case either trivial to calculate for the player or impossible for the
-					tagger to calculate. There is however no good use for such information. The frame is therefore completely deprecated.
-	TYER  		Year (This frame is replaced by the TDRC frame, 'Recording time')
-	New frames in ID3v2.4
-	ASPI 		Audio seek point index
-	EQU2 		Equalisation (2)
-	RVA2 		Relative volume adjustment (2)
-	SEEK 		Seek frame
-	SIGN 		Signature frame
-	TDEN 		Encoding time
-	TDOR 		Original release time
-	TDRC 		Recording time
-	TDRL 		Release time
-	TDTG 		Tagging time
-	TIPL 		Involved people list
-	TMCL 		Musician credits list
-	TMOO 		Mood
-	TPRO 		Produced notice
-	TSOA 		Album sort order
-	TSOP 		Performer sort order
-	TSOT 		Title sort order
-	TSST 		Set subtitle
+   FrameIDs as of ID3v2.3,ID3v2.2 (not all may work in UDF)
+   AENC,CRA	Audio encryption
+   APIC,PIC 	Attached picture
+   COMM,COM 	Comments
+   COMR 		Commercial frame.
+   CRM 		Encrypted meta frame (ID3v2.2 only)
+   ENCR 		Encryption method registration
+   EQUA,EQU 	Equalization
+   ETCO,ETC 	Event timing codes
+   GEOB,GEO 	General encapsulated object
+   GRID 		Group identification registration
+   IPLS,IPL 	Involved people list
+   LINK,LNK 	Linked information
+   MCDI,MCI 	Music CD identifier
+   MLLT,MLL 	MPEG location lookup table
+   OWNE 		Ownership frame
+   PRIV 		Private frame
+   PCNT,CNT 	Play counter
+   POPM,POP 	Popularimeter
+   POSS 		Position synchronisation frame
+   RBUF,BUF	Recommended buffer size
+   RVAD,RVA 	Relative volume adjustment
+   RVRB,REV 	Reverb
+   SYLT,SLT 	Synchronized lyric/text
+   SYTC,STC 	Synchronized tempo codes
+   TALB,TAL 	Album/Movie/Show title
+   TBPM,TBP 	BPM (beats per minute)
+   TCOM,TCM 	Composer
+   TCON,TCO 	Content type
+   TCOP,TCR 	Copyright message
+   TDAT,TDA 	Date
+   TDLY,TDY 	Playlist delay
+   TENC,TEN 	Encoded by
+   TEXT,TXT 	Lyricist/Text writer
+   TFLT,TFT 	File type
+   TIME,TIM 	Time
+   TIT1,TT1 	Content group description
+   TIT2,TT2 	Title/songname/content description
+   TIT3,TT3 	Subtitle/Description refinement
+   TKEY,TKE 	Initial key
+   TLAN,TLA 	Language(s)
+   TLEN,TLE 	Length
+   TMED,TMT 	Media type
+   TOAL,TOT 	Original album/movie/show title
+   TOFN,TOF 	Original filename
+   TOLY,TOL 	Original lyricist(s)/text writer(s)
+   TOPE,TOA 	Original artist(s)/performer(s)
+   TORY,TOR 	Original release year
+   TOWN 		File owner/licensee
+   TPE1,TP1 	Lead performer(s)/Soloist(s)
+   TPE2,TP2 	Band/orchestra/accompaniment
+   TPE3,TP3 	Conductor/performer refinement
+   TPE4,TP4 	Interpreted, remixed, or otherwise modified by
+   TPOS,TPA 	Part of a set
+   TPUB,TPB 	Publisher
+   TRCK,TRK 	Track number/Position in set
+   TRDA,TRD 	Recording dates
+   TRSN 		Internet radio station name
+   TRSO 		Internet radio station owner
+   TSIZ,TSI 	Size
+   TSRC,TRC	ISRC - International Standard Recording Code
+   TSSE,TSS 	Software/Hardware and settings used for encoding
+   TYER,TYE 	Year
+   TXXX,TXX 	User defined text information frame
+   UFID,UFI	Unique file identifier
+   USER 		Terms of use
+   USLT,ULT	Unsychronized lyric/text transcription
+   WCOM,WCM 	Commercial information
+   WCOP,WCP 	Copyright/Legal information
+   WOAF,WAF	Official audio file webpage
+   WOAR,WAR	Official artist/performer webpage
+   WOAS,WAS	Official audio source webpage
+   WORS 		Official internet radio station homepage
+   WPAY 		Payment
+   WPUB,WPB 	Publishers official webpage
+   WXXX,WXX 	User defined URL link frame
+   Unofficial Frames Seen in the Wild:
+   These are frames that are not in the specs that programs are writing:
+   http://www.id3.org/Developer_Information
+   COMM 		w. desc="iTunNORM": iTunes Normalization settings
+   RGAD 		Replay Gain Adjustment (This is not widely supported and I think it has been superseded by RVA2 in ID3v2.4 (and the XRVA tag for 2.3 compatibility).)
+   TCMP 		iTunes Compilation Flag
+   TSO2 		iTunes uses this for Album Artist sort order
+   TSOC 		iTunes uses this for Composer sort order
+   XRVA 		Experimental RVA2
+   Deprecated ID3v2 frames (Not in ID3v2.4)
+   EQUA 	 	Equalization (This frame is replaced by the EQU2 frame)
+   IPLS 		Involved people list (This frame is replaced by the two frames TMCL, 'Musician credits list', and TIPL, 'Involved people list')
+   RVAD  		Relative volume adjustment (This frame is replaced by the RVA2 frame, 'Relative volume adjustment (2)')
+   TDAT  		Date (This frame is replaced by the TDRC frame, 'Recording time')
+   TIME  		Time (This frame is replaced by the TDRC frame, 'Recording time')
+   TORY  		Original release year (This frame is replaced by the TDOR frame, 'Original release time')
+   TRDA  		Recording dates (This frame is replaced by the TDRC frame, 'Recording time')
+   TSIZ  		Size (The information contained in this frame is in the general case either trivial to calculate for the player or impossible for the
+				tagger to calculate. There is however no good use for such information. The frame is therefore completely deprecated.
+   TYER  		Year (This frame is replaced by the TDRC frame, 'Recording time')
+   New frames in ID3v2.4
+   ASPI 		Audio seek point index
+   EQU2 		Equalisation (2)
+   RVA2 		Relative volume adjustment (2)
+   SEEK 		Seek frame
+   SIGN 		Signature frame
+   TDEN 		Encoding time
+   TDOR 		Original release time
+   TDRC 		Recording time
+   TDRL 		Release time
+   TDTG 		Tagging time
+   TIPL 		Involved people list
+   TMCL 		Musician credits list
+   TMOO 		Mood
+   TPRO 		Produced notice
+   TSOA 		Album sort order
+   TSOP 		Performer sort order
+   TSOT 		Title sort order
+   TSST 		Set subtitle
 #ce ;========================================================================================================
 
 #cs #ID3.au3 UDF Changes.......: ;====================================================================
 	Release 3.0 - 20120501
 		-Code re-write to improve performance and increase features
 		-Added ID3v2.4 read/write compatability
-		-Added removal of Unsynchronisation (Needed for ID3v2.4 tags from Foobar2000)
+		-Added removal of Unsynchronisation (Needed for ID3v2.4 tags from Foobar2000) (experimantal)
 		-Added reading/writing of ID3v1.1+ Extended Tags (Not Tested Yet) (http://en.wikipedia.org/wiki/ID3)
 		-Added reading and removing of APEv2 Tags at the end of the file
 		-Improved time to read tags for all versions by about 80%
@@ -298,6 +229,12 @@
 			-updated SongLyrics to function the same as AlbumArt, new array is "LyricsFilename|Description|Language|TextEncoding|SongLyricsString"
 			-this change allows the option of getting the field data without writting a file
 		 -changed all _h_ID3v2_GetFrame___ to always return array
+		 -changed comments for UDF description
+		 -ToDo
+			-test unsync mp3 to fix scanning
+			-try to do unsync frame
+			-flow more errors up
+			-Test, Test and More Test
 
 		 Pushed Unsync work to another release
 		 -working on _h_ID3v2Tag_RemoveUnsynchronisation()
@@ -313,34 +250,34 @@ Dim $sID3v2_TagFrameIndex_Global = "", $sAPEv2_TagFrameIndex_Global = "", $iID3v
 ; ===========================================================================================================
 
 
-; #FUNCTION# ;===============================================================================================
-; Function Name....: _ID3ReadTag($Filename, $iVersion = 0)
-; Description......: Reads ID3v1, ID3v2, and APEv2 binary data and stores them into global variables
-; Parameter(s).....: $Filename     - Filename of mp3 file include full path
-;					 $iTagVersion  - ID3 Version to read (Default: 0 => ID3v1 & ID3v2 & APEv2)
-;										0 => Read ID3v1 & ID3v2 & APEv2 (Default)
-;										1 => Read ID3v1 only
-;										2 => Read ID3v2 only
-;										3 => Read ID3v1 & ID3v2
-;										4 => Read APEv2 only
-; Requirement(s)...: This function must be used first in order to use other ID3.au3 functions.
-; Return Value(s)..: On Success - Returns a string that denotes the tags and fields that exist in file.
-;									@extended = (Can be a combination of the following:)
-;											0 -> No Tags Found
-;											1 -> ID3v1 Found
-;											2 -> ID3v2 Found
-;											4 -> APEv2 Found
-;							   - Example Returned String,
-;									"FilePath\Filename.mp3 @CRLF
-;									 ID3v2.3.0|TIT2:1|TPE1:1|TALB:1|TRCK:1|TYER:1|COMM:2|APIC:1|... @CRLF
-;									 ID3v1.1|Title|Artist|Album|Year|Comment|Track|Genre|... @CRLF
-;									 APEv2|ARTIST|ALBUM|GENRE|..."
-;										Note: for ID3v2 the number that follows the colon indicates the number of
-;												Frames that were found with the same FrameIDs.
-;                    On Failure - Returns 0 and @error = 1 for File not found
-; Author ..........: joeyb1275
-; Modified.........: 20120501 by joeyb1275
-; ;===========================================================================================================
+#cs #FUNCTION# ;===============================================================================================
+Function Name....: _ID3ReadTag($Filename, $iVersion = 0)
+Description......: Reads ID3v1, ID3v2, and APEv2 binary data and stores them into global variables
+Parameter(s).....: $Filename     - Filename of mp3 file include full path
+					 $iTagVersion  - ID3 Version to read (Default: 0 => ID3v1 & ID3v2 & APEv2)
+									0 => Read ID3v1 & ID3v2 & APEv2 (Default)
+									1 => Read ID3v1 only
+									2 => Read ID3v2 only
+									3 => Read ID3v1 & ID3v2
+									4 => Read APEv2 only
+Requirement(s)...: This function must be used first in order to use other ID3.au3 functions.
+Return Value(s)..: On Success - Returns a string that denotes the tags and fields that exist in file.
+									@extended = (Can be a combination of the following:)
+										0 -> No Tags Found
+										1 -> ID3v1 Found
+										2 -> ID3v2 Found
+										4 -> APEv2 Found
+						   - Example Returned String,
+								"FilePath\Filename.mp3 @CRLF
+								 ID3v2.3.0|TIT2:1|TPE1:1|TALB:1|TRCK:1|TYER:1|COMM:2|APIC:1|... @CRLF
+								 ID3v1.1|Title|Artist|Album|Year|Comment|Track|Genre|... @CRLF
+								 APEv2|ARTIST|ALBUM|GENRE|..."
+									Note: for ID3v2 the number that follows the colon indicates the number of
+										 Frames that were found with the same FrameIDs.
+                  On Failure - Returns 0 and @error = 1 for File not found
+Author ..........: joeyb1275
+Modified.........: 20120501 by joeyb1275
+#ce ;===========================================================================================================
 Func _ID3ReadTag($Filename, $iTagVersion = 0)
 
 	;Reset all global vairables
@@ -408,74 +345,92 @@ Func _ID3ReadTag($Filename, $iTagVersion = 0)
 
 EndFunc   ;==>_ID3ReadTag
 
-
-; #FUNCTION# ;===================================================================================================================
-; Function Name:    _ID3GetTagField($sFrameIDRequest, $iFrameID_Index = 1)
-; Description:      Returns a variant data type depending on $iReturnTypeFlag value that represents the ID3 Frame Data that cooresponds to the requested frame ID.
-;						For ID3v2 FrameIDs that are not implimented within this UDF use _ID3v2Frame_GetBinary() to get the raw frame data.
-;						For APEv2 tag Strings use _APEv2_GetItemValueString()
-; Parameter(s):     $sFrameIDRequest 	- ID3 FrameID String of the Field to return (ie. "TIT2" for ID3v2 Title or "Title" for ID3v1 Title)
-;											Valid ID3v1 FrameIDs to Request,
-;												Title | Artist | Album | Year | Comment | Track | Genre | Version1 | Speed | Start-Time | End-Time
-;											Valid ID3v2 FrameIDs to Request - see specification for four character FrameIDs or list above
-;					$iFrameID_Index		- Index number of ID3v2 FrameID, COMM, APIC and TXXX (and more) can exist multiple time in ID3v2 Tag
-;					$iReturnTypeFlag	- Data type to return (Default: 0 )
-;												0 => Returns simple text string that mostly describes the frame (Default)
-;												1 => Returns array of all items in ID3v2 frame including APIC BinaryPictureData and SongLyricsString
-;												2 => Returns 2D array of all items with descriptions
-; Requirement(s):   Must call _ID3ReadTag() first.
-; Return Value(s):  On Success - Returns a variant data type depending on $iReturnTypeFlag value
-;						@error = 0; @extended = Number of Frames that exist in the ID3v2 Tag with $sFieldIDRequest
-;                   On Failure - Returns Empty String meaning $sFieldIDRequest did not match any IDs in the mp3 File
-;						@error = 1; @extended = 0
-; Author ........: joeyb1275
-; Modified.......: 20120501 by joeyb1275
-;============================================================================================
+#cs #FUNCTION# ;=============================================================================================
+ Function Name:    _ID3GetTagField($sFrameIDRequest, $iFrameID_Index = 1)
+ Description:      Returns a variant data type depending on $iReturnTypeFlag value that represents the ID3 Frame Data that cooresponds to the requested frame ID.
+						For ID3v2 FrameIDs that are not implimented within this UDF use _ID3v2Frame_GetBinary() to get the raw frame data.
+						For APEv2 tag Strings use _APEv2_GetItemValueString()
+ Parameter(s):     $sFrameIDRequest 	- ID3 FrameID String of the Field to return (ie. "TIT2" for ID3v2 Title or "Title" for ID3v1 Title)
+										  Valid ID3v1 FrameIDs to Request,
+											 Title | Artist | Album | Year | Comment | Track | Genre | Version1 | Speed | Start-Time | End-Time
+										  Valid ID3v2 FrameIDs to Request - see specification for four character FrameIDs or list above
+											 $iReturnTypeFlag = 1 or 2
+												T??? => Information | TextEncoding
+												TXXX => Value | Description | TextEncoding
+												WXXX => URL | Description | TextEncoding
+												COMM => CommentText | Description | Language | TextEncoding
+												APIC => PictureFileName | Description | PictureType | MIMEType | TextEncoding | BinaryPictureData
+												USLT => LyricsFilename | Description | Language | TextEncoding
+												UFID => OwnerIdentifier | Identifier
+												POPM => Rating | EmailToUser | Counter
+												PRIV => OwnerIdentifier | PrivateData
+												PCNT => PlayCounter
+												MCDI => MusicCDIDBinaryData
+												RGAD => PeakAmplitude | RadioReplayGainAdj | AudiophileReplayGainAdj
+					$iFrameID_Index		- Index number of ID3v2 FrameID, COMM, APIC and TXXX (and more) can exist multiple time in ID3v2 Tag
+					$iReturnTypeFlag	- Data type to return (Default: 0 )
+												0 => Returns simple text string that mostly describes the frame (Default)
+												1 => Returns array of all items in ID3v2 frame including APIC BinaryPictureData and SongLyricsString
+												2 => Returns 2D array of all items with descriptions
+												3 => Returns raw binary data of tag field (Not including FrameID or FrameHeader data)
+ Requirement(s):   Must call _ID3ReadTag() first.
+ Return Value(s):  On Success - Returns a variant data type depending on $iReturnTypeFlag value
+						@error = 0; @extended = Number of Frames that exist in the ID3v2 Tag with $sFieldIDRequest
+                   On Failure - Returns Empty String meaning $sFieldIDRequest did not match any IDs in the mp3 File
+						@error = 1; @extended = 0
+ Author ........: joeyb1275
+ Modified.......: 20120501 by joeyb1275
+#ce;============================================================================================
 Func _ID3GetTagField($sFrameIDRequest, $iFrameID_Index = 1, $iReturnTypeFlag = 0)
 
-	Local $vFrameString, $iNumFrames = 0, $iError = 0
+   Local $vFrameString, $iNumFrames = 0, $iError = 0
 
-	If StringInStr("|Title|Artist|Album|Year|Comment|Track|Genre|Version1|Speed|Start-Time|End-Time", $sFrameIDRequest, 1) Then
-		$vFrameString = _ID3v1Field_GetString($sFrameIDRequest)
-		$iError = @error
-		$iNumFrames = 1
-	 Else
-		$vFrameString = _ID3v2Frame_GetFields($sFrameIDRequest, $iFrameID_Index, $iReturnTypeFlag)
-		$iNumFrames = @extended
-		$iError = @error
-	EndIf
-	SetError($iError)
-	SetExtended($iNumFrames)
-	Return $vFrameString
+   If StringInStr("|Title|Artist|Album|Year|Comment|Track|Genre|Version1|Speed|Start-Time|End-Time", $sFrameIDRequest, 1) Then
+	  $vFrameString = _ID3v1Field_GetString($sFrameIDRequest)
+	  $iError = @error
+	  $iNumFrames = 1
+   Else
+	  If $iReturnTypeFlag = 3 Then
+		 $vFrameString = _ID3v2Frame_GetBinary($sFrameIDRequest, $iFrameID_Index)
+		 $iNumFrames = @extended
+		 $iError = @error
+	  Else
+		 $vFrameString = _ID3v2Frame_GetFields($sFrameIDRequest, $iFrameID_Index, $iReturnTypeFlag)
+		 $iNumFrames = @extended
+		 $iError = @error
+	  EndIf
+   EndIf
+   SetError($iError)
+   SetExtended($iNumFrames)
+   Return $vFrameString
 EndFunc   ;==>_ID3GetTagField
 
 
-; #FUNCTION# ;===================================================================================================================
-; Function Name:    _ID3SetTagField()
-; Description:      Sets a simple string to the requested Tag Frame/Field. Use _ID3WriteTag() to write updated tag to file.
-;						For ID3v2 FrameIDs that are not implimented within this UDF (ie. PRIV) use _ID3v2Frame_SetBinary() to get the raw frame data.
-;						APEv2 Tags not implimented yet.
-; Parameter(s):     $sFieldIDRequest 	- ID3 Field ID String of the Field to return (ie. "TIT2" for ID3v2 Title or "Title" for ID3v1 Title)
-;					$sFieldValue		- Simple text string (when $sFieldValue is set to "" a blank string frame will be removed from the ID3v2 Tag)
-;					$iFrameID_Index		- Index number of ID3v2 FrameID, COMM, APIC and TXXX (and more) can exist multiple times in ID3v2 Tag
-; Requirement(s):   Must call _ID3ReadTag() first or if $sFieldIDRequest does not exist it will be created and set to $sFieldValue.
-;					Must call _ID3WriteTag() to save changes to the file.
-; Return Value(s):  On Success - Returns 0.
-;						@error = 0; @extended = 0
-;                   On Failure - ???
-;						@error = 1; @extended = 0
-; Author ........: joeyb1275
-; Modified.......: 20120501 by joeyb1275
-;============================================================================================
+#cs #FUNCTION# ;===================================================================================================================
+Function Name:    _ID3SetTagField()
+Description:      Sets a simple string to the requested Tag Frame/Field. Use _ID3WriteTag() to write updated tag to file.
+						For ID3v2 FrameIDs that are not implimented within this UDF (ie. PRIV) use _ID3v2Frame_SetBinary() to get the raw frame data.
+						APEv2 Tags not implimented yet.
+Parameter(s):     $sFieldIDRequest 	- ID3 Field ID String of the Field to return (ie. "TIT2" for ID3v2 Title or "Title" for ID3v1 Title)
+					$sFieldValue		- Simple text string (when $sFieldValue is set to "" a blank string frame will be removed from the ID3v2 Tag)
+					$iFrameID_Index		- Index number of ID3v2 FrameID, COMM, APIC and TXXX (and more) can exist multiple times in ID3v2 Tag
+Requirement(s):   Must call _ID3ReadTag() first or if $sFieldIDRequest does not exist it will be created and set to $sFieldValue.
+					Must call _ID3WriteTag() to save changes to the file.
+Return Value(s):  On Success - Returns 0.
+						@error = 0; @extended = 0
+                   On Failure - ???
+						@error = 1; @extended = 0
+Author ........: joeyb1275
+Modified.......: 20120501 by joeyb1275
+#ce ;============================================================================================
 Func _ID3SetTagField($sFrameIDRequest, $sFieldValue, $iFrameID_Index = 1)
 
 	If StringInStr("|Title|Artist|Album|Year|Comment|Track|Genre|Version1|Speed|Start-Time|End-Time", $sFrameIDRequest, 1) Then
 		_ID3v1Field_SetString($sFrameIDRequest, $sFieldValue)
-		Return 0
-	EndIf
-
-	_ID3v2Frame_SetFields($sFrameIDRequest, $sFieldValue, $iFrameID_Index)
-	Return 0
+   Else
+	  _ID3v2Frame_SetFields($sFrameIDRequest, $sFieldValue, $iFrameID_Index)
+   EndIf
+   Return 0
 EndFunc   ;==>_ID3SetTagField
 
 
@@ -1831,12 +1786,21 @@ Func _ID3v2Frame_GetFields($sFrameID, $iFrameID_Index = 1, $iReturnTypeFlag = 0)
 				If $iReturnTypeFlag = 0 Then
 					$vFrameString = $vFrameString[1] ;OwnerIdentifier
 				EndIf
-			Case "PCNT", "CNT" ;Play counter
-				$vFrameStringDescrip = "PlayCount"
-				$vFrameString = _h_ID3v2_GetFramePCNT($bFrameData) ;Counter
+			Case "PCNT", "CNT" ;PlayCounter
+			   $vFrameStringDescrip = "PlayCount"
+			   $vFrameString = _h_ID3v2_GetFramePCNT($bFrameData) ;PlayCount
+			   If $iReturnTypeFlag = 0 Then
+				  $vFrameString = $vFrameString[1] ;PlayCount
+			   EndIf
 			Case "MCDI", "MCI" ;Music CD identifier (Only contains binary data)
-				$vFrameStringDescrip = "BinaryData"
-				$vFrameString = $bFrameData
+			   $vFrameStringDescrip = "MusicCDIDBinaryData"
+			   Local $aFrameInfo[2]
+			   $aFrameInfo[0] = 1
+			   $aFrameInfo[1] = $bFrameData
+			   $vFrameString = $aFrameInfo
+			   If $iReturnTypeFlag = 0 Then
+				  $vFrameString = $vFrameString[1] ;MusicCDIDBinaryData
+			   EndIf
 			Case "RGAD" ;Replay Gain Adjustment
 				;PeakAmplitude | RadioReplayGainAdj | AudiophileReplayGainAdj
 				$vFrameStringDescrip = "PeakAmplitude|RadioReplayGainAdj|AudiophileReplayGainAdj"
@@ -2832,7 +2796,7 @@ Func _h_ID3v2_GetFramePCNT(ByRef $bFrameData)
 	;counter thus making the counter eight bits bigger. The counter must
 	;be at least 32-bits long to begin with.
 	;---------------------------------------------------------------------------------
-	;Counter
+	;PlayCount
 
    Local $aFrameInfo[2]
    $aFrameInfo[0] = 1

@@ -16,14 +16,20 @@
 ;~ _ID3Example_ReadShowAllExistingTags()
 
 ;~ _ID3Example_WritePOPM()
+
 ;~ _ID3Example_ReadPOPM()
 
 ;~ _ID3Example_ReadShowTitle()
+
 _ID3Example_ReadID3v2APIC_SimplePictureBox()
+
 ;~ _ID3Example_ReadAPIC_NoFileGDI()
+
 ;~ _ID3Example_ReadID3v2APIC()
 
 ;~ _ID3Example_ReadID3v2TXXX()
+
+;~ _ID3Example_ReadSpeed()
 
 ;~ _ID3Example_WriteID3v2Only()
 
@@ -110,7 +116,6 @@ Func _ID3Example_ReadAPIC_NoFileGDI()
    GUIDelete($hGUI)
 EndFunc   ;==>_ID3Example_ReadAPIC_NoFile
 
-
 Func _ID3Example_ReadID3v2APIC_SimplePictureBox()
 	Dim $sAPIC_PictureTypes = "Other|32x32 pixels 'file icon'|Other file icon|Cover (front)|Cover (back)|Leaflet page|"
 	$sAPIC_PictureTypes &= "Media (e.g. lable side of CD)|Lead artist/lead performer/soloist|Artist/performer|Conductor|"
@@ -179,6 +184,40 @@ Func _ID3Example_ReadID3v2TXXX()
 
 	EndIf
 EndFunc
+
+Func _ID3Example_ReadSpeed())
+   Local $MusicFolder = FileSelectFolder("Choose a folder.", "")
+
+   $Files = _FileListToArray($MusicFolder,"*.mp3",1)
+
+   FileChangeDir($MusicFolder)
+   $sFilter = "APIC"
+   $begin = TimerInit()
+   Local $sTagInfo
+
+   For $i = 1 To $Files[0]
+
+	$sTagInfo = _ID3ReadTag($Files[$i],2)
+	;MsgBox(0,"$sTagInfo",$sTagInfo)
+;~ 	$iTestTXXX = StringInStr($sTagInfo, "COMM")
+;~ 	If $iTestTXXX > 0 Then
+;~ 		$iNumTXXX = Number(StringMid($sTagInfo,$iTestTXXX + 5,1))
+;~ 		For $j = 1 To $iNumTXXX
+;~ 			MsgBox(0,"COMM:" & $j,$Files[$i] & @CRLF & _ID3v2Frame_GetString("COMM",$j))
+;~ 		Next
+;~ 	EndIf
+
+;~ 	$ID3v1Tag = _ID3TagToArray($Files[$i],1)
+;~ 	_ArrayDisplay($ID3v1Tag,"$ID3v1Tag")
+
+	;$ID3v2Tag = _ID3TagToArray($Files[$i],2,-1)
+;~ 	_ArrayDisplay($ID3v2Tag,"$ID3v2Tag")
+   Next
+   $dif = TimerDiff($begin)
+   MsgBox(0,"Time",$dif)
+   _ID3DeleteFiles()
+EndFunc
+
 
 Func _ID3Example_WriteID3v2Only()
 

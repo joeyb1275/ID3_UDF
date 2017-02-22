@@ -29,6 +29,8 @@
 		 -changed AlbumArt display to use GDI+ working
 		 -remove APIC picture box control
 		 -changed reading in APIC and USLT Frames so that there is no cile cleanup needed (no files are written to HD)
+		 -ToDo Test tag write
+			-Change code for selecting new pic to use GDI+
 	Release 3.5 TODO
 		-Add Listbox of all ID3v2 frames to be able to select and remove from tag
 #ce ;========================================================================================================
@@ -356,27 +358,26 @@ Func _FileOpen_button_Pressed()
 		;**************************************************************************************************
 		 Dim $aAPIC = _ID3GetTagField("APIC",1,1)
 		 Dim $NumAPIC = @extended
-
-		 $hAPIC_Bitmap = _GDIPlus_BitmapCreateFromMemory($aAPIC[6]) ;load binary saved GIF image and convert it to GDI+ bitmap format
-		 $hAPIC_Bitmap = _GDIPlus_ImageResize($hAPIC_Bitmap, 200, 200) ;resize image
-
-		 $hAPIC_Graphics = _GDIPlus_GraphicsCreateFromHWND($ID3Gui_H) ;create a graphics object from a window handle
-		 If _GUICtrlTab_GetCurSel($tab) = 0 Then
-			_GDIPlus_GraphicsDrawImage($hAPIC_Graphics, $hAPIC_Bitmap, 285, 95) ;display image in GUI
-		 EndIf
-
-		 ;Set Picture Type
-		 Local $aAPIC_PictureTypes = StringSplit($sAPIC_PictureTypes,"|",2)
-		 GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[Number($aAPIC[3])])
-
-		 ;Set control to number of pictures in tag
-		 GUICtrlSetData($APIC_label,"AlbumArt (APIC 1 of " & $NumAPIC & ")")
 		 If $NumAPIC > 0 Then
+
+			$hAPIC_Bitmap = _GDIPlus_BitmapCreateFromMemory($aAPIC[6]) ;load binary saved GIF image and convert it to GDI+ bitmap format
+			$hAPIC_Bitmap = _GDIPlus_ImageResize($hAPIC_Bitmap, 200, 200) ;resize image
+
+			$hAPIC_Graphics = _GDIPlus_GraphicsCreateFromHWND($ID3Gui_H) ;create a graphics object from a window handle
+			If _GUICtrlTab_GetCurSel($tab) = 0 Then
+			   _GDIPlus_GraphicsDrawImage($hAPIC_Graphics, $hAPIC_Bitmap, 285, 95) ;display image in GUI
+			EndIf
+
+			;Set Picture Type
+			Local $aAPIC_PictureTypes = StringSplit($sAPIC_PictureTypes,"|",2)
+			GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[Number($aAPIC[3])])
+
+			;Set control to number of pictures in tag
+			GUICtrlSetData($APIC_label,"AlbumArt (APIC 1 of " & $NumAPIC & ")")
 			GUICtrlSetLimit($APIC_inputUD, $NumAPIC,1)
-		 Else
-			GUICtrlSetLimit($APIC_inputUD, 1,1)
 		 EndIf
 		 ;**************************************************************************************************
+
 
 
 		;Get Stuff with multiple FrameIDs
@@ -417,7 +418,8 @@ Func _FileOpen_button_Pressed()
 	  GUICtrlSetData($ID3v2Size_input, _ID3v2Tag_GetTagSize())
 	  ;**************************************************************************************************
 
-
+	  ;ToDo See what happens when a field is not there seems like too much time is spend on non-existant fields
+	  _GUICtrlStatusBar_SetText ( $StatusBar , "Status: Last Tag was read in " & Round($TimeToReadTags,2) & " ms")
 
 	  ;Get APEv2 Tag
 	  ;**************************************************************************************************
@@ -448,7 +450,7 @@ Func _FileOpen_button_Pressed()
 ;~ 	  _ID3DeleteFiles() ;I shouldn't need this anymore
       $InputCheckUpdates = True
 	EndIf
-	_GUICtrlStatusBar_SetText ( $StatusBar , "Status: Last Tag was read in " & Round($TimeToReadTags,2) & " ms")
+;~ 	_GUICtrlStatusBar_SetText ( $StatusBar , "Status: Last Tag was read in " & Round($TimeToReadTags,2) & " ms")
 EndFunc
 Func _FilePlay_button_Pressed()
 	If StringInStr(GUICtrlRead($FilePlay_button),"Play") <> 0 Then
@@ -781,30 +783,7 @@ Func _APIC_inputUD_Pressed()
 
    GUICtrlSetData($APIC_label,"AlbumArt (APIC " & $iAPIC_index & " of " & $NumAPIC & ")")
 
-;~ 	If FileExists($AlbumArtFile) Then
-
-;~ 		Dim $PicTypeIndex = StringInStr($AlbumArtFile,chr(0))
-;~ 		MsgBox(0,"$PicTypeIndex",Number(StringMid($AlbumArtFile,$PicTypeIndex+1)))
-;~ 		Local $aAPIC_PictureTypes = StringSplit($sAPIC_PictureTypes,"|",2)
-;~ 		_ArrayDisplay($aAPIC_PictureTypes)
-;~ 		If _ID3v2Tag_GetVersion() == "2.0" Then
-;~ 			GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[0])
-;~ 		Else
-;~ 			GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[Number(StringMid($AlbumArtFile,$PicTypeIndex+1))])
-;~ 		EndIf
-;~ 		GUICtrlSetColor($APIC_input, 0x000000)
-;~ 		If $APIC_pic == -1 Then
-;~ 			GUISwitch($ID3Gui_H,$ID3_tab)
-;~ 			$APIC_pic = GUICtrlCreatePic($AlbumArtFile,285,95, 200, 200)
-;~ 			GUICtrlCreateTabItem(""); end tabitem definition
-;~ 		EndIf
-		;GUICtrlSetState($APIC_pic, $GUI_SHOW)
-		;ToDo add GDI+ method
-		;GUICtrlSetImage($APIC_pic, $AlbumArtFile)
-;~
-;~ 	EndIf
-
-	$InputCheckUpdates = True
+   $InputCheckUpdates = True
 EndFunc
 Func _TXXX_inputUD_Pressed()
 	$InputCheckUpdates = False
