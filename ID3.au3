@@ -1,7 +1,7 @@
 #include-once
 #include <Array.au3> ;need for UnSynchronisation
 #include <String.au3>
-#cs  #INDEX# ================================================================================================
+#cs  #UDF INDEX# ================================================================================================
  Title .........: ID3 UDF
  AutoIt Version : v3.3.8.0
  Language ......: English
@@ -239,7 +239,7 @@
 	TSST 		Set subtitle
 #ce ;========================================================================================================
 
-#cs #ID3.au3 UDF Latest Changes.......: ;====================================================================
+#cs #ID3.au3 UDF Changes.......: ;====================================================================
 	Release 3.0 - 20120501
 		-Code re-write to improve performance and increase features
 		-Added ID3v2.4 read/write compatability
@@ -292,6 +292,12 @@
     Working for 3.4.2 Release
 		 -renaming variables with UDF naming rules
 		 -merging in 3.4.2 from local and fixing bugs
+		 -added another field to returned array in _h_ID3v2_GetFrameAPIC() to return binary picture data from APIC tag to be used with _GDIPlus_BitmapCreateFromMemory()
+			-moved writing AlbumArt file to disk to _ID3v2Frame_GetFields() only for default return option
+			-when array is requested to be returned no file will be written, "PictureFileName|Description|PictureType|MIMEType|TextEncoding|BinaryPictureData"
+			-updated SongLyrics to function the same as AlbumArt, new array is "LyricsFilename|Description|Language|TextEncoding|SongLyricsString"
+			-this change allows the option of getting the field data without writting a file
+		 -changed all _h_ID3v2_GetFrame___ to always return array
 
 		 Pushed Unsync work to another release
 		 -working on _h_ID3v2Tag_RemoveUnsynchronisation()
@@ -373,7 +379,6 @@ Func _ID3ReadTag($Filename, $iTagVersion = 0)
 			$sID3_TagInfo_RetVal &= _h_ID3v2Tag_EnumerateFrameIDs() ; takes most of the time
 			$TimeToReadTags = TimerDiff($begin)
 			ConsoleWrite("Time To ID3v2ReadFrames: " & Round($TimeToReadTags,2) & @CRLF)
-			;MsgBox(0, "Time To ID3v2Tag", Round($TimeToReadTags,2))
 
 			$sID3_TagInfo_RetVal &= _ID3v1Tag_ReadFromFile($Filename)
 			$iTagVersionsFound += @extended
@@ -407,7 +412,7 @@ EndFunc   ;==>_ID3ReadTag
 ; #FUNCTION# ;===================================================================================================================
 ; Function Name:    _ID3GetTagField($sFrameIDRequest, $iFrameID_Index = 1)
 ; Description:      Returns a variant data type depending on $iReturnTypeFlag value that represents the ID3 Frame Data that cooresponds to the requested frame ID.
-;						For ID3v2 FrameIDs that are not implimented within this UDF (ie. PRIV) use _ID3v2Frame_GetBinary() to get the raw frame data.
+;						For ID3v2 FrameIDs that are not implimented within this UDF use _ID3v2Frame_GetBinary() to get the raw frame data.
 ;						For APEv2 tag Strings use _APEv2_GetItemValueString()
 ; Parameter(s):     $sFrameIDRequest 	- ID3 FrameID String of the Field to return (ie. "TIT2" for ID3v2 Title or "Title" for ID3v1 Title)
 ;											Valid ID3v1 FrameIDs to Request,
@@ -416,9 +421,10 @@ EndFunc   ;==>_ID3ReadTag
 ;					$iFrameID_Index		- Index number of ID3v2 FrameID, COMM, APIC and TXXX (and more) can exist multiple time in ID3v2 Tag
 ;					$iReturnTypeFlag	- Data type to return (Default: 0 )
 ;												0 => Returns simple text string that mostly describes the frame (Default)
-;												1 => Returns Array of all items in ID3v2 frame
+;												1 => Returns array of all items in ID3v2 frame including APIC BinaryPictureData and SongLyricsString
+;												2 => Returns 2D array of all items with descriptions
 ; Requirement(s):   Must call _ID3ReadTag() first.
-; Return Value(s):  On Success - Returns a string.
+; Return Value(s):  On Success - Returns a variant data type depending on $iReturnTypeFlag value
 ;						@error = 0; @extended = Number of Frames that exist in the ID3v2 Tag with $sFieldIDRequest
 ;                   On Failure - Returns Empty String meaning $sFieldIDRequest did not match any IDs in the mp3 File
 ;						@error = 1; @extended = 0
@@ -433,7 +439,7 @@ Func _ID3GetTagField($sFrameIDRequest, $iFrameID_Index = 1, $iReturnTypeFlag = 0
 		$vFrameString = _ID3v1Field_GetString($sFrameIDRequest)
 		$iError = @error
 		$iNumFrames = 1
-	Else
+	 Else
 		$vFrameString = _ID3v2Frame_GetFields($sFrameIDRequest, $iFrameID_Index, $iReturnTypeFlag)
 		$iNumFrames = @extended
 		$iError = @error
@@ -1703,13 +1709,17 @@ Func _ID3v2Frame_SetBinary($sFrameID, $bNewFrameData, $iFrameID_Index = 1)
 EndFunc   ;==>_ID3v2Frame_SetBinary
 Func _ID3v2Frame_GetFields($sFrameID, $iFrameID_Index = 1, $iReturnTypeFlag = 0)
 
+
 	;$iReturnTypeFlag
 	;0 (Default) => Returns single text string that mostly describes the frame
-	;1 => Returns Array of all items in frame
-	;2 => Returns 2D Array of all items with descriptions
+	;1 => Returns array of all items in frame
+	;2 => Returns 2D array of all items with descriptions
+	;3 => Returns binary of raw data on frame (does not include FrameID or FrameHeader) Only works with APIC -ToDo add to others
 
 	;Will take advantage of the variant data type in AutoIt
 	;20120327 change this function to return an array with all frame fields including FrameID
+
+	;ToDo Renamee vFrameString to vFrameData
 
 	Local $vFrameString = "", $vFrameStringDescrip = "", $iSetError = 0
 
@@ -1734,7 +1744,7 @@ Func _ID3v2Frame_GetFields($sFrameID, $iFrameID_Index = 1, $iReturnTypeFlag = 0)
 	EndIf
 
 
-	If (StringMid($sFrameID, 1, 1) == "T") And ($sFrameID <> "TXXX") And ($sFrameID <> "TXX") Then
+   If (StringMid($sFrameID, 1, 1) == "T") And ($sFrameID <> "TXXX") And ($sFrameID <> "TXX") Then
 		;Information | TextEncoding
 		$vFrameStringDescrip = "Information|TextEncoding"
 		$vFrameString = _h_ID3v2_GetFrameT000_TZZZ($bFrameData)
@@ -1748,10 +1758,10 @@ Func _ID3v2Frame_GetFields($sFrameID, $iFrameID_Index = 1, $iReturnTypeFlag = 0)
 				EndIf ;If no "(" then return the whole field as is
 			EndIf
 		EndIf
-	ElseIf (StringMid($sFrameID, 1, 1) == "W") And ($sFrameID <> "WXXX") And ($sFrameID <> "WXX") Then
+   ElseIf (StringMid($sFrameID, 1, 1) == "W") And ($sFrameID <> "WXXX") And ($sFrameID <> "WXX") Then
 		$vFrameString = _h_ID3v2_GetFrameW000_WZZZ($bFrameData)
-	Else
-		Switch $sFrameID
+   Else
+		 Switch $sFrameID
 			Case "TXXX", "TXX" ;User defined text information frame
 				;Value | Description | TextEncoding
 				$vFrameStringDescrip = "Value|Description|TextEncoding"
@@ -1774,19 +1784,32 @@ Func _ID3v2Frame_GetFields($sFrameID, $iFrameID_Index = 1, $iReturnTypeFlag = 0)
 					$vFrameString = $vFrameString[1] ;CommentText
 				EndIf
 			Case "APIC", "PIC" ;Attached picture
-				;PictureFileName | Description | PictureType | MIMEType | TextEncoding
-				$vFrameStringDescrip = "PictureFileName|Description|PictureType|MIMEType|TextEncoding"
-				$vFrameString = _h_ID3v2_GetFrameAPIC($bFrameData)
-				If $iReturnTypeFlag = 0 Then
-					$vFrameString = $vFrameString[1] & Chr(0) & Number($vFrameString[3]);PictureFileName & chr(0) & PictureType
-				EndIf
+			   ;PictureFileName | Description | PictureType | MIMEType | TextEncoding | BinaryPictureData
+			   $vFrameStringDescrip = "PictureFileName|Description|PictureType|MIMEType|TextEncoding|BinaryPictureData"
+			   $vFrameString = _h_ID3v2_GetFrameAPIC($bFrameData)
+			   If $iReturnTypeFlag = 0 Then
+				  ;Write Picture data to file
+				  ;****************************************************************************************
+				  Local $PicFile_h = FileOpen($vFrameString[1], 2) ;Open for write and erase existing
+				  $WriteError = FileWrite($PicFile_h, $vFrameString[6])
+				  FileClose($PicFile_h)
+				  ;****************************************************************************************
+				  ;Set return string to filename and picture type
+				  $vFrameString = $vFrameString[1] & Chr(0) & Number($vFrameString[3]);PictureFileName & chr(0) & PictureType
+			   EndIf
 			Case "USLT", "ULT" ;Unsychronized lyric/text transcription
 				;LyricsFilename | Description | Language | TextEncoding
-				$vFrameStringDescrip = "LyricsFilename|Description|Language|TextEncoding"
+				$vFrameStringDescrip = "LyricsFilename|Description|Language|TextEncoding|SongLyricsString"
 				$vFrameString = _h_ID3v2_GetFrameUSLT($bFrameData)
-				If $iReturnTypeFlag = 0 Then
-					$vFrameString = $vFrameString[1] ;LyricsFilename
-				EndIf
+			   If $iReturnTypeFlag = 0 Then
+				  ;Write Picture data to file
+				  ;****************************************************************************************
+				  $hLyricFile = FileOpen($vFrameString[1], 2) ;Open for write and erase existing
+				  FileWrite($hLyricFile, $vFrameString[5])
+				  FileClose($hLyricFile)
+				  ;****************************************************************************************
+				  $vFrameString = $vFrameString[1] ;LyricsFilename
+			   EndIf
 			Case "UFID", "UFI" ;Unique file identifier
 				;OwnerIdentifier | Identifier
 				$vFrameStringDescrip = "OwnerIdentifier|Identifier"
@@ -1803,15 +1826,15 @@ Func _ID3v2Frame_GetFields($sFrameID, $iFrameID_Index = 1, $iReturnTypeFlag = 0)
 				EndIf
 			Case "PRIV" ;Private frame
 				;OwnerIdentifier | PrivateData
-				$vFrameStringDescrip = "OwnerIdentifier|PrivateData"
+				$vFrameStringDescrip = "OwnerIdentifier|BinaryPrivateData"
 				$vFrameString = _h_ID3v2_GetFramePRIV($bFrameData)
 				If $iReturnTypeFlag = 0 Then
 					$vFrameString = $vFrameString[1] ;OwnerIdentifier
 				EndIf
-			 Case "PCNT", "CNT" ;Play counter
+			Case "PCNT", "CNT" ;Play counter
 				$vFrameStringDescrip = "PlayCount"
 				$vFrameString = _h_ID3v2_GetFramePCNT($bFrameData) ;Counter
-			 Case "MCDI", "MCI" ;Music CD identifier (Only contains binary data)
+			Case "MCDI", "MCI" ;Music CD identifier (Only contains binary data)
 				$vFrameStringDescrip = "BinaryData"
 				$vFrameString = $bFrameData
 			Case "RGAD" ;Replay Gain Adjustment
@@ -1822,19 +1845,21 @@ Func _ID3v2Frame_GetFields($sFrameID, $iFrameID_Index = 1, $iReturnTypeFlag = 0)
 					$vFrameString = $vFrameString[1] ;PeakAmplitude
 				EndIf
 			Case Else
-				$iSetError = 2
-				$vFrameString = $bFrameData
-		EndSwitch
-	EndIf
+			   $iSetError = 2
+			   $vFrameString = $bFrameData
+		 EndSwitch
+   EndIf
 
+   ;$iReturnTypeFlag=2 => Returns 2D Array of all items with descriptions
+   ;****************************************************************************************
    If $iReturnTypeFlag = 2 Then
 	  _ArrayColInsert($vFrameString,0)
 	  Dim $iColumn = StringSplit($vFrameStringDescrip,"|")
 	  For $i=0 To $iColumn[0]
 		 $vFrameString[$i][0] = $iColumn[$i]
 	  Next
-;~ 	  _ArrayDisplay($vFrameString,"$vFrameString After")
    EndIf
+   ;****************************************************************************************
 
 
 	SetError($iSetError)
@@ -2381,6 +2406,8 @@ Func _h_ID3v2Frame_RemoveUnsynchronisation() ;_h_ID3v2Frame_RemoveUnsynchronisat
 	$bFrameData = $bFrameData_Temp
 
 EndFunc   ;==>_h_ID3v2Frame_RemoveUnsynchronisation
+
+
 Func _h_ID3v2_GetFrameT000_TZZZ(ByRef $bFrameData)
 	;---------------------------------------------------------------------------------
 	;<Header for 'Text information frame', ID: "T000" - "TZZZ", excluding "TXXX">
@@ -2394,13 +2421,13 @@ Func _h_ID3v2_GetFrameT000_TZZZ(ByRef $bFrameData)
 	;---------------------------------------------------------------------------------
 	;Information | TextEncoding
 
-	Local $aFrameInfo[3]
-	$aFrameInfo[0] = 2
+   Local $aFrameInfo[3]
+   $aFrameInfo[0] = 2
 
-	$aFrameInfo[1] = _h_ID3v2_DecodeTextToString(BinaryMid($bFrameData, 1, 1), BinaryMid($bFrameData, 2)) ;Information
-	$aFrameInfo[2] = "0x" & Hex(BinaryMid($bFrameData, 1, 1), 2) ;Text Encoding
+   $aFrameInfo[1] = _h_ID3v2_DecodeTextToString(BinaryMid($bFrameData, 1, 1), BinaryMid($bFrameData, 2)) ;Information
+   $aFrameInfo[2] = "0x" & Hex(BinaryMid($bFrameData, 1, 1), 2) ;Text Encoding
 
-	Return $aFrameInfo
+   Return $aFrameInfo
 EndFunc   ;==>_h_ID3v2_GetFrameT000_TZZZ
 Func _h_ID3v2_CreateFrameT000_TZZZ($sInformation, $iTextEncoding = 0)
 	;---------------------------------------------------------------------------------
@@ -2456,19 +2483,23 @@ Func _h_ID3v2_CreateFrameTXXX($sValue, $sDescription = "", $iTextEncoding = 0)
 
 EndFunc   ;==>_h_ID3v2_CreateFrameTXXX
 Func _h_ID3v2_GetFrameW000_WZZZ(ByRef $bFrameData)
-	;---------------------------------------------------------------------------------
-	;<Header for 'URL link frame', ID: "W000" - "WZZZ", excluding "WXXX" described in 4.3.2.>
-	;URL              <text string>
-	;If nothing else is said, strings, including numeric strings and URLs
-	;[URL], are represented as ISO-8859-1 [ISO-8859-1] characters in the
-	;range $20 - $FF.
-	;---------------------------------------------------------------------------------
+   ;---------------------------------------------------------------------------------
+   ;<Header for 'URL link frame', ID: "W000" - "WZZZ", excluding "WXXX" described in 4.3.2.>
+   ;URL              <text string>
+   ;If nothing else is said, strings, including numeric strings and URLs
+   ;[URL], are represented as ISO-8859-1 [ISO-8859-1] characters in the
+   ;range $20 - $FF.
+   ;---------------------------------------------------------------------------------
+   ;URL
 
-	Local $bText_Encoding = Binary(Chr(0))
+   Local $aFrameInfo[2]
+   $aFrameInfo[0] = 1
 
-	$sFrameString = _h_ID3v2_DecodeTextToString($bText_Encoding, $bFrameData)
+   Local $bText_Encoding = Binary(Chr(0))
 
-	Return $sFrameString
+   $aFrameInfo[1] = _h_ID3v2_DecodeTextToString($bText_Encoding, $bFrameData)
+
+   Return $aFrameInfo
 
 EndFunc   ;==>_h_ID3v2_GetFrameW000_WZZZ
 Func _h_ID3v2_CreateFrameW000_WZZZ($sURL)
@@ -2596,11 +2627,12 @@ Func _h_ID3v2_GetFrameAPIC(ByRef $bFrameData)
 	;Description        <textstring> $00 (00)
 	;Picture data       <binary data>
 	;---------------------------------------------------------------------------------
-	;PictureFileName | Description | PictureType | MIMEType | TextEncoding
+	;PictureFileName | Description | PictureType | MIMEType | TextEncoding | BinaryPictureData
+	;Returns an array
 
-	Local $sPictureFileName, $sDescription, $iPictureType, $sMIMEType, $bText_Encoding, $iMIMETypeEndIndex, $iDescriptionEndIndex, $iBinaryStartIndex
-	Local $aFrameInfo[6]
-	$aFrameInfo[0] = 5
+	Local $sPictureFileName, $sDescription, $iPictureType, $sMIMEType, $bText_Encoding, $iMIMETypeEndIndex, $iDescriptionEndIndex, $iPicBinStartIndex
+	Local $aFrameInfo[7]
+	$aFrameInfo[0] = 6
 
 	$sPictureFileName = @ScriptDir & "\" & "AlbumArt"
 	$sID3_TagFiles_Global &= $sPictureFileName & "|"
@@ -2633,23 +2665,23 @@ Func _h_ID3v2_GetFrameAPIC(ByRef $bFrameData)
 
 	$iDescriptionEndIndex = StringInStr(BinaryToString(BinaryMid($bFrameData, $iMIMETypeEndIndex + 3)), Chr(0))
 	$sDescription = _h_ID3v2_DecodeTextToString($bText_Encoding, BinaryMid($bFrameData, $iMIMETypeEndIndex + 3, $iDescriptionEndIndex - 1))
-	$iBinaryStartIndex = $iMIMETypeEndIndex + $iDescriptionEndIndex + 3
+	$iPicBinStartIndex = $iMIMETypeEndIndex + $iDescriptionEndIndex + 3
 
-	;Check $iBinaryStartIndex shows the 0xFF 0xD8 for Start of image for JPEG SOI Segment
+	;Check $iPicBinStartIndex shows the 0xFF 0xD8 for Start of image for JPEG SOI Segment
 	If StringInStr($sMIMEType, "jpg") Or StringInStr($sMIMEType, "jpeg") Then
-		Local $iBinaryStartIndex_Test = $iBinaryStartIndex, $SOI_NotFound = False
-		While BinaryMid($bFrameData, $iBinaryStartIndex_Test, 2) <> Binary("0xFFD8")
-			$iBinaryStartIndex_Test += 1
-			If BinaryLen(BinaryMid($bFrameData, $iBinaryStartIndex_Test)) < 10 Then
+		Local $iPicBinStartIndex_Test = $iPicBinStartIndex, $SOI_NotFound = False
+		While BinaryMid($bFrameData, $iPicBinStartIndex_Test, 2) <> Binary("0xFFD8")
+			$iPicBinStartIndex_Test += 1
+			If BinaryLen(BinaryMid($bFrameData, $iPicBinStartIndex_Test)) < 10 Then
 				$SOI_NotFound = True
 				ExitLoop
 			EndIf
 		WEnd
 		If $SOI_NotFound = False Then
-			If $iBinaryStartIndex <> $iBinaryStartIndex_Test Then
-				$sDescription = _h_ID3v2_DecodeTextToString($bText_Encoding, BinaryMid($bFrameData, $iMIMETypeEndIndex + 3, ($iBinaryStartIndex_Test - $iMIMETypeEndIndex - 3) - 1))
+			If $iPicBinStartIndex <> $iPicBinStartIndex_Test Then
+				$sDescription = _h_ID3v2_DecodeTextToString($bText_Encoding, BinaryMid($bFrameData, $iMIMETypeEndIndex + 3, ($iPicBinStartIndex_Test - $iMIMETypeEndIndex - 3) - 1))
 			EndIf
-			$iBinaryStartIndex = $iBinaryStartIndex_Test
+			$iPicBinStartIndex = $iPicBinStartIndex_Test
 		EndIf
 	EndIf
 
@@ -2664,25 +2696,16 @@ Func _h_ID3v2_GetFrameAPIC(ByRef $bFrameData)
 		$sPictureFileName = "File Type Unknown"
 	EndIf
 
-
-
-	;Read Picture data to file
-	;****************************************************************************************
-	Local $PicFile_h = FileOpen($sPictureFileName, 2) ;Open for write and erase existing
-	$WriteError = FileWrite($PicFile_h, BinaryMid($bFrameData, $iBinaryStartIndex))
-	FileClose($PicFile_h)
-	;****************************************************************************************
-
-
 	$aFrameInfo[1] = $sPictureFileName
 	$aFrameInfo[2] = $sDescription
 	$aFrameInfo[3] = $iPictureType
 	$aFrameInfo[4] = $sMIMEType
 	$aFrameInfo[5] = "0x" & Hex($bText_Encoding, 2)
+	$aFrameInfo[6] = BinaryMid($bFrameData, $iPicBinStartIndex)
 
 ;~ 	_ArrayDisplay($aFrameInfo)
 
-	Return $aFrameInfo;$sAlbumArtFilename & Chr(0) & Number($bPicture_Type)
+	Return $aFrameInfo
 
 EndFunc   ;==>_h_ID3v2_GetFrameAPIC
 Func _h_ID3v2_CreateFrameAPIC($sPictureFileName, $sDescription = "", $iPictureType = 0, $sMIMEType = -1, $iTextEncoding = 0)
@@ -2751,11 +2774,11 @@ Func _h_ID3v2_GetFrameUSLT(ByRef $bFrameData)
 	;Content descriptor   <text string according to encoding> $00 (00)
 	;Lyrics/text          <full text string according to encoding>
 	;---------------------------------------------------------------------------------
-	;LyricsFilename | Description | Language | TextEncoding
+	;LyricsFilename | Description | Language | TextEncoding | SongLyricsString
 
 	Local $bText_Encoding, $sDescription, $sLanguage, $sLyricsFilename, $hLyricFile, $sLyricsText, $iDescriptionEndIndex
-	Local $aFrameInfo[5]
-	$aFrameInfo[0] = 4
+	Local $aFrameInfo[6]
+	$aFrameInfo[0] = 5
 
 	$sLyricsFilename = @ScriptDir & "\" & "SongLyrics.txt"
 	$sID3_TagFiles_Global &= $sLyricsFilename & "|"
@@ -2766,15 +2789,12 @@ Func _h_ID3v2_GetFrameUSLT(ByRef $bFrameData)
 	$sDescription = _h_ID3v2_DecodeTextToString($bText_Encoding, BinaryMid($bFrameData, 5, $iDescriptionEndIndex - 1))
 	$sLyricsText = _h_ID3v2_DecodeTextToString($bText_Encoding, BinaryMid($bFrameData, $iDescriptionEndIndex + 5))
 
-	$hLyricFile = FileOpen($sLyricsFilename, 2) ;Open for write and erase existing
-	FileWrite($hLyricFile, $sLyricsText)
-	FileClose($hLyricFile)
-
 
 	$aFrameInfo[1] = $sLyricsFilename
 	$aFrameInfo[2] = $sDescription
 	$aFrameInfo[3] = $sLanguage
 	$aFrameInfo[4] = "0x" & Hex($bText_Encoding, 2)
+	$aFrameInfo[5] =  $sLyricsText
 	Return $aFrameInfo
 EndFunc   ;==>_h_ID3v2_GetFrameUSLT
 Func _h_ID3v2_CreateFrameUSLT($sLyricsFilename, $sDescription = "", $sLanguage = "eng", $iTextEncoding = 0)
@@ -2814,11 +2834,16 @@ Func _h_ID3v2_GetFramePCNT(ByRef $bFrameData)
 	;---------------------------------------------------------------------------------
 	;Counter
 
-	Local $iCounter = Dec(Hex(BinaryMid($bFrameData, 1)))
-	;Hex function can only work up to 16 bytes
-	;Dec will only work up to 64 bit signed integer
+   Local $aFrameInfo[2]
+   $aFrameInfo[0] = 1
 
-	Return $iCounter
+   Local $iCounter = Dec(Hex(BinaryMid($bFrameData, 1)))
+   ;Hex function can only work up to 16 bytes
+   ;Dec will only work up to 64 bit signed integer
+
+   $aFrameInfo[1] = $iCounter
+
+   Return $aFrameInfo
 EndFunc   ;==>_h_ID3v2_GetFramePCNT
 Func _h_ID3v2_CreateFramePCNT($iCounter = 0)
 	;---------------------------------------------------------------------------------
@@ -2951,7 +2976,7 @@ Func _h_ID3v2_GetFramePRIV(ByRef $bFrameData)
 	;indicated email address. The tag may contain more than one "PRIV" frame but only with different
 	;contents. It is recommended to keep the number of "PRIV" frames as low as possible.
 	;---------------------------------------------------------------------------------
-	;OwnerIdentifier | PrivateData
+	;OwnerIdentifier | BinaryPrivateData
 	Local $aFrameInfo[3]
 	$aFrameInfo[0] = 2
 

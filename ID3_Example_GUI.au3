@@ -11,6 +11,7 @@
 #include <EditConstants.au3>
 #include <GDIPlus.au3>
 #include <WinAPI.au3>
+#include <GuiTab.au3>
 
 #cs #ID3_Example_GUI.au3 UDF Example Latest Changes.......: ;====================================================================
 	Release 3.1 - 20120519
@@ -24,6 +25,10 @@
 		-Added ability to save multiple ID3v2 APIC frames with differant Picture Types
 	Release 3.4 - 20120610
 		-changed all _ID3v1Field_GetString and _ID3v2Field_GetString to _ID3GetTagField
+    Release 3.4.2 Working
+		 -changed AlbumArt display to use GDI+ working
+		 -remove APIC picture box control
+		 -changed reading in APIC and USLT Frames so that there is no cile cleanup needed (no files are written to HD)
 	Release 3.5 TODO
 		-Add Listbox of all ID3v2 frames to be able to select and remove from tag
 #ce ;========================================================================================================
@@ -36,6 +41,7 @@ _GDIPlus_Startup()
 Dim $Gui_Width = 850-265-65, $Gui_Height = 550
 $ID3Gui_H = GUICreate("ID3 Example GUI", $Gui_Width, $Gui_Height)
 ;Check for GUI Icon
+;Todo use fileinstall
 If Not FileExists(@TempDir & "\id3v22.ico") Then
 	InetGet("http://www.id3.org/Developer_Information?action=AttachFile&do=get&target=id3v2.ico", @TempDir & "\id3v22.ico")
 EndIf
@@ -81,7 +87,6 @@ $COMMSet_button = GUICtrlCreateButton("+", 242, 301, 18, 18)
 GUICtrlSetState($COMMSet_button, $GUI_DISABLE)
 
 
-$APIC_pic = -1
 $APIC_picBKGlabel = GUICtrlCreateLabel("",285, 95, 200, 200)
 GUICtrlSetBkColor($APIC_picBKGlabel, 0xefefef) ; light gray
 $APIC_label = GUICtrlCreateLabel("AlbumArt (APIC)", 285, 305, 170, 20)
@@ -202,12 +207,13 @@ $APEv2INFO_edit = GUICtrlCreateEdit("", 265, 220, 225, 285)
 
 
 GUICtrlCreateTabItem(""); end tabitem definition
-
+GUIRegisterMsg($WM_PAINT, "ID3_WM_PAINT")
 GUIRegisterMsg($WM_COMMAND, "ID3_WM_COMMAND");so we can catch the $EN_CHANGE
 Dim $InputCheckUpdates = False, $InputResetAll = False
 
 Dim $szDrive, $szDir, $szFName, $szExt, $Filename
-
+Local $hAPIC_Bitmap
+Local $hAPIC_Graphics
 GUISetState()
 While 1
 	$msg = GUIGetMsg()
@@ -248,7 +254,10 @@ While 1
 			_GUI_EVENT_CLOSE_Pressed()
 			ExitLoop
 	EndSwitch
-WEnd
+ WEnd
+ ;cleanup GDI+ resources
+_GDIPlus_BitmapDispose($hAPIC_Bitmap)
+_GDIPlus_GraphicsDispose($hAPIC_Graphics)
 _GDIPlus_Shutdown()
 
 
@@ -277,7 +286,18 @@ Func ID3_WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
 			EndIf
 		EndIf
 	EndIf
-EndFunc   ;==>MY_WM_COMMAND
+ EndFunc   ;==>MY_WM_COMMAND
+
+ Func ID3_WM_PAINT($hWnd, $iMsg, $wParam, $lParam)
+   #forceref $hWnd, $iMsg, $wParam, $lParam
+   If _GUICtrlTab_GetCurSel($tab) <> 0 Then
+	  Return $GUI_RUNDEFMSG
+   EndIf
+   _WinAPI_RedrawWindow($ID3Gui_H, 0, 0, $RDW_UPDATENOW)
+   _GDIPlus_GraphicsDrawImage($hAPIC_Graphics, $hAPIC_Bitmap, 285, 95) ;display image in GUI
+   _WinAPI_RedrawWindow($ID3Gui_H, 0, 0, $RDW_VALIDATE)
+   Return $GUI_RUNDEFMSG
+EndFunc   ;==>ID3_WM_PAINT
 
 
 Func _FileOpen_button_Pressed()
@@ -298,25 +318,17 @@ Func _FileOpen_button_Pressed()
 		GUICtrlSetData($File_input, $szFName & $szExt)
 		GUICtrlSetData($FileSize_input, Round(FileGetSize($Filename)/1048576,2) & " MB")
 
-
-
-
 		Local $begin = TimerInit()
-		Local $TAGINFO = _ID3ReadTag($Filename)
+		Local $TAGINFO = _ID3ReadTag($Filename) ;Read Tags from file
 		Local $iTAGsFound = @extended
-;~ 		MsgBox(0,"@extended",@extended)
-;~ 		MsgBox(0,"$TAGINFO",$TAGINFO)
+
 		$TimeToReadTags = TimerDiff($begin)
 		GUICtrlSetData($TAGINFO_edit,$TAGINFO)
 		GUICtrlSetData($ID3v2INFO_edit,$sID3v2_TagFrameIndex_Global)
 		GUICtrlSetData($APEv2INFO_edit,$sAPEv2_TagFrameIndex_Global)
 
-;~ 		Dim $Test = _ID3v2Tag_GetHeaderFlags()
-;~ 		MsgBox(0,"Header Flags",$Test)
-
-
 		;Get ID3v1 Tag
-		;_ID3v1Tag_ReadFromFile($Filename)
+		;**************************************************************************************************
 		GUICtrlSetData($hID3v1Group,"ID3v1." & _ID3v1Tag_GetVersion())
 		GUICtrlSetData($TitleV1_input, _ID3GetTagField("Title"))
 		GUICtrlSetData($ArtistV1_input, _ID3GetTagField("Artist"))
@@ -325,10 +337,10 @@ Func _FileOpen_button_Pressed()
 		GUICtrlSetData($YearV1_input, _ID3GetTagField("Year"))
 		GUICtrlSetData($GenreV1_input, _ID3GetTagField("Genre"))
 		GUICtrlSetData($CommentV1_input, _ID3GetTagField("Comment"))
+		;**************************************************************************************************
 
 		;Get ID3v2 Tag
-		;_ID3v2Tag_ReadFromFile($Filename)
-		;_ID3v2Tag_GetFrameIDs()
+		;**************************************************************************************************
 		GUICtrlSetData($hID3v2Group,"ID3v2." & _ID3v2Tag_GetVersion())
 		GUICtrlSetData($Title_input, _ID3GetTagField("TIT2"))
 		GUICtrlSetData($Artist_input, _ID3GetTagField("TPE1"))
@@ -337,114 +349,104 @@ Func _FileOpen_button_Pressed()
 		GUICtrlSetData($Year_input, _ID3GetTagField("TYER"))
 		GUICtrlSetData($Genre_input, _ID3GetTagField("TCON"))
 		GUICtrlSetData($Length_input, _ID3GetTagField("TLEN"))
+		;**************************************************************************************************
 
 
-		;Get Album Art
-;~ 		$Test = _ID3v2Frame_GetFields("APIC",1, 1)
-;~ 		_ArrayDisplay($Test)
+		;Get Album Art $APIC_pic
+		;**************************************************************************************************
+		 Dim $aAPIC = _ID3GetTagField("APIC",1,1)
+		 Dim $NumAPIC = @extended
 
-		$AlbumArtFile = _ID3GetTagField("APIC")
-		Dim $NumAPIC = @extended
-;~ 		MsgBox(0,"$AlbumArtFile",$AlbumArtFile)
-		If FileExists($AlbumArtFile) Then
+		 $hAPIC_Bitmap = _GDIPlus_BitmapCreateFromMemory($aAPIC[6]) ;load binary saved GIF image and convert it to GDI+ bitmap format
+		 $hAPIC_Bitmap = _GDIPlus_ImageResize($hAPIC_Bitmap, 200, 200) ;resize image
 
-			;Added this to handle APIC tags with png files
-			If StringInStr($AlbumArtFile,".png") Then
-				$APIC_GDIPlusImage = _GDIPlus_ImageLoadFromFile($AlbumArtFile)
-				$AlbumArtFile = StringReplace($AlbumArtFile,".png",".jpg")
-				_GDIPlus_ImageSaveToFileEx($APIC_GDIPlusImage,$AlbumArtFile, $APIC_PNGTOJPEG_Encoder)
-				_GDIPlus_ImageDispose($APIC_GDIPlusImage)
-			EndIf
+		 $hAPIC_Graphics = _GDIPlus_GraphicsCreateFromHWND($ID3Gui_H) ;create a graphics object from a window handle
+		 If _GUICtrlTab_GetCurSel($tab) = 0 Then
+			_GDIPlus_GraphicsDrawImage($hAPIC_Graphics, $hAPIC_Bitmap, 285, 95) ;display image in GUI
+		 EndIf
 
-			Dim $PicTypeIndex = StringInStr($AlbumArtFile,chr(0))
-			Local $aAPIC_PictureTypes = StringSplit($sAPIC_PictureTypes,"|",2)
-			If _ID3v2Tag_GetVersion() == "2.0" Then
-				GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[0])
-			Else
-				GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[Number(StringMid($AlbumArtFile,$PicTypeIndex+1))])
-			EndIf
+		 ;Set Picture Type
+		 Local $aAPIC_PictureTypes = StringSplit($sAPIC_PictureTypes,"|",2)
+		 GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[Number($aAPIC[3])])
 
-			If $APIC_pic == -1 Then
-				GUISwitch($ID3Gui_H,$ID3_tab)
-				$APIC_pic = GUICtrlCreatePic($AlbumArtFile,285,95, 200, 200)
-				GUICtrlCreateTabItem(""); end tabitem definition
-			EndIf
-			GUICtrlSetState($APIC_pic, $GUI_SHOW)
-			GUICtrlSetImage($APIC_pic, $AlbumArtFile)
-			GUICtrlSetData($APIC_label,"AlbumArt (APIC 1 of " & $NumAPIC & ")")
+		 ;Set control to number of pictures in tag
+		 GUICtrlSetData($APIC_label,"AlbumArt (APIC 1 of " & $NumAPIC & ")")
+		 If $NumAPIC > 0 Then
 			GUICtrlSetLimit($APIC_inputUD, $NumAPIC,1)
-		Else
+		 Else
 			GUICtrlSetLimit($APIC_inputUD, 1,1)
-		EndIf
+		 EndIf
+		 ;**************************************************************************************************
 
 
 		;Get Stuff with multiple FrameIDs
+		;**************************************************************************************************
 		;TXXX
 		Dim $TXXX = _ID3GetTagField("TXXX",1,1) ;return array
 		Dim $NumTXXX = @extended
-;~ 		_ArrayDisplay($TXXX)
-;~ 		MsgBox(0,"$NumTXXX",$NumTXXX)
 		If $NumTXXX > 0 Then
 			GUICtrlSetLimit($TXXX_inputUD, $NumTXXX + 1,1)
 			GUICtrlSetData($TXXX_input,$TXXX[2] & ":" & $TXXX[1])
 			GUICtrlSetData($TXXX_label,"User-Defined Text (TXXX 1 of " & $NumTXXX & ")")
-		EndIf
+		 EndIf
+
 		;COMM
 		Dim $COMM = _ID3GetTagField("COMM",1) ;return simple string
 		Dim $NumCOMM = @extended
-;~ 		MsgBox(0,"$NumCOMM",$NumCOMM)
 		If $NumCOMM > 0 Then
 			GUICtrlSetLimit($COMM_inputUD, $NumCOMM + 1,1)
 			GUICtrlSetData($COMM_input,$COMM)
 			GUICtrlSetData($COMM_label,"Comment (COMM 1 of " & $NumCOMM & ")")
 		EndIf
+	  ;**************************************************************************************************
 
-
-		;Get More Stuff
-		GUICtrlSetData($POPM_input, _ID3GetTagField("POPM"))
-		GUICtrlSetData($Encoder_input, _ID3GetTagField("TSSE"))
-		GUICtrlSetData($Publisher_input, _ID3GetTagField("TPUB"))
-		GUICtrlSetData($Composer_input, _ID3GetTagField("TCOM"))
-		GUICtrlSetData($UFID_input, _ID3GetTagField("UFID"))
-		GUICtrlSetData($Band_input,_ID3GetTagField("TPE2"))
-		GUICtrlSetData($WCOM_input, _ID3GetTagField("WCOM"))
-		GUICtrlSetData($WXXX_input, _ID3GetTagField("WXXX"))
-		GUICtrlSetData($WOAR_input, _ID3GetTagField("WOAR"))
-		$LyricsFile = _ID3GetTagField("USLT")
-		GUICtrlSetData($Lyrics_edit,  FileRead($LyricsFile))
-		GUICtrlSetData($ZPADSize_input, _ID3v2Tag_GetZPAD())
-		GUICtrlSetData($ID3v2Size_input, _ID3v2Tag_GetTagSize())
-
-
-;~ 		MsgBox(0,"TOAL",_ID3v2Frame_GetFields("TOAL"))
-
-
-		;Get APEv2 Tag
-		;_APEv2Tag_ReadFromFile($Filename)
-		If BitAND($iTAGsFound,4) Then
-			GUICtrlSetData($APEv2TagSize_input, _APEv2Tag_GetTagSize())
-			GUICtrlSetData($APEv2Version_input, _APEv2Tag_GetVersion())
-			GUICtrlSetData($APEv2ItemCount_input, _APEv2Tag_GetItemCount())
-			GUICtrlSetData($APEv2_ItemList, _APEv2_GetItemKeys("|"))
-		EndIf
+	  ;Get More Stuff
+	  ;**************************************************************************************************
+	  GUICtrlSetData($POPM_input, _ID3GetTagField("POPM"))
+	  GUICtrlSetData($Encoder_input, _ID3GetTagField("TSSE"))
+	  GUICtrlSetData($Publisher_input, _ID3GetTagField("TPUB"))
+	  GUICtrlSetData($Composer_input, _ID3GetTagField("TCOM"))
+	  GUICtrlSetData($UFID_input, _ID3GetTagField("UFID"))
+	  GUICtrlSetData($Band_input,_ID3GetTagField("TPE2"))
+	  GUICtrlSetData($WCOM_input, _ID3GetTagField("WCOM"))
+	  GUICtrlSetData($WXXX_input, _ID3GetTagField("WXXX"))
+	  GUICtrlSetData($WOAR_input, _ID3GetTagField("WOAR"))
+	  $aLyricsFile = _ID3GetTagField("USLT",1,1)
+	  GUICtrlSetData($Lyrics_edit,  $aLyricsFile[5])
+	  GUICtrlSetData($ZPADSize_input, _ID3v2Tag_GetZPAD())
+	  GUICtrlSetData($ID3v2Size_input, _ID3v2Tag_GetTagSize())
+	  ;**************************************************************************************************
 
 
 
-		;TODO Add more to MPEG Tab
-;~ 		Local $MPEGbegin = TimerInit()
-		Local $bMPEG = _MPEG_GetFrameHeader($Filename)
-;~ 		$MPEGTimeToReadTags = TimerDiff($MPEGbegin)
-;~ 		MsgBox(0,"$MPEGTimeToReadTags",Round($MPEGTimeToReadTags,2) & " ms")
-		GUICtrlSetData($MPEGFrameHeader_input, $bMPEG)
-		GUICtrlSetData($MPEGVersion_input, _MPEG_GetVersion($bMPEG))
-		GUICtrlSetData($MPEGLayer_input, _MPEG_GetLayer($bMPEG))
-		GUICtrlSetData($MPEGBitRate_input, _MPEG_GetBitRate($bMPEG))
-		GUICtrlSetData($MPEGSampleRate_input, _MPEG_GetSampleRate($bMPEG))
-		GUICtrlSetData($MPEGChannelMode_input, _MPEG_GetChannelMode($bMPEG))
+	  ;Get APEv2 Tag
+	  ;**************************************************************************************************
+	  ;_APEv2Tag_ReadFromFile($Filename)
+	  If BitAND($iTAGsFound,4) Then
+		 GUICtrlSetData($APEv2TagSize_input, _APEv2Tag_GetTagSize())
+		 GUICtrlSetData($APEv2Version_input, _APEv2Tag_GetVersion())
+		 GUICtrlSetData($APEv2ItemCount_input, _APEv2Tag_GetItemCount())
+		 GUICtrlSetData($APEv2_ItemList, _APEv2_GetItemKeys("|"))
+	  EndIf
+	  ;**************************************************************************************************
 
 
-		_ID3DeleteFiles()
-		$InputCheckUpdates = True
+	  ;TODO Add more to MPEG Tab
+	  ;**************************************************************************************************
+;~ 	Local $MPEGbegin = TimerInit()
+	  Local $bMPEG = _MPEG_GetFrameHeader($Filename)
+;~ 	$MPEGTimeToReadTags = TimerDiff($MPEGbegin)
+;~ 	MsgBox(0,"$MPEGTimeToReadTags",Round($MPEGTimeToReadTags,2) & " ms")
+	  GUICtrlSetData($MPEGFrameHeader_input, $bMPEG)
+	  GUICtrlSetData($MPEGVersion_input, _MPEG_GetVersion($bMPEG))
+	  GUICtrlSetData($MPEGLayer_input, _MPEG_GetLayer($bMPEG))
+	  GUICtrlSetData($MPEGBitRate_input, _MPEG_GetBitRate($bMPEG))
+	  GUICtrlSetData($MPEGSampleRate_input, _MPEG_GetSampleRate($bMPEG))
+	  GUICtrlSetData($MPEGChannelMode_input, _MPEG_GetChannelMode($bMPEG))
+	  ;**************************************************************************************************
+
+;~ 	  _ID3DeleteFiles() ;I shouldn't need this anymore
+      $InputCheckUpdates = True
 	EndIf
 	_GUICtrlStatusBar_SetText ( $StatusBar , "Status: Last Tag was read in " & Round($TimeToReadTags,2) & " ms")
 EndFunc
@@ -750,7 +752,7 @@ Func _ID3v2_RemoveAPIC_button_Pressed()
 		EndIf
 	EndIf
 	_ID3v2Frame_SetFields("APIC","",$iAPIC_index)
-	GUICtrlSetState($APIC_pic, $GUI_HIDE) ;removes picture
+;~ 	GUICtrlSetState($APIC_pic, $GUI_HIDE) ;removes picture
 	GUICtrlSetColor($APIC_input, 0xff0000)
 	GUICtrlSetColor($APIC_label, 0xff0000)
 	If $NumAPIC == 1 Then
@@ -762,36 +764,45 @@ EndFunc
 Func _APIC_inputUD_Pressed()
 	$InputCheckUpdates = False
 	Local $iAPIC_index = GUICtrlRead($APIC_input)
-	$AlbumArtFile = _ID3v2Frame_GetFields("APIC",$iAPIC_index)
+	$aAPIC = _ID3v2Frame_GetFields("APIC",$iAPIC_index,1) ;get array data
 	Dim $NumAPIC = @extended
 
-	If FileExists($AlbumArtFile) Then
-		;Added this to handle APIC tags with png files
-		If StringInStr($AlbumArtFile,".png") Then
-			$APIC_GDIPlusImage = _GDIPlus_ImageLoadFromFile($AlbumArtFile)
-			$AlbumArtFile = StringReplace($AlbumArtFile,".png",".jpg")
-			_GDIPlus_ImageSaveToFileEx($APIC_GDIPlusImage,$AlbumArtFile, $APIC_PNGTOJPEG_Encoder)
-			_GDIPlus_ImageDispose($APIC_GDIPlusImage)
-		EndIf
-		Dim $PicTypeIndex = StringInStr($AlbumArtFile,chr(0))
+   $hAPIC_Bitmap = _GDIPlus_BitmapCreateFromMemory($aAPIC[6]) ;load binary saved GIF image and convert it to GDI+ bitmap format
+   $hAPIC_Bitmap = _GDIPlus_ImageResize($hAPIC_Bitmap, 200, 200) ;resize image
+
+   $hAPIC_Graphics = _GDIPlus_GraphicsCreateFromHWND($ID3Gui_H) ;create a graphics object from a window handle
+   If _GUICtrlTab_GetCurSel($tab) = 0 Then
+	  _GDIPlus_GraphicsDrawImage($hAPIC_Graphics, $hAPIC_Bitmap, 285, 95) ;display image in GUI
+   EndIf
+
+   ;Set Picture Type
+   Local $aAPIC_PictureTypes = StringSplit($sAPIC_PictureTypes,"|",2)
+   GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[Number($aAPIC[3])])
+
+   GUICtrlSetData($APIC_label,"AlbumArt (APIC " & $iAPIC_index & " of " & $NumAPIC & ")")
+
+;~ 	If FileExists($AlbumArtFile) Then
+
+;~ 		Dim $PicTypeIndex = StringInStr($AlbumArtFile,chr(0))
 ;~ 		MsgBox(0,"$PicTypeIndex",Number(StringMid($AlbumArtFile,$PicTypeIndex+1)))
-		Local $aAPIC_PictureTypes = StringSplit($sAPIC_PictureTypes,"|",2)
+;~ 		Local $aAPIC_PictureTypes = StringSplit($sAPIC_PictureTypes,"|",2)
 ;~ 		_ArrayDisplay($aAPIC_PictureTypes)
-		If _ID3v2Tag_GetVersion() == "2.0" Then
-			GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[0])
-		Else
-			GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[Number(StringMid($AlbumArtFile,$PicTypeIndex+1))])
-		EndIf
-		GUICtrlSetColor($APIC_input, 0x000000)
-		If $APIC_pic == -1 Then
-			GUISwitch($ID3Gui_H,$ID3_tab)
-			$APIC_pic = GUICtrlCreatePic($AlbumArtFile,285,95, 200, 200)
-			GUICtrlCreateTabItem(""); end tabitem definition
-		EndIf
-		GUICtrlSetState($APIC_pic, $GUI_SHOW)
-		GUICtrlSetImage($APIC_pic, $AlbumArtFile)
-		GUICtrlSetData($APIC_label,"AlbumArt (APIC " & $iAPIC_index & " of " & $NumAPIC & ")")
-	EndIf
+;~ 		If _ID3v2Tag_GetVersion() == "2.0" Then
+;~ 			GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[0])
+;~ 		Else
+;~ 			GUICtrlSetData($APIC_input,$aAPIC_PictureTypes[Number(StringMid($AlbumArtFile,$PicTypeIndex+1))])
+;~ 		EndIf
+;~ 		GUICtrlSetColor($APIC_input, 0x000000)
+;~ 		If $APIC_pic == -1 Then
+;~ 			GUISwitch($ID3Gui_H,$ID3_tab)
+;~ 			$APIC_pic = GUICtrlCreatePic($AlbumArtFile,285,95, 200, 200)
+;~ 			GUICtrlCreateTabItem(""); end tabitem definition
+;~ 		EndIf
+		;GUICtrlSetState($APIC_pic, $GUI_SHOW)
+		;ToDo add GDI+ method
+		;GUICtrlSetImage($APIC_pic, $AlbumArtFile)
+;~
+;~ 	EndIf
 
 	$InputCheckUpdates = True
 EndFunc
@@ -958,9 +969,10 @@ Func _ResetID3v2()
 	GUICtrlSetData($Year_input, "")
 	GUICtrlSetData($Length_input, "")
 	GUICtrlSetData($Genre_input, "")
-	GUICtrlSetState($APIC_pic, $GUI_HIDE)
 	GUICtrlSetData($APIC_input, "")
 	GUICtrlSetData($APIC_label,"AlbumArt (APIC)")
+	_GDIPlus_BitmapDispose($hAPIC_Bitmap)
+    _GDIPlus_GraphicsDispose($hAPIC_Graphics)
 	GUICtrlSetData($COMM_input, "")
 	GUICtrlSetColor($COMM_label, 0x000000)
 	GUICtrlSetColor($COMMSet_button, 0x000000)

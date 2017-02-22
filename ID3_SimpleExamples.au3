@@ -2,6 +2,8 @@
 #include <ID3.au3>
 #include <Array.au3>
 #include <File.au3>
+#include <GUIConstantsEx.au3>
+#include <GDIPlus.au3>
 #cs #ID3_SimpleExamples.au3  Latest Changes.......: ;========================================================
 	Release 3.4 - 20120610
 		-First Release
@@ -11,13 +13,14 @@
 ;Un-comment one at a time to try each example
 
 
-_ID3Example_ReadShowAllExistingTags()
+;~ _ID3Example_ReadShowAllExistingTags()
 
 ;~ _ID3Example_WritePOPM()
 ;~ _ID3Example_ReadPOPM()
 
 ;~ _ID3Example_ReadShowTitle()
-
+_ID3Example_ReadID3v2APIC_SimplePictureBox()
+;~ _ID3Example_ReadAPIC_NoFileGDI()
 ;~ _ID3Example_ReadID3v2APIC()
 
 ;~ _ID3Example_ReadID3v2TXXX()
@@ -74,22 +77,82 @@ Func _ID3Example_ReadShowTitle()
 	MsgBox(0,"ID3v2 Title",_ID3GetTagField("TIT2")) ;Title from ID3v2
 EndFunc
 
-Func _ID3Example_ReadID3v2APIC()
+Func _ID3Example_ReadAPIC_NoFileGDI()
+   _GDIPlus_Startup() ;initialize GDI+
+
+   ;Select MP3 and ReadTag
+   $MP3Filename = FileOpenDialog("Select Mp3 File", "", "Muisc (*.mp3)")
+   _ID3ReadTag($MP3Filename,2)
+
+   ;Read APIC Frame
+   Local $aAlbumArtData = _ID3GetTagField("APIC",1,1) ;return array with binary picture data
+   Local $NumAPIC = @extended ;holds number of Pictures in tag
+   Local $bAlbumArtData = $aAlbumArtData[6]
+
+   Local $hBitmap = _GDIPlus_BitmapCreateFromMemory($bAlbumArtData) ;load binary saved GIF image and convert it to GDI+ bitmap format
+   ;Local $iWidth = _GDIPlus_ImageGetWidth($hBitmap), $iHeight = _GDIPlus_ImageGetHeight($hBitmap)
+   Local $iWidth = 300, $iHeight = 300
+   Local $hGUI = GUICreate("APIC Example with no AlbumArt.jpg", $iWidth, $iHeight) ;create a test GUI
+   GUISetBkColor(0xFFE8FF, $hGUI) ;set GUI background color
+   GUISetState(@SW_SHOW)
+
+   Local $hGraphics = _GDIPlus_GraphicsCreateFromHWND($hGUI) ;create a graphics object from a window handle
+   $hBitmap = _GDIPlus_ImageResize($hBitmap, $iWidth, $iHeight) ;resize image
+   _GDIPlus_GraphicsDrawImage($hGraphics, $hBitmap, 0 ,0) ;display image in GUI
+
+   Do
+   Until GUIGetMsg() = $GUI_EVENT_CLOSE
+
+   ;cleanup GDI+ resources
+   _GDIPlus_BitmapDispose($hBitmap)
+   _GDIPlus_GraphicsDispose($hGraphics)
+   _GDIPlus_Shutdown()
+   GUIDelete($hGUI)
+EndFunc   ;==>_ID3Example_ReadAPIC_NoFile
+
+
+Func _ID3Example_ReadID3v2APIC_SimplePictureBox()
 	Dim $sAPIC_PictureTypes = "Other|32x32 pixels 'file icon'|Other file icon|Cover (front)|Cover (back)|Leaflet page|"
 	$sAPIC_PictureTypes &= "Media (e.g. lable side of CD)|Lead artist/lead performer/soloist|Artist/performer|Conductor|"
 	$sAPIC_PictureTypes &= "Lyricist/text writer|Recording Location|During recording|During performance|Movie/video screen capture|"
 	$sAPIC_PictureTypes &= "A bright coloured fish|Illustration|Band/artist logotype|Publisher/Studio logotype"
 
-	$Filename = FileOpenDialog("Select Mp3 File", "", "Muisc (*.mp3)")
-	_ID3ReadTag($Filename,2)
+   $Filename = FileOpenDialog("Select Mp3 File", "", "Muisc (*.mp3)")
+   _ID3ReadTag($Filename,2)
 
-	Local $AlbumArtFile = _ID3GetTagField("APIC")
-	Local $NumAPIC = @extended ;holds number of Pictures in tag
-	MsgBox(0,"AlbumArtFile",$AlbumArtFile)
+   Local $AlbumArtFile = _ID3GetTagField("APIC")
+   Local $NumAPIC = @extended ;holds number of Pictures in tag
+
+   Local $hGUI = GUICreate("APIC Example with Picture Control", 400, 400) ;create a test GUI
+   GUISetBkColor(0xFFE8FF, $hGUI) ;set GUI background color
+   GUISetState(@SW_SHOW)
+   If FileExists($AlbumArtFile) Then
+
+	  ;Converts png to jpeg and continues
+	  ;**************************************************************************************************
+	  If StringInStr($AlbumArtFile,".png") Then
+		 $APIC_GDIPlusImage = _GDIPlus_ImageLoadFromFile($AlbumArtFile)
+		 $AlbumArtFile = StringReplace($AlbumArtFile,".png",".jpg")
+		 _GDIPlus_ImageSaveToFileEx($APIC_GDIPlusImage,$AlbumArtFile, $APIC_PNGTOJPEG_Encoder)
+		 _GDIPlus_ImageDispose($APIC_GDIPlusImage)
+	  EndIf
+	  ;**************************************************************************************************
+
+	  $APIC_pic = GUICtrlCreatePic($AlbumArtFile,100,100, 200, 200)
+
+   EndIf
+
+   Do
+   Until GUIGetMsg() = $GUI_EVENT_CLOSE
+
+
+;~    _ArrayDisplay($AlbumArtFile)
+   return 0
 
 	Local $PicTypeIndex = StringInStr($AlbumArtFile,chr(0))
 	Local $aAPIC_PictureTypes = StringSplit($sAPIC_PictureTypes,"|",2)
 	MsgBox(0,"APIC_PictureType",$aAPIC_PictureTypes[Number(StringMid($AlbumArtFile,$PicTypeIndex+1))])
+	GUIDelete($hGUI)
 EndFunc
 
 Func _ID3Example_ReadID3v2TXXX()
