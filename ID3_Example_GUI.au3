@@ -31,6 +31,7 @@
 		 -changed reading in APIC and USLT Frames so that there is no cile cleanup needed (no files are written to HD)
 		 -ToDo Test tag write
 			-Change code for selecting new pic to use GDI+
+			-POPM writting from GUI is not working (set to 10, read back 49)
 	Release 3.5 TODO
 		-Add Listbox of all ID3v2 frames to be able to select and remove from tag
 #ce ;========================================================================================================
@@ -42,13 +43,11 @@ _GDIPlus_Startup()
 
 Dim $Gui_Width = 850-265-65, $Gui_Height = 550
 $ID3Gui_H = GUICreate("ID3 Example GUI", $Gui_Width, $Gui_Height)
-;Check for GUI Icon
-;Todo use fileinstall
-If Not FileExists(@TempDir & "\id3v22.ico") Then
-	InetGet("http://www.id3.org/Developer_Information?action=AttachFile&do=get&target=id3v2.ico", @TempDir & "\id3v22.ico")
+If Not FileExists(@ScriptDir & "\id3v2.ico") Then
+   InetGet("http://id3lib.sourceforge.net/id3/id3v2.ico",@ScriptDir & "\id3v2.ico")
 EndIf
-GUISetIcon(@TempDir & "\id3v22.ico")
-TraySetIcon(@TempDir & "\id3v22.ico")
+GUISetIcon(@ScriptDir & "\id3v2.ico")
+TraySetIcon(@ScriptDir & "\id3v2.ico")
 $ProgDir = @WorkingDir & "\"
 
 $StatusBar = _GUICtrlStatusBar_Create($ID3Gui_H, -1, -1)
@@ -435,16 +434,13 @@ Func _FileOpen_button_Pressed()
 
 	  ;TODO Add more to MPEG Tab
 	  ;**************************************************************************************************
-;~ 	Local $MPEGbegin = TimerInit()
-	  Local $bMPEG = _MPEG_GetFrameHeader($Filename)
-;~ 	$MPEGTimeToReadTags = TimerDiff($MPEGbegin)
-;~ 	MsgBox(0,"$MPEGTimeToReadTags",Round($MPEGTimeToReadTags,2) & " ms")
-	  GUICtrlSetData($MPEGFrameHeader_input, $bMPEG)
-	  GUICtrlSetData($MPEGVersion_input, _MPEG_GetVersion($bMPEG))
-	  GUICtrlSetData($MPEGLayer_input, _MPEG_GetLayer($bMPEG))
-	  GUICtrlSetData($MPEGBitRate_input, _MPEG_GetBitRate($bMPEG))
-	  GUICtrlSetData($MPEGSampleRate_input, _MPEG_GetSampleRate($bMPEG))
-	  GUICtrlSetData($MPEGChannelMode_input, _MPEG_GetChannelMode($bMPEG))
+;~ 	  Local $bMPEG = _MPEG_GetFrameHeader($Filename)
+;~ 	  GUICtrlSetData($MPEGFrameHeader_input, $bMPEG)
+;~ 	  GUICtrlSetData($MPEGVersion_input, _MPEG_GetVersion($bMPEG))
+;~ 	  GUICtrlSetData($MPEGLayer_input, _MPEG_GetLayer($bMPEG))
+;~ 	  GUICtrlSetData($MPEGBitRate_input, _MPEG_GetBitRate($bMPEG))
+;~ 	  GUICtrlSetData($MPEGSampleRate_input, _MPEG_GetSampleRate($bMPEG))
+;~ 	  GUICtrlSetData($MPEGChannelMode_input, _MPEG_GetChannelMode($bMPEG))
 	  ;**************************************************************************************************
 
 ;~ 	  _ID3DeleteFiles() ;I shouldn't need this anymore
@@ -632,24 +628,25 @@ Func _ID3v2_SaveTag_button_Pressed()
 	$TimeToReadTags = TimerDiff($begin)
 	_GUICtrlStatusBar_SetText( $StatusBar , "Completed Last Tag Write in " & Round($TimeToReadTags,2) & " ms")
 EndFunc
-; #FUNCTION# ======================================================================================
-; Name...........: _GUICtrlGetTextColorEx
-; Description ...: Get RGB text colour of in-process standard controls
-; Syntax.........: _GUICtrlGetTextColorEx($hWnd, $iRType = 0)
-; Parameters ....: $hWnd - Handle or Control ID of standard control: Static (Label), Edit(Edit/Input),
-;                  Button (Ownerdrawn/Classic Theme PushButton**, Group, Radio, CheckBox), ListBox, ComboBox
-; Parameters ....: $iRType - RGB return type: 0 = Integer / 1 = Hex String
-; Return values .: Success - Returns the RGB value as Integer or Hex String
-;                  Failure - $CLR_INVALID = 0xFFFFFFFF (-1), sets @error to integer indicating location in function.
-; Author ........: rover 2k11 - code portions and ideas from: Chris Boss, Prog@ndy, Malkey, Yashied, and Wraithdu.
-; Modified.......:
-; Remarks .......: Returns text colour for visible, hidden or disabled in-process controls.
-;                  on an active, inactive, hidden, locked, disabled or minimized gui.
-; Related .......:
-; Link ..........:
-; Example .......: Yes
-; =================================================================================================
+
 Func _GUICtrlGetTextColorEx($hWnd, $iRType = 0)
+   ; #FUNCTION# ======================================================================================
+   ; Name...........: _GUICtrlGetTextColorEx
+   ; Description ...: Get RGB text colour of in-process standard controls
+   ; Syntax.........: _GUICtrlGetTextColorEx($hWnd, $iRType = 0)
+   ; Parameters ....: $hWnd - Handle or Control ID of standard control: Static (Label), Edit(Edit/Input),
+   ;                  Button (Ownerdrawn/Classic Theme PushButton**, Group, Radio, CheckBox), ListBox, ComboBox
+   ; Parameters ....: $iRType - RGB return type: 0 = Integer / 1 = Hex String
+   ; Return values .: Success - Returns the RGB value as Integer or Hex String
+   ;                  Failure - $CLR_INVALID = 0xFFFFFFFF (-1), sets @error to integer indicating location in function.
+   ; Author ........: rover 2k11 - code portions and ideas from: Chris Boss, Prog@ndy, Malkey, Yashied, and Wraithdu.
+   ; Modified.......:
+   ; Remarks .......: Returns text colour for visible, hidden or disabled in-process controls.
+   ;                  on an active, inactive, hidden, locked, disabled or minimized gui.
+   ; Related .......:
+   ; Link ..........:
+   ; Example .......: Yes
+   ; =================================================================================================
 	;Author: rover 2k11
 	If Not IsDeclared("CLR_INVALID") Then Local Const $CLR_INVALID = 0xFFFFFFFF
 	Local $iRet = $CLR_INVALID
@@ -732,36 +729,41 @@ Func _ID3v2_AddAPIC_button_Pressed()
 		EndIf
 		GUICtrlSetLimit($APIC_inputUD, $NumAPIC,1)
 		_ID3v2Frame_SetFields("APIC",$PIC_Filename & "|" & "" & "|" & String($iAPIC_PictureType),$iAPIC_index,"|")
-		If $APIC_pic == -1 Then
-			GUISwitch($ID3Gui_H,$ID3_tab)
-			$APIC_pic = GUICtrlCreatePic($PIC_Filename,285,95, 200, 200)
-			GUICtrlCreateTabItem(""); end tabitem definition
-		EndIf
+
+		 $hAPIC_Bitmap = _GDIPlus_BitmapCreateFromFile($PIC_Filename) ;load binary saved GIF image and convert it to GDI+ bitmap format
+		 $hAPIC_Bitmap = _GDIPlus_ImageResize($hAPIC_Bitmap, 200, 200) ;resize image
+
+		 $hAPIC_Graphics = _GDIPlus_GraphicsCreateFromHWND($ID3Gui_H) ;create a graphics object from a window handle
+		 If _GUICtrlTab_GetCurSel($tab) = 0 Then
+			_GDIPlus_GraphicsDrawImage($hAPIC_Graphics, $hAPIC_Bitmap, 285, 95) ;display image in GUI
+		 EndIf
+
 		GUICtrlSetData($APIC_input,$sAPIC_PictureType)
-		GUICtrlSetState($APIC_pic, $GUI_SHOW)
-		GUICtrlSetImage($APIC_pic, $PIC_Filename)
 		GUICtrlSetData($APIC_label,"AlbumArt (APIC " & $iAPIC_index & " of " & $NumAPIC & ")")
 	EndIf
 
 EndFunc
 Func _ID3v2_RemoveAPIC_button_Pressed()
-	Local $aNumAPIC = StringSplit(GUICtrlRead($APIC_label)," of ",1)
-	Local $NumAPIC = 0, $iAPIC_index = 1
-	If IsArray($aNumAPIC) Then
-		If $aNumAPIC[0] > 1 Then
-			$NumAPIC = StringTrimRight($aNumAPIC[2],1)
-			$iAPIC_index = StringTrimLeft($aNumAPIC[1],15)
-		EndIf
-	EndIf
-	_ID3v2Frame_SetFields("APIC","",$iAPIC_index)
-;~ 	GUICtrlSetState($APIC_pic, $GUI_HIDE) ;removes picture
-	GUICtrlSetColor($APIC_input, 0xff0000)
-	GUICtrlSetColor($APIC_label, 0xff0000)
-	If $NumAPIC == 1 Then
-		GUICtrlSetLimit($APIC_inputUD, 1,1)
-		GUICtrlSetData($APIC_input,"")
-		GUICtrlSetData($APIC_label,"AlbumArt (APIC)")
-	EndIf
+   Local $aNumAPIC = StringSplit(GUICtrlRead($APIC_label)," of ",1)
+   Local $NumAPIC = 0, $iAPIC_index = 1
+   If IsArray($aNumAPIC) Then
+	  If $aNumAPIC[0] > 1 Then
+		 $NumAPIC = StringTrimRight($aNumAPIC[2],1)
+		 $iAPIC_index = StringTrimLeft($aNumAPIC[1],15)
+	  EndIf
+   EndIf
+   _ID3v2Frame_SetFields("APIC","",$iAPIC_index)
+
+   _GDIPlus_BitmapDispose($hAPIC_Bitmap)
+   _GDIPlus_GraphicsDispose($hAPIC_Graphics)
+   GUICtrlSetData($hID3v2Group,"ID3v2")
+   GUICtrlSetColor($APIC_input, 0xff0000)
+   GUICtrlSetColor($APIC_label, 0xff0000)
+   If $NumAPIC == 1 Then
+	  GUICtrlSetLimit($APIC_inputUD, 1,1)
+	  GUICtrlSetData($APIC_input,"")
+	  GUICtrlSetData($APIC_label,"AlbumArt (APIC)")
+   EndIf
 EndFunc
 Func _APIC_inputUD_Pressed()
 	$InputCheckUpdates = False

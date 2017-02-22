@@ -509,11 +509,11 @@ EndFunc   ;==>_ID3WriteTag
 ; Modified.......: 20120501 by joeyb1275
 ;================================================================================================================================
 Func _ID3RemoveTag($sFilename, $iTagVersion=0)
-	MsgBox(0,"$iTagVersion()",$iTagVersion)
+;~ 	MsgBox(0,"$iTagVersion()",$iTagVersion)
 	Switch $iTagVersion
 		Case -1 ;save only raw MPEG data
 			Local $Test = _MPEG_GetFrameHeader($sFilename)
-			MsgBox(0,"_MPEG_GetFrameHeader()",$Test)
+;~ 			MsgBox(0,"_MPEG_GetFrameHeader()",$Test)
 		Case 0 ;All Tags
 			_ID3v1Tag_RemoveTag($sFilename)
 			_ID3v2Tag_RemoveTag($sFilename)
@@ -1035,10 +1035,8 @@ Func _h_ID3v2Tag_EnumerateFrameIDs()
 	EndIf
    ;****************************************************************************************
 
-	;Scan Tag for all Fields - takes most of the time!!!
-	;Some have found errors in reading the tag size and this while loop will hang if thats wrong
-	;need to clean this part of code up - use something other than while loop?
-;~ 	Local $WhileLoopbegin = TimerInit()
+
+
    $iID3v2_RawTagDataLen = BinaryLen($bID3v2_RawTagData_Global)
    While ($iBytesRead < $iTagSize)
 	  ;check if all the binary data has been scanned
@@ -1061,9 +1059,8 @@ Func _h_ID3v2Tag_EnumerateFrameIDs()
 	  If $sFrameID <> -1 Then
 		 ;if frameID is good get FrameSize
 		 $iFrameSize = _h_ID3v2FrameHeader_GetFrameSize($bFrameHeader)
-
 	  Else
-		 ;check for padding
+		 ;check for zero padding at the end of the ID3v2 tag
 		 If Dec(Hex(BinaryMid($bFrameHeader, 1, 2), 4)) = 0 Then
 			$iZPAD = ($iTagSize + 10) - ($iBytesRead - $iFrameHeaderLen)
 			$sID3v2_TagFrameIndex_Global &= "ZPAD" & "|" & String($iBytesRead - $iFrameHeaderLen + 1) & "|" & $iZPAD & @CRLF
@@ -1075,7 +1072,7 @@ Func _h_ID3v2Tag_EnumerateFrameIDs()
 			$iBytesRead -= Round(($iFrameSize / 8 + 2)) ;go back before starting the byte scan
 			ConsoleWrite("Unexpected data found...")
 			ConsoleWrite("Scanning bytes to correct...")
-			For $itest = 1 To ($iBytesRead + $iFrameSize + 20)
+			For $itest = 1 To ($iTagSize - $iBytesRead - $iFrameHeaderLen)
 			   $bFrameHeader = BinaryMid($bID3v2_RawTagData_Global, $iBytesRead + 1 + $itest, $iFrameHeaderLen)
 			   $sFrameID = _h_ID3v2FrameHeader_GetFrameID($bFrameHeader)
 			   If $sFrameID <> -1 Then
@@ -1108,9 +1105,6 @@ Func _h_ID3v2Tag_EnumerateFrameIDs()
 	  EndIf
 
    WEnd
-
-;~    $WhileLoopTimeToReadTags = TimerDiff($WhileLoopbegin)
-;~    MsgBox(0,"$SlowTimeToReadTags",Round($WhileLoopTimeToReadTags,2) & " ms")
 
    Return $sID3v2_FrameIDList_RetVal & @CRLF
 
@@ -2109,7 +2103,7 @@ Func _ID3v2Frame_SetFields($sFrameID, $vNewFrameStrings, $iFrameID_Index = 1, $s
 					EndIf
 				EndIf
 			Case Else
-				MsgBox(0, "_ID3v2Frame_SetFields Error", $sFrameID & " has not been implemented yet!")
+				ConsoleWrite("_ID3v2Frame_SetFields Error: " & $sFrameID & " has not been implemented yet!")
 				SetError(1)
 				Return -1
 		EndSwitch
@@ -2770,10 +2764,12 @@ Func _h_ID3v2_CreateFrameUSLT($sLyricsFilename, $sDescription = "", $sLanguage =
 	;Lyrics/text          <full text string according to encoding>
 	;---------------------------------------------------------------------------------
 
-	Local $sLyrics = ""
-	If FileExists($sLyricsFilename) Then
-		$sLyrics = FileRead($sLyricsFilename)
-	EndIf
+   Local $sLyrics = ""
+   If FileExists($sLyricsFilename) Then
+	  $sLyrics = FileRead($sLyricsFilename)
+   Else
+	  $sLyrics = $sLyricsFilename
+   EndIf
 
 
 	Local $bFrameData = Binary("0x0" & String($iTextEncoding))
@@ -2925,7 +2921,7 @@ Func _h_ID3v2_CreateFramePOPM($bRating, $sEmailToUser = "", $iCounter = 0)
 	$bFrameData &= Binary("0x" & Hex($iCounter))
 	;Hex function can only work up to 16 bytes
 
-	MsgBox(0,"$bRating",$bRating)
+;~ 	MsgBox(0,"$bRating",$bRating)
 
 	Return $bFrameData
 EndFunc   ;==>_h_ID3v2_CreateFramePOPM
@@ -3407,12 +3403,12 @@ Func _h_MPEG_SyncToNextFrameOLD($sFilename, Byref $iOffsetByte)
 		If BitAND($bTestSyncBytes, Binary("0xFFE0")) = Binary("0xFFE0") Then
 			;Read in the rest of the MPEG Frame Header
 			$bTestSyncBytes &= FileRead($hfile, 2)
-			MsgBox(0,"$bTestSyncBytes",$bTestSyncBytes)
+;~ 			MsgBox(0,"$bTestSyncBytes",$bTestSyncBytes)
 			If _h_MPEG_IsValidHeader($bTestSyncBytes) Then
 ;~ 				MsgBox(0,"$bTestSyncBytes",$bTestSyncBytes)
 				ExitLoop
 			Else
-				MsgBox(0,"$bTestSyncBytes",$bTestSyncBytes)
+;~ 				MsgBox(0,"$bTestSyncBytes",$bTestSyncBytes)
 				$bTestSyncBytes = BinaryMid($bTestSyncBytes,1,2) ;trim 2 bytes
 				FileSetPos($hfile, -2, 1)
 			EndIf
@@ -3440,13 +3436,13 @@ Func _h_MPEG_SyncToNextFrameOLD($sFilename, Byref $iOffsetByte)
 
 	;Read in the rest of the MPEG Frame Header
 ;~ 	$bTestSyncBytes &= FileRead($hfile, 2)
-	MsgBox(0,"$bTestSyncBytes",$bTestSyncBytes & " (" & $iOffsetByte & ")")
+;~ 	MsgBox(0,"$bTestSyncBytes",$bTestSyncBytes & " (" & $iOffsetByte & ")")
 	FileClose($hfile)
 
 	Local $FrameLengthInBytes = Floor(144 * Number(_MPEG_GetBitRate($bTestSyncBytes))*1000 / Number(_MPEG_GetSampleRate($bTestSyncBytes)) + 0)
 ;~ 	MsgBox(0,"_MPEG_GetBitRate",Number(_MPEG_GetBitRate($bTestSyncBytes))*1000)
 ;~ 	MsgBox(0,"_MPEG_GetSampleRate",Number(_MPEG_GetSampleRate($bTestSyncBytes)))
-	MsgBox(0,"$FrameLengthInBytes",$FrameLengthInBytes)
+;~ 	MsgBox(0,"$FrameLengthInBytes",$FrameLengthInBytes)
 ;~ 	$iOffsetByte + $FrameLengthInBytes+2
 ;~ 	MsgBox(0,"Next",$iOffsetByte + $FrameLengthInBytes + 1)
 	$iOffsetByte = $iOffsetByte + $FrameLengthInBytes + 1 - 8

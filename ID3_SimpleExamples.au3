@@ -21,7 +21,7 @@
 
 ;~ _ID3Example_ReadShowTitle()
 
-_ID3Example_ReadID3v2APIC_SimplePictureBox()
+;~ _ID3Example_ReadID3v2APIC_SimplePictureBox()
 
 ;~ _ID3Example_ReadAPIC_NoFileGDI()
 
@@ -29,7 +29,7 @@ _ID3Example_ReadID3v2APIC_SimplePictureBox()
 
 ;~ _ID3Example_ReadID3v2TXXX()
 
-;~ _ID3Example_ReadSpeed()
+_ID3Example_ReadSpeed()
 
 ;~ _ID3Example_WriteID3v2Only()
 
@@ -185,37 +185,51 @@ Func _ID3Example_ReadID3v2TXXX()
 	EndIf
 EndFunc
 
-Func _ID3Example_ReadSpeed())
+Func _ID3Example_ReadSpeed()
    Local $MusicFolder = FileSelectFolder("Choose a folder.", "")
 
-   $Files = _FileListToArray($MusicFolder,"*.mp3",1)
+   $aFiles = _FileListToArray($MusicFolder,"*.mp3",1)
+
+   _ArrayDisplay($aFiles)
 
    FileChangeDir($MusicFolder)
    $sFilter = "APIC"
    $begin = TimerInit()
    Local $sTagInfo
 
-   For $i = 1 To $Files[0]
+   For $i = 1 To $aFiles[0]
 
-	$sTagInfo = _ID3ReadTag($Files[$i],2)
-	;MsgBox(0,"$sTagInfo",$sTagInfo)
-;~ 	$iTestTXXX = StringInStr($sTagInfo, "COMM")
-;~ 	If $iTestTXXX > 0 Then
-;~ 		$iNumTXXX = Number(StringMid($sTagInfo,$iTestTXXX + 5,1))
-;~ 		For $j = 1 To $iNumTXXX
-;~ 			MsgBox(0,"COMM:" & $j,$Files[$i] & @CRLF & _ID3v2Frame_GetString("COMM",$j))
-;~ 		Next
-;~ 	EndIf
+	  $sTagInfo = _ID3ReadTag($aFiles[$i],2)
+;~ 	  MsgBox(0,"$sFileTagInfo",$sTagInfo)
+	  $aTagList = StringSplit($sTagInfo,@CRLF,1)
+	  For $iTag = 2 To $aTagList[0] - 1
+		 Dim $aTagFieldList = StringSplit($aTagList[$iTag],"|")
+		 Dim $a2DTagFields[$aTagFieldList[0]-1][2] ;2D Array to hold FieldNames and FieldStrings
+		 For $iField = 2 To $aTagFieldList[0]
+			$a2DTagFields[$iField-2][0] = $aTagFieldList[$iField]
+			If StringInStr($aTagFieldList[1],"ID3v2") > 0 Then
+			   Dim $aFrameInfo = StringSplit($aTagFieldList[$iField],":")
+			   Dim $sFrameID = $aFrameInfo[1]
+			   Dim $iNumFrames = $aFrameInfo[2]
+			   $a2DTagFields[$iField-2][1] = ""
+			   For $iFrame = 1 To $iNumFrames
+				  $a2DTagFields[$iField-2][1] &= _ID3GetTagField($sFrameID,$iFrame) & " | "
+			   Next
+			   $a2DTagFields[$iField-2][1] = StringTrimRight($a2DTagFields[$iField-2][1],3)
+			ElseIf StringInStr($aTagFieldList[1],"ID3v1") > 0 Then
+			   $a2DTagFields[$iField-2][1] =_ID3GetTagField($aTagFieldList[$iField])
+			ElseIf StringInStr($aTagFieldList[1],"APEv2") > 0 Then
+			   $a2DTagFields[$iField-2][1] =_APEv2_GetItemValueString($aTagFieldList[$iField])
+			EndIf
+		 Next
+;~ 		 _ArrayDisplay($a2DTagFields,$aTagFieldList[1])
+	  Next
 
-;~ 	$ID3v1Tag = _ID3TagToArray($Files[$i],1)
-;~ 	_ArrayDisplay($ID3v1Tag,"$ID3v1Tag")
-
-	;$ID3v2Tag = _ID3TagToArray($Files[$i],2,-1)
-;~ 	_ArrayDisplay($ID3v2Tag,"$ID3v2Tag")
    Next
    $dif = TimerDiff($begin)
-   MsgBox(0,"Time",$dif)
+   MsgBox(0,"Time/#",$dif/$aFiles[0])
    _ID3DeleteFiles()
+
 EndFunc
 
 
